@@ -73,22 +73,33 @@ export const useChatSocket = ({
         return [...prev, message];
       });
 
-      const isActiveChat = message.chatId === activeChatId;
+      const isActiveChat = activeChatId && (
+        String(message.chatId) === String(activeChatId)
+      );
+
+      if (isActiveChat && socket && user) {
+        socket.emit("join-chat", { userId: user.id || user._id, chatId: activeChatId });
+      }
+
       setChats(prevChats => {
-        const chatExists = prevChats.some(c => c.id === message.chatId || c.groupId === message.chatId);
+        const chatExists = prevChats.some(c => String(c.id) === String(message.chatId) || String(c._id) === String(message.chatId) || String(c.groupId) === String(message.chatId));
         if (!chatExists) {
           loadChats();
           return prevChats;
         }
-        return prevChats.map(c =>
-          (c.id === message.chatId || c.groupId === message.chatId) ? {
+        return prevChats.map(c => {
+          const isTarget = String(c.id) === String(message.chatId) || String(c._id) === String(message.chatId) || String(c.groupId) === String(message.chatId);
+          if (!isTarget) return c;
+          const isThisActive = activeChatId && (String(c.id) === String(activeChatId) || String(c._id) === String(activeChatId) || String(c.groupId) === String(activeChatId));
+          return {
             ...c,
             lastMessageId: message.id,
             createdTime: message.timestamp,
             lastMessage: message,
-            unreadCount: isActiveChat ? 0 : (c.unreadCount || 0) + 1
-          } : c
-        );
+            unreadCount: isThisActive ? 0 : (c.unreadCount || 0) + 1,
+            isUnread: isThisActive ? false : true
+          };
+        });
       });
 
       const isWindowHidden = document.visibilityState === 'hidden';
@@ -233,7 +244,7 @@ export const useChatSocket = ({
       );
     };
 
-    const handleUserDeleted = ({ userId, conversationIds }) => {
+    const handleUserDeleted = ({ conversationIds }) => {
       if (Array.isArray(conversationIds) && conversationIds.length > 0) {
         setChats(prev => prev.filter(c => !conversationIds.includes(c.id)));
         setMessages(prev => prev.filter(m => !conversationIds.includes(m.chatId)));

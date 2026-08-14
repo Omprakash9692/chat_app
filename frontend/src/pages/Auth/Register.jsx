@@ -13,18 +13,15 @@ export const Register = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       name: '',
       email: '',
       phone: '',
       password: '',
-      confirmPassword: '',
       acceptTerms: false
     }
   });
-
-  const password = watch('password');
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -140,10 +137,17 @@ export const Register = () => {
               <Phone className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#667781] h-4 w-4 my-auto" />
               <input
                 type="tel"
-                placeholder="+1 555-0199 or +91 9876543210"
+                inputMode="numeric"
+                maxLength={15}
+                placeholder="e.g. 9876543210"
                 className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.phone ? 'border-rose-500' : 'border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]'} text-xs text-[#111b21] py-3 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
                 {...register('phone', {
-                  required: 'Phone number is required'
+                  required: 'Phone number is required',
+                  validate: value => {
+                    if (!value) return 'Phone number is required';
+                    const digitsOnly = value.replace(/\D/g, '');
+                    return digitsOnly.length <= 10 || 'Phone number must not exceed 10 digits';
+                  }
                 })}
               />
             </div>

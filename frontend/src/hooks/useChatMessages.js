@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { chatApi } from '../services/chatApi';
 
-export const useChatMessages = ({ user, authFetch, logout, activeChatId, chats, setChats, setGroups }) => {
+export const useChatMessages = ({ authFetch, logout, activeChatId, chats, setChats, setGroups }) => {
   const [messages, setMessages] = useState([]);
   const [starredMsgIds, setStarredMsgIds] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('starredMsgIds') || '[]');
-    } catch (e) {
+    } catch {
       return [];
     }
   });
@@ -19,7 +19,7 @@ export const useChatMessages = ({ user, authFetch, logout, activeChatId, chats, 
         : [...prev, messageId];
       try {
         localStorage.setItem('starredMsgIds', JSON.stringify(updated));
-      } catch (e) {}
+      } catch {}
       return updated;
     });
   };
@@ -28,7 +28,7 @@ export const useChatMessages = ({ user, authFetch, logout, activeChatId, chats, 
     setStarredMsgIds([]);
     try {
       localStorage.setItem('starredMsgIds', '[]');
-    } catch (e) {}
+    } catch {}
   };
 
   const mergeMessagesPreservingStatus = (prevMessages, newMessages, currentChatId) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Eye,
@@ -133,13 +133,14 @@ export const Badge = ({ children, variant = 'primary', className = '' }) => {
     danger: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
     info: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
     neutral: 'bg-slate-100 text-slate-800 dark:bg-slate-850 dark:text-slate-200',
+    unread: 'bg-[#008069] text-white shadow-sm ring-1 ring-white',
   };
 
   return (
     <span
       className={`
-        inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold tracking-wide select-none
-        ${variants[variant]}
+        inline-flex items-center justify-center rounded-full text-xs font-black tracking-wide select-none leading-none
+        ${variants[variant] || variants.primary}
         ${className}
       `}
     >
@@ -710,9 +711,14 @@ export const MessageInfoPanel = ({ message, onClose }) => {
     [authFetch]
   );
 
+  const loadedMsgIdRef = useRef(null);
+
   useEffect(() => {
-    if (isOpen && message?.id) {
+    if (isOpen && message?.id && loadedMsgIdRef.current !== message.id) {
+      loadedMsgIdRef.current = message.id;
       fetchInfo(message.id);
+    } else if (!isOpen) {
+      loadedMsgIdRef.current = null;
     }
   }, [isOpen, message?.id, fetchInfo]);
 

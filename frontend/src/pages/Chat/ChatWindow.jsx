@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X } from 'lucide-react';
@@ -9,7 +10,7 @@ import { PinnedMessagesBar } from './components/PinnedMessagesBar';
 import { MessageBubble } from './components/MessageBubble';
 import { ChatInputBar } from './components/ChatInputBar';
 import { ForwardMessageModal, PinDurationModal } from './components/ChatModals';
-import { Modal, Button, MessageInfoPanel } from '../../components/ui/ui';
+import { Avatar, Modal, Button, MessageInfoPanel } from '../../components/ui/ui';
 
 const getMsgDateKey = (dateString) => {
   const date = new Date(dateString);
@@ -32,8 +33,8 @@ const formatDateSeparator = (dateString) => {
 export const ChatWindow = ({ toggleRightSidebar, isRightSidebarOpen, onBack }) => {
   const {
     chats, activeChatId, getActiveChat, getChatMessages, sendMessage, uploadFile,
-    editMessage, deleteMessage, deleteMessageForMe, deleteMessageForEveryone, togglePinnedMessage, addReaction, typingUsers, groups,
-    blockUser, unblockUser, reportUser, socket, blockedUserIds, selectChat, starredMsgIds, toggleStarMessage
+    editMessage, deleteMessageForMe, deleteMessageForEveryone, togglePinnedMessage, addReaction, typingUsers, groups,
+    unblockUser, reportUser, socket, blockedUserIds, selectChat, starredMsgIds, toggleStarMessage
   } = useChat();
   const { user, allUsers } = useAuth();
   const { showToast } = useNotifications();
@@ -116,10 +117,8 @@ export const ChatWindow = ({ toggleRightSidebar, isRightSidebarOpen, onBack }) =
   };
 
   const activeChat = getActiveChat();
-  if (!activeChat) return null;
-
   const myRealId = user?.id?.toString() || user?._id?.toString();
-  const isDirect = activeChat.type === 'direct';
+  const isDirect = activeChat ? activeChat.type === 'direct' : false;
 
   const getPId = (p) => {
     if (!p) return null;
@@ -127,7 +126,7 @@ export const ChatWindow = ({ toggleRightSidebar, isRightSidebarOpen, onBack }) =
     return (p._id || p.id)?.toString() || p.toString();
   };
 
-  const recipientParticipant = isDirect
+  const recipientParticipant = (isDirect && activeChat)
     ? activeChat.participants?.find(p => {
       const pId = getPId(p);
       return pId && pId !== 'user_me' && pId !== myRealId;
@@ -139,15 +138,15 @@ export const ChatWindow = ({ toggleRightSidebar, isRightSidebarOpen, onBack }) =
     ? allUsers.find(u => (u.id || u._id)?.toString() === recipientId)
     : null;
 
-  const group = !isDirect
-    ? groups.find(g => g.id === activeChat.groupId || g.id === activeChat.id)
+  const group = (!isDirect && activeChat)
+    ? (groups || []).find(g => g.id === activeChat.groupId || g.id === activeChat.id)
     : null;
 
   const targetUnblockId = recipientId || recipient?.id?.toString() || recipient?._id?.toString();
   const isBlocked = isDirect && targetUnblockId && (
     (blockedUserIds || []).map(id => id.toString()).includes(targetUnblockId.toString())
   );
-  const isGroupBlocked = !isDirect && (activeChat?.isBlocked || group?.isBlocked);
+  const isGroupBlocked = !isDirect && activeChat && (activeChat?.isBlocked || group?.isBlocked);
 
   const amIAdmin = !isDirect && group && (group?.adminIds || []).some(
     id => id === 'user_me' || id === myRealId
@@ -526,6 +525,8 @@ export const ChatWindow = ({ toggleRightSidebar, isRightSidebarOpen, onBack }) =
       return msg ? { ...msg, pinnedUntil: p.pinnedUntil } : null;
     })
     .filter(Boolean);
+
+  if (!activeChat) return null;
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#efeae2] relative font-sans select-text">

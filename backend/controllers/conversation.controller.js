@@ -78,8 +78,9 @@ export const createDirectChat = async (req, res) => {
   if (conversation) {
     if (conversation.deletedBy?.length > 0) {
       conversation.deletedBy = conversation.deletedBy.filter((id) => !isMe(id, myId));
-      await conversation.save();
     }
+    conversation.updatedAt = new Date();
+    await conversation.save();
   } else {
     conversation = await Conversation.create({ type: "direct", participants: [myId, userId] });
   }

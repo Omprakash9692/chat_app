@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Search, Plus, Check, Users, MessageSquare, MoreVertical,
   X, Mail, UserPlus, Archive, Trash2, Eraser
@@ -13,12 +12,11 @@ import { CreateGroupModal } from './components/CreateGroupModal';
 
 export const SidebarLeft = ({ closeMobileSidebar }) => {
   const {
-    chats, messages, groups, selectChat, activeChatId, createGroup, createDirectChat, uploadFile,
+    chats, groups, selectChat, activeChatId, createGroup, createDirectChat, uploadFile,
     togglePinChat, toggleArchiveChat, toggleFavoriteChat, toggleUnreadChat, clearChatMessages, deleteChat
   } = useChat();
   const { user, allUsers } = useAuth();
   const { showToast } = useNotifications();
-  const navigate = useNavigate();
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,12 +115,12 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
     return true;
   });
 
-  // Sort chats: pinned chats first, then by last message timestamp
+  // Sort chats: pinned chats first, then by last message timestamp or update time
   const sortedChats = [...filteredChats].sort((a, b) => {
     if (a.pinned && !b.pinned) return -1;
     if (!a.pinned && b.pinned) return 1;
-    const timeA = a.lastMessage ? new Date(a.lastMessage.timestamp).getTime() : 0;
-    const timeB = b.lastMessage ? new Date(b.lastMessage.timestamp).getTime() : 0;
+    const timeA = new Date(a.lastMessage?.timestamp || a.updatedAt || a.createdTime || 0).getTime();
+    const timeB = new Date(b.lastMessage?.timestamp || b.updatedAt || b.createdTime || 0).getTime();
     return timeB - timeA;
   });
 
@@ -263,7 +261,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
                             <span className="text-amber-400 text-[10px]" title="Favorite Chat">⭐</span>
                           )}
                           {isUnread && (
-                            <Badge variant="unread" className="h-4.5 min-w-4.5 text-[9px] px-1">
+                            <Badge variant="unread" className="h-5 min-w-[1.25rem] text-[10px] px-1.5 flex-shrink-0">
                               {chat.unreadCount || 1}
                             </Badge>
                           )}

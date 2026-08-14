@@ -38,13 +38,19 @@ export const AddGroupMembersModal = ({
 
   const handleConfirmAdd = async () => {
     if (selectedMemberIds.length === 0) return;
-    const success = await addMembersToGroup(group.id, selectedMemberIds);
-    if (success) {
-      showToast("Members Added", `Added ${selectedMemberIds.length} members to group.`, "success");
+    const result = await addMembersToGroup(group.id, selectedMemberIds);
+
+    if (result?.success) {
+      if (result.isPending) {
+        showToast("Request Sent", `Join request sent for ${selectedMemberIds.length} member(s). Admin approval is required.`, "info");
+      } else {
+        showToast("Members Added", `Added ${selectedMemberIds.length} member(s) to the group.`, "success");
+      }
+
       setSelectedMemberIds([]);
       onClose();
     } else {
-      showToast("Error", "Could not add members to group.", "danger");
+      showToast("Error", result?.message || "Could not add members to group.", "danger");
     }
   };
 

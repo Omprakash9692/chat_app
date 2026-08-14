@@ -1,9 +1,10 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Forward, Pin, X } from 'lucide-react';
 import { Avatar } from '../../../components/ui/ui';
 
-export const ForwardMessageModal = ({ forwardMessage, chats, allUsers, user, onClose, onSendForward }) => {
+export const ForwardMessageModal = ({ forwardMessage, chats, allUsers, onClose, onSendForward }) => {
   const [selectedChatIds, setSelectedChatIds] = useState([]);
   const [forwardSearch, setForwardSearch] = useState('');
 

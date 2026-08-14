@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, ChevronDown, MessageSquare, ShieldCheck, UserMinus, Check, X } from 'lucide-react';
+import { Users, ChevronDown, MessageSquare, ShieldCheck, UserMinus, UserPlus, Check, X } from 'lucide-react';
 import { Avatar } from '../../../components/ui/ui';
 
 export const GroupMembersList = ({
@@ -10,10 +10,10 @@ export const GroupMembersList = ({
   dismissGroupAdmin,
   removeFromGroup,
   createDirectChat,
-  selectChat,
   showToast,
   onClose,
-  handleJoinRequest
+  handleJoinRequest,
+  setIsAddMembersModalOpen
 }) => {
   const [activeMemberMenuId, setActiveMemberMenuId] = useState(null);
 
@@ -100,10 +100,21 @@ export const GroupMembersList = ({
         </div>
       )}
 
-      <h4 className="text-xs font-bold text-[#111b21] flex items-center gap-1.5 mb-3.5 tracking-wide uppercase">
-        <Users className="h-4 w-4 text-[#008069]" />
-        Members list ({group.memberIds.length})
-      </h4>
+      <div className="flex items-center justify-between gap-2 mb-3.5">
+        <h4 className="text-xs font-bold text-[#111b21] flex items-center gap-1.5 tracking-wide uppercase">
+          <Users className="h-4 w-4 text-[#008069]" />
+          Members list ({group.memberIds.length})
+        </h4>
+
+        <button
+          type="button"
+          onClick={() => setIsAddMembersModalOpen?.(true)}
+          className="inline-flex items-center gap-1.5 rounded-full bg-[#008069]/10 text-[#008069] border border-[#008069]/20 px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wide hover:bg-[#008069]/15 transition-colors cursor-pointer"
+        >
+          <UserPlus className="h-3.5 w-3.5" />
+          Add members
+        </button>
+      </div>
 
       <div className="space-y-2">
         {group.memberIds.map(mid => {

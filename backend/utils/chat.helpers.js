@@ -39,7 +39,7 @@ export const formatConversation = (conv, currentUserId, unreadCount = 0) => {
   const lastMsgObj = conv.lastMessage;
   let lastMsgFormatted = null;
   let lastMsgIdStr = null;
-  let conversationTime = conv.createdAt;
+  let conversationTime = conv.updatedAt || conv.createdAt;
 
   if (lastMsgObj && typeof lastMsgObj === "object" && lastMsgObj._id) {
     if (!hasUser(lastMsgObj.deletedFor, currentUserId)) {
@@ -86,7 +86,7 @@ export const formatConversation = (conv, currentUserId, unreadCount = 0) => {
     pinned: hasUser(conv.pinnedBy, currentUserId),
     archived: hasUser(conv.archivedBy, currentUserId),
     favorite: hasUser(conv.favoriteBy, currentUserId),
-    isUnread: isMarkedUnread,
+    isUnread: isMarkedUnread || unreadCount > 0,
     unreadCount: isMarkedUnread ? Math.max(unreadCount, 1) : unreadCount,
     groupId: conv.type === "group" ? toStr(conv._id) : undefined,
     participants: (conv.participants || []).map((p) => meOrId(p, currentUserId)),
@@ -108,6 +108,7 @@ export const formatConversation = (conv, currentUserId, unreadCount = 0) => {
       requestedAt: req.requestedAt || new Date()
     })),
     createdTime: conversationTime,
+    updatedAt: conv.updatedAt || conv.createdAt,
     lastMessageId: lastMsgIdStr,
     lastMessage: lastMsgFormatted,
     pinnedMessageIds,

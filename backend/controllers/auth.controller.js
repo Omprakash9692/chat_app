@@ -7,7 +7,7 @@ import { sendVerificationEmail } from "../services/email.service.js";
 const generateAccessToken = (userId) => {
   return jwt.sign(
     { userId },
-    process.env.JWT_ACCESS_SECRET,
+    process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 };
@@ -34,6 +34,13 @@ const genCode = () => ({
 const checkPhoneExists = async (phone, res) => {
   if (!phone?.trim()) return false;
   const clean = phone.trim();
+  const digits = clean.replace(/\D/g, "");
+
+  if (digits.length > 10) {
+    res.status(400).json({ success: false, message: "Phone number must not exceed 10 digits." });
+    return true;
+  }
+
   const norm = clean.replace(/[\s\-\(\)]/g, "");
   const users = await User.find({ phone: { $exists: true, $ne: "" } });
   if (users.some(u => u.phone && (u.phone.trim().replace(/[\s\-\(\)]/g, "") === norm || u.phone.trim() === clean))) {
@@ -59,6 +66,10 @@ const registerUserWithRole = async (req, res, role, isVerified) => {
     if (!name || !email || !password) {
       return res.status(400).json({ success: false,
  message: "All fields (name, email, password) are required" });
+    }
+
+    if (phone && phone.toString().replace(/\D/g, "").length > 10) {
+      return res.status(400).json({ success: false, message: "Phone number must not exceed 10 digits." });
     }
 
     const cleanEmail = email.toLowerCase().trim();
@@ -157,7 +168,7 @@ export const logout = async (req, res) => {
     const token = req.headers.authorization?.startsWith("Bearer") ? req.headers.authorization.split(" ")[1] : null;
     if (token) {
       try {
-        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         await User.findByIdAndUpdate(decoded.userId, { isOnline: false, lastSeen: new Date() });
       } catch (err) {
         console.log("Token verification during logout:", err.message);

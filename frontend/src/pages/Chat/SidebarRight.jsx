@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, Phone, UserX, AlertTriangle, LogOut, Trash, Pencil, Star, StarOff, ArrowLeft, Search, MoreVertical, Shield, FileText, ChevronRight } from 'lucide-react';
+import { X, Mail, Phone, UserX, UserPlus, AlertTriangle, LogOut, Trash, Pencil, Star, StarOff, ArrowLeft, Search, MoreVertical, Shield, FileText, ChevronRight } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -300,6 +300,9 @@ export const SidebarRight = ({ onClose }) => {
                 {title}
                 {isDirect && recipient?.role === 'Admin' && <Badge variant="primary">Admin</Badge>}
               </h3>
+
+
+
               {amIAdmin && (
                 <button
                   onClick={() => setIsEditGroupModalOpen(true)} title="Edit Group Profile"
@@ -373,6 +376,7 @@ export const SidebarRight = ({ onClose }) => {
               group={group} allUsers={allUsers} user={authUser} makeGroupAdmin={makeGroupAdmin}
               dismissGroupAdmin={dismissGroupAdmin} removeFromGroup={removeFromGroup} createDirectChat={createDirectChat}
               selectChat={selectChat} showToast={showToast} onClose={onClose} handleJoinRequest={handleJoinRequest}
+              setIsAddMembersModalOpen={setIsAddMembersModalOpen}
             />
           )}
 

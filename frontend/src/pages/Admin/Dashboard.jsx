@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Users, AlertTriangle, ShieldAlert, Shield, MessageSquare } from 'lucide-react';
@@ -33,8 +34,8 @@ export const Dashboard = () => {
         const result = await res.json();
         if (result.success && result.data?.stats) setAdminStats(result.data.stats);
       }
-    } catch (err) {
-      console.error("fetchAdminStats error:", err);
+    } catch {
+      // Ignore error
     }
   }, [authFetch]);
 
@@ -45,8 +46,8 @@ export const Dashboard = () => {
         const result = await res.json();
         if (result.success && result.data?.groups) setGroupsList(result.data.groups);
       }
-    } catch (err) {
-      console.error("fetchAdminGroups error:", err);
+    } catch {
+      // Ignore error
     }
   }, [authFetch]);
 
@@ -57,8 +58,8 @@ export const Dashboard = () => {
         const result = await res.json();
         if (result.success && result.data?.reports) setAdminReports(result.data.reports);
       }
-    } catch (err) {
-      console.error("fetchAdminReports error:", err);
+    } catch {
+      // Ignore error
     }
   }, [authFetch]);
 
@@ -91,7 +92,7 @@ export const Dashboard = () => {
             refreshAllData();
             showToast(isCurrentlyBlocked ? "User Unbanned" : "User Banned", `${userName} status updated.`, isCurrentlyBlocked ? "success" : "warning");
           }
-        } catch (err) {
+        } catch {
           showToast("Error", "Failed to update user ban status.", "error");
         }
       }
@@ -112,7 +113,7 @@ export const Dashboard = () => {
             refreshAllData();
             showToast("User Deleted", `${userName} was deleted from database.`, "success");
           }
-        } catch (err) {
+        } catch {
           showToast("Error", "Failed to delete user account.", "error");
         }
       }
@@ -133,7 +134,7 @@ export const Dashboard = () => {
             refreshAllData();
             showToast(isCurrentlyBlocked ? "Group Unblocked" : "Group Suspended", `"${groupName}" status updated.`, isCurrentlyBlocked ? "success" : "warning");
           }
-        } catch (err) {
+        } catch {
           showToast("Error", "Failed to update group status.", "error");
         }
       }
@@ -154,7 +155,7 @@ export const Dashboard = () => {
             refreshAllData();
             showToast("Group Deleted", `"${groupName}" was deleted.`, "success");
           }
-        } catch (err) {
+        } catch {
           showToast("Error", "Failed to delete group.", "error");
         }
       }
@@ -172,7 +173,7 @@ export const Dashboard = () => {
         refreshAllData();
         showToast("Report Resolved", "Ticket marked as resolved.", "success");
       }
-    } catch (err) {
+    } catch {
       showToast("Error", "Failed to resolve report.", "error");
     }
   };
@@ -188,7 +189,7 @@ export const Dashboard = () => {
         refreshAllData();
         showToast("Report Dismissed", "Ticket dismissed.", "info");
       }
-    } catch (err) {
+    } catch {
       showToast("Error", "Failed to dismiss report.", "error");
     }
   };

@@ -8,6 +8,28 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
   const [blockedUserIds, setBlockedUserIds] = useState([]);
   const [reports, setReports] = useState([]);
   const deletedChatIdsRef = useRef(new Set());
+  const chatOrderRef = useRef(new Map());
+
+  const getChatOrderKey = (chat) => {
+    if (!chat) return '';
+    return String(chat.id ?? chat._id ?? chat.groupId ?? '');
+  };
+
+  const syncChatOrder = (nextChats) => {
+    const nextOrder = new Map();
+    (nextChats || []).forEach((chat, index) => {
+      const key = getChatOrderKey(chat);
+      if (key) nextOrder.set(key, index);
+    });
+    chatOrderRef.current = nextOrder;
+    return nextChats;
+  };
+
+  const isMatchChatId = (c, targetId) => {
+    if (!c || !targetId) return false;
+    const tStr = String(targetId);
+    return String(c.id) === tStr || String(c._id) === tStr || (c.groupId && String(c.groupId) === tStr);
+  };
 
   const loadChats = async () => {
     try {
@@ -22,7 +44,26 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
           const activeChats = (result.data.chats || []).filter(
             c => !deletedChatIdsRef.current.has(c.id) && !deletedChatIdsRef.current.has(c._id)
           );
-          setChats(activeChats);
+
+          const sanitizedChats = activeChats.map(c => {
+            if (activeChatId && isMatchChatId(c, activeChatId)) {
+              return { ...c, unreadCount: 0, isUnread: false };
+            }
+            return c;
+          });
+
+          setChats(() => {
+            const orderedChats = [...sanitizedChats].sort((a, b) => {
+              if (a.pinned && !b.pinned) return -1;
+              if (!a.pinned && b.pinned) return 1;
+
+              const aTime = new Date(a.lastMessage?.timestamp ?? a.updatedAt ?? a.createdTime ?? 0).getTime();
+              const bTime = new Date(b.lastMessage?.timestamp ?? b.updatedAt ?? b.createdTime ?? 0).getTime();
+              return bTime - aTime;
+            });
+
+            return syncChatOrder(orderedChats);
+          });
         }
       }
     } catch (err) {
@@ -51,11 +92,11 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
   const selectChat = (chatId) => {
     setActiveChatId(chatId);
     setChats(prevChats =>
-      prevChats.map(c => (c.id === chatId || c.groupId === chatId ? { ...c, unreadCount: 0, isUnread: false } : c))
+      prevChats.map(c => (isMatchChatId(c, chatId) ? { ...c, unreadCount: 0, isUnread: false } : c))
     );
   };
 
-  const getActiveChat = () => chats.find(c => c.id === activeChatId);
+  const getActiveChat = () => chats.find(c => isMatchChatId(c, activeChatId));
 
   // Sync browser desktop notification permissions & window title
   useEffect(() => {
@@ -105,7 +146,7 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
   useEffect(() => {
     if (activeChatId) {
       setChats(prevChats =>
-        prevChats.map(c => (c.id === activeChatId || c.groupId === activeChatId ? { ...c, unreadCount: 0, isUnread: false } : c))
+        prevChats.map(c => (isMatchChatId(c, activeChatId) ? { ...c, unreadCount: 0, isUnread: false } : c))
       );
     }
   }, [activeChatId]);
@@ -117,13 +158,18 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
         const result = await res.json();
         if (result.success && result.data?.chat) {
           const newChat = result.data.chat;
-          if (newChat.id) deletedChatIdsRef.current.delete(newChat.id);
+          const chatKey = getChatOrderKey(newChat);
+          if (chatKey) {
+            deletedChatIdsRef.current.delete(chatKey);
+            chatOrderRef.current.delete(chatKey);
+          }
           setChats(prev => {
-            if (prev.some(c => c.id === newChat.id)) return prev;
-            return [newChat, ...prev];
+            const filtered = prev.filter(c => getChatOrderKey(c) !== chatKey);
+            const updated = [newChat, ...filtered];
+            return syncChatOrder(updated);
           });
-          setActiveChatId(newChat.id);
-          return newChat.id;
+          setActiveChatId(newChat.id || newChat._id);
+          return newChat.id || newChat._id;
         }
       }
     } catch (err) {
@@ -280,11 +326,13 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
 
   const deleteChat = async (chatId) => {
     if (!chatId) return;
-    deletedChatIdsRef.current.add(chatId.toString());
+    const chatKey = String(chatId);
+    deletedChatIdsRef.current.add(chatKey);
+    chatOrderRef.current.delete(chatKey);
     if (typeof setMessages === 'function') {
       setMessages(prev => prev.filter(m => m.chatId !== chatId));
     }
-    setChats(prevChats => prevChats.filter(c => c.id !== chatId));
+    setChats(prevChats => syncChatOrder(prevChats.filter(c => getChatOrderKey(c) !== chatKey)));
     if (activeChatId === chatId) {
       setActiveChatId(null);
     }

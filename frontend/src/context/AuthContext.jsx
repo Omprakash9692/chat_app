@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext();
 
@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const authFetch = async (url, options = {}) => {
+  const authFetch = useCallback(async (url, options = {}) => {
     const currentToken = token || localStorage.getItem('accessToken');
     const headers = {
       ...(options.headers || {}),
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
       headers,
       credentials: 'include'
     });
-  };
+  }, [token]);
 
   const fetchDbUsers = async () => {
     try {
