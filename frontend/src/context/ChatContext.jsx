@@ -37,13 +37,10 @@ export const ChatProvider = ({ children }) => {
     deleteChat
   } = useChatOperations({ user, authFetch, logout, fetchDbUsers });
 
-  // 2. Messages Hook (handles messages list, sending/editing/deleting messages, pinning, reactions, starring, clearing)
+  // 2. Messages Hook (handles messages list, sending/editing/deleting messages, pinning, reactions, clearing)
   const {
     messages,
     setMessages,
-    starredMsgIds,
-    toggleStarMessage,
-    clearAllStarredMessages,
     getChatMessages,
     sendMessage,
     uploadFile,
@@ -145,12 +142,9 @@ export const ChatProvider = ({ children }) => {
     toggleFavoriteChat,
     toggleUnreadChat,
     clearChatMessages,
-    deleteChat,
-    starredMsgIds,
-    toggleStarMessage,
-    clearAllStarredMessages
+    deleteChat
   }), [
-    chats, messages, groups, activeChatId, typingUsers, blockedUserIds, reports, socket, starredMsgIds
+    chats, messages, groups, activeChatId, typingUsers, blockedUserIds, reports, socket
   ]);
 
   return (

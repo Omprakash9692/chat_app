@@ -1,7 +1,7 @@
 import React from 'react';
 import EmojiPicker from 'emoji-picker-react';
 import {
-  Check, CheckCheck, Edit2, Reply, Forward, Pin, Star, Copy, Trash2, Download,
+  Check, CheckCheck, Edit2, Reply, Forward, Pin, Copy, Trash2, Download,
   Smile, ChevronDown, Plus, AlertTriangle, Info, FileText, Phone
 } from 'lucide-react';
 import { Avatar } from '../../../components/ui/ui';
@@ -29,8 +29,8 @@ const renderTextWithLinks = (text) => {
 };
 
 export const MessageBubble = ({
-  msg, index, filteredMessagesCount, isMe, sender, activeChat, replyCtx, starredMsgIds,
-  handleCopyMsgText, handleToggleStarMsg, setReplyMessage, setEditingMessage, setInputText, setForwardMessage, handleTogglePinMessage, handleDownloadFile,
+  msg, index, filteredMessagesCount, isMe, sender, activeChat, replyCtx,
+  handleCopyMsgText, setReplyMessage, setEditingMessage, setInputText, setForwardMessage, handleTogglePinMessage, handleDownloadFile,
   setLightboxImage, setMsgInfoTarget, setTargetDeleteMessage, setDeleteModalOpen, addReaction, quickEmojis, activeMsgMenuId, setActiveMsgMenuId,
   showEmojiPickerMsgId, setShowEmojiPickerMsgId, showFullEmojiPickerMsgId, setShowFullEmojiPickerMsgId, msgMenuRef, reportUser, getSenderProfile, showToast
 }) => {
@@ -233,17 +233,6 @@ export const MessageBubble = ({
                   {(activeChat?.pinnedMessageIds || []).some(p => p.id === msg.id) ? "Unpin" : "Pin"}
                 </button>
 
-                <button
-                  onClick={() => {
-                    handleToggleStarMsg(msg.id);
-                    setActiveMsgMenuId(null);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-slate-100 transition-colors text-left text-[#111b21]"
-                >
-                  <Star className={`h-4 w-4 ${starredMsgIds.includes(msg.id) ? 'text-amber-400 fill-amber-400' : 'text-[#667781]'}`} />
-                  {starredMsgIds.includes(msg.id) ? "Unstar" : "Star"}
-                </button>
-
                 {!isMe && (
                   <button
                     onClick={() => {
@@ -444,9 +433,6 @@ export const MessageBubble = ({
 
           {/* Timestamp & read receipt info */}
           <div className={`flex items-center gap-1.5 mt-1 text-[9px] text-slate-400 font-medium ${isMe ? 'justify-end' : 'justify-start'}`}>
-            {starredMsgIds.includes(msg.id) && (
-              <Star className="h-3 w-3 text-amber-400 fill-amber-400 shrink-0" />
-            )}
             <span>{time}</span>
             {msg.edited && <span className="text-slate-400/70 select-none">(edited)</span>}
             {isMe && (

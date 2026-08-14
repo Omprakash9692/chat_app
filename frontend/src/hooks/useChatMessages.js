@@ -3,33 +3,6 @@ import { chatApi } from '../services/chatApi';
 
 export const useChatMessages = ({ authFetch, logout, activeChatId, chats, setChats, setGroups }) => {
   const [messages, setMessages] = useState([]);
-  const [starredMsgIds, setStarredMsgIds] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('starredMsgIds') || '[]');
-    } catch {
-      return [];
-    }
-  });
-
-  const toggleStarMessage = (messageId) => {
-    setStarredMsgIds(prev => {
-      const isStarred = prev.includes(messageId);
-      const updated = isStarred
-        ? prev.filter(id => id !== messageId)
-        : [...prev, messageId];
-      try {
-        localStorage.setItem('starredMsgIds', JSON.stringify(updated));
-      } catch {}
-      return updated;
-    });
-  };
-
-  const clearAllStarredMessages = () => {
-    setStarredMsgIds([]);
-    try {
-      localStorage.setItem('starredMsgIds', '[]');
-    } catch {}
-  };
 
   const mergeMessagesPreservingStatus = (prevMessages, newMessages, currentChatId) => {
     const statusRank = { sent: 1, delivered: 2, seen: 3 };
@@ -364,9 +337,6 @@ export const useChatMessages = ({ authFetch, logout, activeChatId, chats, setCha
   return {
     messages,
     setMessages,
-    starredMsgIds,
-    toggleStarMessage,
-    clearAllStarredMessages,
     getChatMessages,
     sendMessage,
     uploadFile,
