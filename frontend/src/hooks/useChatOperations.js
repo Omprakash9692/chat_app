@@ -25,12 +25,6 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
     return nextChats;
   };
 
-  const isMatchChatId = (c, targetId) => {
-    if (!c || !targetId) return false;
-    const tStr = String(targetId);
-    return String(c.id) === tStr || String(c._id) === tStr || (c.groupId && String(c.groupId) === tStr);
-  };
-
   const loadChats = async () => {
     try {
       const res = await chatApi.fetchChats(authFetch);
@@ -45,15 +39,8 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
             c => !deletedChatIdsRef.current.has(c.id) && !deletedChatIdsRef.current.has(c._id)
           );
 
-          const sanitizedChats = activeChats.map(c => {
-            if (activeChatId && isMatchChatId(c, activeChatId)) {
-              return { ...c, unreadCount: 0, isUnread: false };
-            }
-            return c;
-          });
-
-          setChats(() => {
-            const orderedChats = [...sanitizedChats].sort((a, b) => {
+          setChats(prevChats => {
+            const orderedChats = [...activeChats].sort((a, b) => {
               if (a.pinned && !b.pinned) return -1;
               if (!a.pinned && b.pinned) return 1;
 
@@ -92,11 +79,11 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
   const selectChat = (chatId) => {
     setActiveChatId(chatId);
     setChats(prevChats =>
-      prevChats.map(c => (isMatchChatId(c, chatId) ? { ...c, unreadCount: 0, isUnread: false } : c))
+      prevChats.map(c => (c.id === chatId || c.groupId === chatId ? { ...c, unreadCount: 0, isUnread: false } : c))
     );
   };
 
-  const getActiveChat = () => chats.find(c => isMatchChatId(c, activeChatId));
+  const getActiveChat = () => chats.find(c => c.id === activeChatId);
 
   // Sync browser desktop notification permissions & window title
   useEffect(() => {
@@ -146,7 +133,7 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
   useEffect(() => {
     if (activeChatId) {
       setChats(prevChats =>
-        prevChats.map(c => (isMatchChatId(c, activeChatId) ? { ...c, unreadCount: 0, isUnread: false } : c))
+        prevChats.map(c => (c.id === activeChatId || c.groupId === activeChatId ? { ...c, unreadCount: 0, isUnread: false } : c))
       );
     }
   }, [activeChatId]);

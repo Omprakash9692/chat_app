@@ -34,11 +34,10 @@ export const ChatProvider = ({ children }) => {
     toggleArchiveChat,
     toggleFavoriteChat,
     toggleUnreadChat,
-    clearChatMessages,
     deleteChat
   } = useChatOperations({ user, authFetch, logout, fetchDbUsers });
 
-  // 2. Messages Hook (handles messages list, sending/editing/deleting messages, pinning, reactions, starring)
+  // 2. Messages Hook (handles messages list, sending/editing/deleting messages, pinning, reactions, starring, clearing)
   const {
     messages,
     setMessages,
@@ -52,7 +51,8 @@ export const ChatProvider = ({ children }) => {
     deleteMessageForMe,
     deleteMessageForEveryone,
     togglePinnedMessage,
-    addReaction
+    addReaction,
+    clearChatMessages
   } = useChatMessages({
     user,
     authFetch,

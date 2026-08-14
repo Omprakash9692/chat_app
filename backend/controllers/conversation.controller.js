@@ -24,9 +24,9 @@ const toggleUserStatus = async (req, res, fieldName, successMsg) => {
   else conversation[fieldName].push(myId);
 
   await conversation.save();
-  await populateConv(Conversation.findById(conversation._id));
+  const populated = await populateConv(Conversation.findById(conversation._id));
 
-  return ok(res, successMsg, { chat: formatConversation(conversation, myId) });
+  return ok(res, successMsg, { chat: formatConversation(populated, myId) });
 };
 
 // 1. Get User Chats
@@ -85,8 +85,8 @@ export const createDirectChat = async (req, res) => {
     conversation = await Conversation.create({ type: "direct", participants: [myId, userId] });
   }
 
-  await populateConv(Conversation.findById(conversation._id));
-  return ok(res, "Direct chat ready", { chat: formatConversation(conversation, myId) });
+  const populated = await populateConv(Conversation.findById(conversation._id));
+  return ok(res, "Direct chat ready", { chat: formatConversation(populated, myId) });
 };
 
 // 3. Toggle Pin Chat
@@ -103,11 +103,11 @@ export const togglePinChat = async (req, res) => {
   else conversation.pinnedBy.splice(idx, 1);
 
   await conversation.save();
-  await populateConv(Conversation.findById(conversation._id));
+  const populated = await populateConv(Conversation.findById(conversation._id));
 
   return ok(res, pinned ? "Conversation pinned" : "Conversation unpinned", {
     pinned,
-    chat: formatConversation(conversation, myId)
+    chat: formatConversation(populated, myId)
   });
 };
 

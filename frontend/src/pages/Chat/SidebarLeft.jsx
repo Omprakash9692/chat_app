@@ -13,7 +13,7 @@ import { CreateGroupModal } from './components/CreateGroupModal';
 export const SidebarLeft = ({ closeMobileSidebar }) => {
   const {
     chats, groups, selectChat, activeChatId, createGroup, createDirectChat, uploadFile,
-    togglePinChat, toggleArchiveChat, toggleFavoriteChat, toggleUnreadChat, clearChatMessages, deleteChat
+    togglePinChat, toggleArchiveChat, toggleFavoriteChat, clearChatMessages, deleteChat
   } = useChat();
   const { user, allUsers } = useAuth();
   const { showToast } = useNotifications();
@@ -300,12 +300,6 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
                           className="w-full text-left px-3.5 py-2 hover:bg-slate-100 flex items-center gap-2 cursor-pointer"
                         >
                           <span>{chat.favorite ? '⭐ Remove Favorite' : '⭐ Mark Favorite'}</span>
-                        </button>
-                        <button
-                          onClick={() => { toggleUnreadChat(chat.id); setOpenMenuChatId(null); }}
-                          className="w-full text-left px-3.5 py-2 hover:bg-slate-100 flex items-center gap-2 cursor-pointer"
-                        >
-                          <span>{isUnread ? '✉️ Mark as Read' : '✉️ Mark as Unread'}</span>
                         </button>
                         <button
                           onClick={() => { toggleArchiveChat(chat.id); setOpenMenuChatId(null); }}

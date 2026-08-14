@@ -39,10 +39,10 @@ export const createGroupChat = async (req, res) => {
     memberJoinedAt
   });
 
-  await populateConv(Conversation.findById(conversation._id));
+  const populated = await populateConv(Conversation.findById(conversation._id));
   emitGroupUpdate(req, conversation);
 
-  return created(res, "Group chat created successfully", { chat: formatConversation(conversation, myId) });
+  return created(res, "Group chat created successfully", { chat: formatConversation(populated, myId) });
 };
 
 // 2. Make Group Admin
@@ -146,12 +146,12 @@ export const addMembersToGroup = async (req, res) => {
     newMemberIds.forEach((id) => conversation.joinRequests.push({ user: id, requestedBy: myId, requestedAt: now }));
 
     await conversation.save();
-    await populateConv(Conversation.findById(conversation._id));
+    const populatedPending = await populateConv(Conversation.findById(conversation._id));
     emitGroupUpdate(req, conversation);
 
     return ok(res, "Join request sent to group admin for approval", {
       isPending: true,
-      chat: formatConversation(conversation, myId)
+      chat: formatConversation(populatedPending, myId)
     });
   }
 
@@ -163,10 +163,10 @@ export const addMembersToGroup = async (req, res) => {
   });
   conversation.markModified("memberJoinedAt");
   await conversation.save();
-  await populateConv(Conversation.findById(conversation._id));
+  const populatedAdded = await populateConv(Conversation.findById(conversation._id));
   emitGroupUpdate(req, conversation);
 
-  return ok(res, "Members added to group successfully", { chat: formatConversation(conversation, myId) });
+  return ok(res, "Members added to group successfully", { chat: formatConversation(populatedAdded, myId) });
 };
 
 // 6. Update Group Profile
@@ -187,10 +187,10 @@ export const updateGroupProfile = async (req, res) => {
   if (avatar !== undefined && avatar !== null) conversation.avatar = avatar;
 
   await conversation.save();
-  await populateConv(Conversation.findById(conversation._id));
+  const populated = await populateConv(Conversation.findById(conversation._id));
   emitGroupUpdate(req, conversation);
 
-  return ok(res, "Group profile updated successfully", { chat: formatConversation(conversation, myId) });
+  return ok(res, "Group profile updated successfully", { chat: formatConversation(populated, myId) });
 };
 
 // 7. Leave Group
@@ -259,10 +259,10 @@ export const updateGroupPermissions = async (req, res) => {
   }
 
   await conversation.save();
-  await populateConv(Conversation.findById(conversation._id));
+  const populated = await populateConv(Conversation.findById(conversation._id));
   emitGroupUpdate(req, conversation);
 
-  return ok(res, "Group permissions updated successfully", { chat: formatConversation(conversation, myId) });
+  return ok(res, "Group permissions updated successfully", { chat: formatConversation(populated, myId) });
 };
 
 // 10. Handle Join Request
@@ -289,10 +289,10 @@ export const handleJoinRequest = async (req, res) => {
   }
 
   await conversation.save();
-  await populateConv(Conversation.findById(conversation._id));
+  const populated = await populateConv(Conversation.findById(conversation._id));
   emitGroupUpdate(req, conversation);
 
   return ok(res, `Join request ${action === "approve" ? "approved" : "rejected"} successfully`, {
-    chat: formatConversation(conversation, myId)
+    chat: formatConversation(populated, myId)
   });
 };

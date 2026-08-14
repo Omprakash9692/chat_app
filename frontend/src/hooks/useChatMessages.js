@@ -339,6 +339,28 @@ export const useChatMessages = ({ authFetch, logout, activeChatId, chats, setCha
     saveReaction();
   };
 
+  const clearChatMessages = async (chatId) => {
+    if (!chatId) return;
+    const cIdStr = String(chatId);
+
+    setMessages(prev => prev.filter(m => !m.chatId || (String(m.chatId) !== cIdStr && m.chatId !== chatId)));
+
+    if (typeof setChats === 'function') {
+      setChats(prevChats =>
+        prevChats.map(c => {
+          const isMatch = String(c.id) === cIdStr || String(c._id) === cIdStr || (c.groupId && String(c.groupId) === cIdStr);
+          return isMatch ? { ...c, lastMessage: null, lastMessageId: null } : c;
+        })
+      );
+    }
+
+    try {
+      await chatApi.clearChatMessages(authFetch, chatId);
+    } catch (err) {
+      console.error("Failed to clear chat messages on backend:", err);
+    }
+  };
+
   return {
     messages,
     setMessages,
@@ -354,6 +376,7 @@ export const useChatMessages = ({ authFetch, logout, activeChatId, chats, setCha
     deleteMessage: deleteMessageForEveryone,
     togglePinnedMessage,
     addReaction,
+    clearChatMessages,
     mergeMessagesPreservingStatus
   };
 };
