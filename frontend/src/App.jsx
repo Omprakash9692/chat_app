@@ -10,7 +10,6 @@ import { EmailVerification } from './pages/Auth/EmailVerification';
 import { Layout } from './pages/Chat/Layout';
 
 // Providers
-import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ChatProvider } from './context/ChatContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -127,15 +126,13 @@ const AppContent = () => {
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ChatProvider>
-          <NotificationProvider>
-            <AppContent />
-          </NotificationProvider>
-        </ChatProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <ChatProvider>
+        <NotificationProvider>
+          <AppContent />
+        </NotificationProvider>
+      </ChatProvider>
+    </AuthProvider>
   );
 }
 

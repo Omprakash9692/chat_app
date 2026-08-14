@@ -1,32 +1,12 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Flag, UserX, LogOut, Trash2 } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Modal, Button } from '../../../components/ui/ui';
 
 export const SidebarRightModals = ({
-  isBlockModalOpen,
-  setIsBlockModalOpen,
-  isBlocked,
-  recipientName,
-  handleBlockToggle,
-  isLeaveModalOpen,
-  setIsLeaveModalOpen,
-  groupName,
-  groupMembersCount,
-  amIAdmin,
-  otherAdminsCount,
-  groupOtherMembers,
-  handleLeaveGroup,
-  handleMakeAdminAndLeave,
-  isDeleteGroupModalOpen,
-  setIsDeleteGroupModalOpen,
-  handleDeleteGroup,
-  isReportModalOpen,
-  setIsReportModalOpen,
-  handleReportSubmit,
-  reportReason,
-  setReportReason,
-  reportDetails,
-  setReportDetails
+  isBlockModalOpen, setIsBlockModalOpen, isBlocked, recipientName, handleBlockToggle,
+  isLeaveModalOpen, setIsLeaveModalOpen, groupName, groupMembersCount, amIAdmin, otherAdminsCount, groupOtherMembers, handleLeaveGroup, handleMakeAdminAndLeave,
+  isDeleteGroupModalOpen, setIsDeleteGroupModalOpen, handleDeleteGroup,
+  isReportModalOpen, setIsReportModalOpen, handleReportSubmit, reportReason, setReportReason, reportDetails, setReportDetails
 }) => {
   const [selectedPromoteAdminId, setSelectedPromoteAdminId] = useState('');
 

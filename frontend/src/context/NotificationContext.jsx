@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { DEFAULT_TOAST_DURATION } from './notificationUtils';
+const DEFAULT_TOAST_DURATION = 4500; // milliseconds
 
 
 const NotificationContext = createContext();

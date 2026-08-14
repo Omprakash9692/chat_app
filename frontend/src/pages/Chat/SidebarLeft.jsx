@@ -1,19 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, Plus, Pin, Check, CheckCheck, Users, MessageCircle, MessageSquare, MoreVertical,
-  Camera, X, VolumeX, Mail, BellOff, UserPlus, ArrowLeft, ChevronRight,
-  ChevronDown, Archive, Star, Trash2, Eraser, SquarePen, SlidersHorizontal, CircleDashed, Settings
+  Search, Plus, Check, Users, MessageSquare, MoreVertical,
+  X, Mail, UserPlus, Archive, Trash2, Eraser
 } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
-import { Avatar } from '../../components/ui/Avatar';
-import { Badge } from '../../components/ui/Badge';
-import { Modal } from '../../components/ui/Modal';
-import { Button } from '../../components/ui/Button';
-import { Tooltip } from '../../components/ui/Tooltip';
-import { BrandLogo } from '../../components/ui/BrandLogo';
+import { Avatar, Badge, BrandLogo } from '../../components/ui/ui';
+import { NewContactModal } from './components/NewContactModal';
+import { CreateGroupModal } from './components/CreateGroupModal';
 
 export const SidebarLeft = ({ closeMobileSidebar }) => {
   const {
@@ -45,23 +41,9 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
   // Floating plus menu state
   const [isPlusMenuOpen, setIsPlusMenuOpen] = useState(false);
 
-  // Group creation modal 2-step wizard state
+  // Modal open states
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
-  const [groupStep, setGroupStep] = useState(1); // 1: Select members, 2: Group info & details
-  const [groupName, setGroupName] = useState('');
-  const [groupDesc, setGroupDesc] = useState('');
-  const [selectedMembers, setSelectedMembers] = useState([]);
-  const [groupAvatarFile, setGroupAvatarFile] = useState(null);
-  const [groupAvatarUrl, setGroupAvatarUrl] = useState('');
-  const [memberSearchQuery, setMemberSearchQuery] = useState('');
-  const [isUploadingGroupAvatar, setIsUploadingGroupAvatar] = useState(false);
-
-  // New Contact modal state
   const [isNewContactModalOpen, setIsNewContactModalOpen] = useState(false);
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactName, setContactName] = useState('');
-
-  const groupAvatarInputRef = useRef(null);
 
   // Fetch target info of a direct chat (recipient user profile)
   const getDirectChatInfo = (chat) => {
@@ -87,418 +69,303 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
     if (chat.lastMessage) {
       const msg = chat.lastMessage;
       if (msg.isDeleted) return "This message was deleted.";
-      if (msg.type === 'image') return "📷 Image file";
-      if (msg.type === 'file') return "📄 Document PDF";
-      return msg.text;
+      if (msg.type === 'image') return "📷 Photo";
+      if (msg.type === 'audio') return "🎤 Voice message";
+      if (msg.type === 'file') return `📄 ${msg.attachmentName || 'Document'}`;
+      return msg.text || (msg.attachmentUrl ? "📎 Attachment" : "");
     }
     return "No messages yet";
   };
 
-  // Handle member checkbox toggle
-  const handleToggleMember = (userId) => {
-    if (selectedMembers.includes(userId)) {
-      setSelectedMembers(selectedMembers.filter(id => id !== userId));
-    } else {
-      setSelectedMembers([...selectedMembers, userId]);
-    }
-  };
-
-  // Handle avatar upload click
-  const handleGroupAvatarClick = () => {
-    groupAvatarInputRef.current?.click();
-  };
-
-  // Handle avatar file change
-  const handleGroupAvatarChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        showToast("Invalid File Type", "Please select an image file.", "danger");
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        showToast("File Too Large", "Max image size allowed is 5MB.", "danger");
-        return;
-      }
-      setIsUploadingGroupAvatar(true);
-      const uploadedData = await uploadFile(file);
-      setIsUploadingGroupAvatar(false);
-
-      if (uploadedData && uploadedData.url) {
-        setGroupAvatarUrl(uploadedData.url);
-        showToast("Image Uploaded", "Group avatar icon ready.", "info");
-      } else {
-        const localUrl = URL.createObjectURL(file);
-        setGroupAvatarUrl(localUrl);
-      }
-    }
-  };
-
-  // Submit handler for creating group space
-  const handleCreateGroupSubmit = async (e) => {
-    e.preventDefault();
-    if (!groupName.trim()) {
-      showToast("Validation Error", "Please enter a group name.", "warning");
-      return;
-    }
-    if (selectedMembers.length === 0) {
-      showToast("Validation Error", "Please select at least 1 member for the group.", "warning");
-      return;
-    }
-
-    const newGroup = await createGroup({
-      name: groupName.trim(),
-      description: groupDesc.trim(),
-      avatar: groupAvatarUrl,
-      members: selectedMembers
-    });
-
-    if (newGroup) {
-      showToast("Group Created", `Group "${groupName}" created successfully!`, "success");
-      setIsGroupModalOpen(false);
-      setGroupStep(1);
-      setGroupName('');
-      setGroupDesc('');
-      setSelectedMembers([]);
-      setGroupAvatarFile(null);
-      setGroupAvatarUrl('');
-      setMemberSearchQuery('');
-    } else {
-      showToast("Creation Failed", "Could not create group.", "danger");
-    }
-  };
-
-  // Submit handler for searching & adding new contact
-  const handleStartDirectChat = async (foundUser) => {
-    const targetId = foundUser.id || foundUser._id?.toString();
-
-    // Check if direct chat already exists
-    const existingChat = chats.find(
-      c => c.type === 'direct' && (c.participants.includes(targetId) || c.participants.includes(foundUser.id))
-    );
-
-    if (existingChat) {
-      selectChat(existingChat.id);
-      showToast("Chat Opened", `Opened direct chat with ${foundUser.name}.`, "info");
-    } else {
-      const newChat = await createDirectChat(targetId);
-      if (newChat) {
-        selectChat(newChat.id || newChat);
-        showToast("Contact Added", `Added ${foundUser.name} to chats.`, "success");
-      } else {
-        showToast("Error", "Could not start chat with contact.", "danger");
-      }
-    }
-
+  // Handle direct chat creation from new contact modal
+  const handleStartDirectChat = async (targetUser) => {
     setIsNewContactModalOpen(false);
-    setContactEmail('');
-    setContactName('');
+    const targetUserId = targetUser.id || targetUser._id?.toString();
+
+    // Check if chat already exists
+    const existing = chats.find(c => c.type === 'direct' && c.participants.includes(targetUserId));
+    if (existing) {
+      selectChat(existing.id);
+      if (typeof closeMobileSidebar === 'function') closeMobileSidebar();
+      return;
+    }
+
+    const newChatId = await createDirectChat(targetUserId);
+    if (newChatId) {
+      selectChat(newChatId);
+      showToast("Chat Started", `Conversation started with ${targetUser.name}`, "success");
+      if (typeof closeMobileSidebar === 'function') closeMobileSidebar();
+    }
   };
 
-  // Filter chats by search query and active tab filter
-  const filteredChats = chats
-    .filter(chat => {
-      const isDirect = chat.type === 'direct';
-      const info = isDirect ? getDirectChatInfo(chat) : getGroupChatInfo(chat);
+  // Filter conversations list
+  const filteredChats = chats.filter(chat => {
+    // 1. Search Query filter
+    const title = chat.type === 'group' ? getGroupChatInfo(chat).name : getDirectChatInfo(chat).name;
+    const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // Search Filter
-      const matchesSearch = searchQuery === '' ||
-        info.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (isDirect && ((info.phone && info.phone.toLowerCase().includes(searchQuery.toLowerCase())) || info.email?.toLowerCase().includes(searchQuery.toLowerCase())));
+    if (!matchesSearch) return false;
 
-      // Archived filter tab handling
-      if (activeFilter === 'archived') {
-        return matchesSearch && !!chat.archived;
-      }
+    // 2. Active Tab filter
+    if (activeFilter === 'archived') return !!chat.archived;
+    if (chat.archived) return false; // Hide archived chats from normal tabs
 
-      // For non-archived tabs, exclude archived chats
-      if (chat.archived) return false;
+    if (activeFilter === 'unread') return (chat.unreadCount > 0) || !!chat.isUnread;
+    if (activeFilter === 'favorites') return !!chat.favorite;
+    if (activeFilter === 'groups') return chat.type === 'group';
 
-      // Category Tag Filter
-      let matchesCategory = true;
-      if (activeFilter === 'unread') {
-        matchesCategory = (chat.unreadCount || 0) > 0 || chat.isUnread;
-      } else if (activeFilter === 'favorites') {
-        matchesCategory = !!chat.favorite;
-      } else if (activeFilter === 'groups') {
-        matchesCategory = chat.type === 'group';
-      }
+    return true;
+  });
 
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      if (a.pinned && !b.pinned) return -1;
-      if (!a.pinned && b.pinned) return 1;
-      return new Date(b.createdTime || 0) - new Date(a.createdTime || 0);
-    });
+  // Sort chats: pinned chats first, then by last message timestamp
+  const sortedChats = [...filteredChats].sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    const timeA = a.lastMessage ? new Date(a.lastMessage.timestamp).getTime() : 0;
+    const timeB = b.lastMessage ? new Date(b.lastMessage.timestamp).getTime() : 0;
+    return timeB - timeA;
+  });
+
+  const archivedCount = chats.filter(c => c.archived).length;
+  const unreadTotal = chats.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
 
   return (
     <>
-      <div className="flex flex-col h-full bg-[#f0f4f8] border-r border-slate-200/80 select-none relative" ref={menuContainerRef}>
+      <div className="flex flex-col h-full bg-[#ffffff] select-none relative w-full border-r border-slate-200/80">
 
-        {/* Top Header */}
-        <div className="p-4 bg-[#f0f4f8] border-b border-slate-200/80 space-y-3 shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="text-left">
-              <h1 className="text-xl font-bold tracking-tight text-[#111b21] font-sans leading-none">
-                Chats
-              </h1>
-              <p className="text-xs font-medium text-[#667781] mt-1">
-                Recent conversations
-              </p>
-            </div>
+        {/* 1. Header Bar */}
+        <div className="flex items-center justify-between px-4 py-3 bg-[#ffffff] border-b border-slate-200/80">
+          <div className="flex items-center gap-2">
+            <BrandLogo size="sm" showSubtitle={false} />
           </div>
+        </div>
 
-          {/* Global Search Bar */}
+        {/* 2. Search & Filter Bar */}
+        <div className="p-3 bg-[#ffffff] border-b border-slate-200/80 space-y-2.5">
           <div className="relative">
-            
+            <Search className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 h-4 w-4 my-auto" />
             <input
               type="text"
               placeholder="Search or start new chat"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full rounded-full bg-[#dce4ec] border-0 text-xs py-2.5 pl-10 pr-9 outline-none text-[#111b21] placeholder-[#667781] font-medium"
+              className="block w-full rounded-xl bg-[#f0f4f8] border border-slate-200/80 focus:border-[#008069] focus:ring-1 focus:ring-[#008069] text-xs py-2 pl-9 pr-8 outline-none text-slate-800 placeholder-slate-400 font-medium"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#667781] hover:text-[#111b21]"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 my-auto cursor-pointer"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
 
-          {/* Category Filter Tags (All, Unread, Groups, Archived) */}
-          <div className="flex gap-1.5 overflow-x-auto pb-0.5 pt-0.5 no-scrollbar select-none">
+          {/* Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5 text-slate-600">
             {[
               { id: 'all', label: 'All' },
-              { id: 'unread', label: 'Unread' },
+              { id: 'unread', label: 'Unread', badge: unreadTotal },
+              { id: 'favorites', label: 'Favorites' },
               { id: 'groups', label: 'Groups' },
-              { id: 'archived', label: 'Archived' }
-            ].map((filter) => (
+              { id: 'archived', label: 'Archived', badge: archivedCount }
+            ].map(f => (
               <button
-                key={filter.id}
-                onClick={() => setActiveFilter(filter.id)}
-                className={`
-                  px-3.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer shrink-0
-                  ${activeFilter === filter.id
-                    ? 'bg-[#008069] text-white shadow-xs'
-                    : 'bg-[#dce4ec]/80 hover:bg-[#dce4ec] text-[#54656f] hover:text-[#111b21]'
-                  }
-                `}
+                key={f.id}
+                onClick={() => setActiveFilter(f.id)}
+                className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 border ${activeFilter === f.id
+                  ? 'bg-[#008069] text-white border-[#008069] shadow-xs'
+                  : 'bg-slate-100/80 text-slate-600 border-slate-200/80 hover:bg-slate-200/60'
+                  }`}
               >
-                {filter.label}
+                <span>{f.label}</span>
+                {f.badge > 0 && (
+                  <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-extrabold ${activeFilter === f.id ? 'bg-white text-[#008069]' : 'bg-[#008069] text-white'
+                    }`}>
+                    {f.badge}
+                  </span>
+                )}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Chat / Group Roster List */}
-        <div className="flex-1 overflow-y-auto no-scrollbar bg-white">
-          {filteredChats.length === 0 ? (
-            <div className="p-8 text-center text-[#667781] space-y-2">
-              <MessageCircle className="h-8 w-8 mx-auto opacity-30" />
-              <p className="text-xs font-semibold">No chats found</p>
+        {/* 3. Conversations List */}
+        <div className="flex-1 overflow-y-auto divide-y divide-slate-100 no-scrollbar">
+          {sortedChats.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center text-slate-400 h-64">
+              <MessageSquare className="h-10 w-10 mb-2 opacity-40" />
+              <p className="text-xs font-semibold">No conversations found</p>
+              <p className="text-[11px] text-slate-400 mt-1">
+                {searchQuery ? "Try a different search term" : "Click '+' to start a new chat"}
+              </p>
             </div>
           ) : (
-            filteredChats.map((chat) => {
-              const isDirect = chat.type === 'direct';
-              const info = isDirect ? getDirectChatInfo(chat) : getGroupChatInfo(chat);
-              const isActive = chat.id === activeChatId;
-              const lastMsgText = getLastMessageText(chat);
+            sortedChats.map(chat => {
+              const isGroup = chat.type === 'group';
+              const info = isGroup ? getGroupChatInfo(chat) : getDirectChatInfo(chat);
+              const isActive = activeChatId === chat.id;
+              const isMenuOpen = openMenuChatId === chat.id;
+              const lastText = getLastMessageText(chat);
+              const isUnread = (chat.unreadCount > 0) || !!chat.isUnread;
 
               return (
                 <div
                   key={chat.id}
                   onClick={() => {
                     selectChat(chat.id);
-                    if (closeMobileSidebar) closeMobileSidebar();
+                    if (typeof closeMobileSidebar === 'function') closeMobileSidebar();
                   }}
-                  className={`
-                    p-3.5 border-b border-slate-100 flex items-center gap-3 cursor-pointer transition-colors text-left relative group
-                    ${isActive
-                      ? 'bg-[#dce4ec]'
-                      : 'hover:bg-[#f0f4f8] bg-white'
-                    }
-                  `}
+                  className={`group relative flex items-center justify-between p-3.5 cursor-pointer transition-all border-l-3 ${isActive
+                    ? 'bg-[#f0f4f8] border-l-[#008069]'
+                    : 'bg-white hover:bg-slate-50/80 border-l-transparent'
+                    }`}
                 >
-                  <Avatar
-                    src={info.avatar}
-                    name={info.name}
-                    size="md"
-                    status={isDirect ? info.status : null}
-                    color={info.avatarColor}
-                  />
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-1.5 min-w-0 pr-2">
-                        <h3 className="text-xs font-bold text-[#111b21] truncate">
-                          {info.name}
-                        </h3>
-                        {chat.pinned && (
-                          <Pin className="h-3 w-3 text-[#008069] shrink-0 transform rotate-45 fill-[#008069]" />
-                        )}
-                      </div>
-                      {chat.lastMessage && (
-                        <span className="text-[10px] text-[#667781] font-medium shrink-0">
-                          {new Date(chat.lastMessage.createdAt || chat.createdTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                  {/* Left info */}
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="relative flex-shrink-0">
+                      <Avatar
+                        src={info.avatar}
+                        name={info.name}
+                        size="md"
+                        status={!isGroup ? (info.isOnline ? 'online' : 'offline') : undefined}
+                        color={info.avatarColor}
+                      />
+                      {isGroup && (
+                        <div className="absolute -bottom-1 -right-1 bg-[#008069] text-white p-0.5 rounded-full border border-white">
+                          <Users className="h-2.5 w-2.5" />
+                        </div>
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-[#54656f] truncate font-normal">
-                        {lastMsgText}
-                      </p>
-
-                      <div className="flex items-center gap-1.5 ml-2 shrink-0">
-                        {chat.unreadCount > 0 && (
-                          <span className="h-5 w-5 rounded-full bg-[#008069] text-white font-bold text-[10px] flex items-center justify-center shrink-0">
-                            {chat.unreadCount}
+                    <div className="min-w-0 flex-1 text-left">
+                      <div className="flex items-center justify-between gap-1">
+                        <h4 className={`text-xs font-bold truncate ${isActive ? 'text-[#008069]' : 'text-slate-800'}`}>
+                          {info.name}
+                        </h4>
+                        {chat.lastMessage && (
+                          <span className="text-[10px] text-slate-400 flex-shrink-0 font-medium">
+                            {new Date(chat.lastMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
+                      </div>
 
-                        {/* Hover action dropdown trigger button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenMenuChatId(openMenuChatId === chat.id ? null : chat.id);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-[#667781] hover:text-[#111b21] hover:bg-slate-200 transition-all cursor-pointer"
-                        >
-                          <ChevronDown className="h-4 w-4" />
-                        </button>
+                      <div className="flex items-center justify-between gap-1 mt-0.5">
+                        <p className={`text-[11px] truncate flex-1 ${isUnread ? 'font-bold text-slate-900' : 'text-slate-500 font-medium'}`}>
+                          {lastText}
+                        </p>
+
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {chat.pinned && (
+                            <span className="text-amber-500 text-[10px]" title="Pinned Chat">📌</span>
+                          )}
+                          {chat.favorite && (
+                            <span className="text-amber-400 text-[10px]" title="Favorite Chat">⭐</span>
+                          )}
+                          {isUnread && (
+                            <Badge variant="unread" className="h-4.5 min-w-4.5 text-[9px] px-1">
+                              {chat.unreadCount || 1}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* WhatsApp Context Dropdown Menu */}
-                  {openMenuChatId === chat.id && (
-                    <div
-                      onClick={(e) => e.stopPropagation()}
-                      className="absolute right-3 top-10 z-50 bg-white text-[#111b21] rounded-xl shadow-2xl border border-slate-200/90 py-1.5 w-48 text-xs font-semibold select-none animate-in fade-in zoom-in-95"
+                  {/* Context Menu Trigger */}
+                  <div className="relative ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuChatId(isMenuOpen ? null : chat.id);
+                      }}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 cursor-pointer"
                     >
-                      <button
-                        onClick={() => {
-                          toggleArchiveChat(chat.id);
-                          setOpenMenuChatId(null);
-                          showToast(chat.archived ? "Chat Unarchived" : "Chat Archived", chat.archived ? "Chat restored to main list" : "Moved to Archived folder", "info");
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-slate-100 transition-colors text-left text-[#111b21]"
-                      >
-                        <Archive className="h-4 w-4 text-[#667781]" />
-                        {chat.archived ? "Unarchive chat" : "Archive chat"}
-                      </button>
+                      <MoreVertical className="h-4 w-4" />
+                    </button>
 
-                      <button
-                        onClick={() => {
-                          togglePinChat(chat.id);
-                          setOpenMenuChatId(null);
-                          showToast(chat.pinned ? "Chat Unpinned" : "Chat Pinned", chat.pinned ? "Unpinned from top" : "Pinned to top of chat list", "info");
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-slate-100 transition-colors text-left text-[#111b21]"
+                    {/* Context Dropdown Menu */}
+                    {isMenuOpen && (
+                      <div
+                        ref={menuContainerRef}
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute right-0 top-8 w-44 bg-white rounded-2xl shadow-xl border border-slate-200/80 py-1.5 z-40 text-xs font-semibold text-slate-700 space-y-0.5 animate-in fade-in zoom-in-95 duration-100"
                       >
-                        <Pin className="h-4 w-4 text-[#667781]" />
-                        {chat.pinned ? "Unpin chat" : "Pin chat"}
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          toggleUnreadChat(chat.id);
-                          setOpenMenuChatId(null);
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-slate-100 transition-colors text-left text-[#111b21]"
-                      >
-                        <Mail className="h-4 w-4 text-[#667781]" />
-                        {chat.isUnread || chat.unreadCount > 0 ? "Mark as read" : "Mark as unread"}
-                      </button>
-
-                      <div className="my-1 border-t border-slate-100" />
-
-                      <button
-                        onClick={() => {
-                          clearChatMessages(chat.id);
-                          setOpenMenuChatId(null);
-                          showToast("Chat Cleared", "Messages cleared for this conversation.", "info");
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-slate-100 transition-colors text-left text-amber-600 font-bold"
-                      >
-                        <Eraser className="h-4 w-4" />
-                        Clear chat
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          deleteChat(chat.id);
-                          setOpenMenuChatId(null);
-                          showToast("Chat Deleted", "Conversation deleted successfully.", "warning");
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-slate-100 transition-colors text-left text-rose-600 font-bold"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Delete chat
-                      </button>
-                    </div>
-                  )}
+                        <button
+                          onClick={() => { togglePinChat(chat.id); setOpenMenuChatId(null); }}
+                          className="w-full text-left px-3.5 py-2 hover:bg-slate-100 flex items-center gap-2 cursor-pointer"
+                        >
+                          <span>{chat.pinned ? '📌 Unpin Chat' : '📌 Pin Chat'}</span>
+                        </button>
+                        <button
+                          onClick={() => { toggleFavoriteChat(chat.id); setOpenMenuChatId(null); }}
+                          className="w-full text-left px-3.5 py-2 hover:bg-slate-100 flex items-center gap-2 cursor-pointer"
+                        >
+                          <span>{chat.favorite ? '⭐ Remove Favorite' : '⭐ Mark Favorite'}</span>
+                        </button>
+                        <button
+                          onClick={() => { toggleUnreadChat(chat.id); setOpenMenuChatId(null); }}
+                          className="w-full text-left px-3.5 py-2 hover:bg-slate-100 flex items-center gap-2 cursor-pointer"
+                        >
+                          <span>{isUnread ? '✉️ Mark as Read' : '✉️ Mark as Unread'}</span>
+                        </button>
+                        <button
+                          onClick={() => { toggleArchiveChat(chat.id); setOpenMenuChatId(null); }}
+                          className="w-full text-left px-3.5 py-2 hover:bg-slate-100 flex items-center gap-2 cursor-pointer text-slate-600"
+                        >
+                          <Archive className="h-3.5 w-3.5" />
+                          <span>{chat.archived ? 'Unarchive' : 'Archive'}</span>
+                        </button>
+                        <button
+                          onClick={() => { clearChatMessages(chat.id); setOpenMenuChatId(null); }}
+                          className="w-full text-left px-3.5 py-2 hover:bg-slate-100 flex items-center gap-2 cursor-pointer text-amber-600"
+                        >
+                          <Eraser className="h-3.5 w-3.5" />
+                          <span>Clear Messages</span>
+                        </button>
+                        <div className="border-t border-slate-100 my-1"></div>
+                        <button
+                          onClick={() => { deleteChat(chat.id); setOpenMenuChatId(null); }}
+                          className="w-full text-left px-3.5 py-2 hover:bg-rose-50 flex items-center gap-2 cursor-pointer text-rose-600 font-bold"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span>Delete Chat</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })
           )}
         </div>
 
-        {/* Floating Plus Action Button */}
-        <div className="absolute bottom-5 right-5 z-20">
+        {/* 4. Floating Action Button (+) */}
+        <div className="absolute bottom-5 right-5 z-30">
           {isPlusMenuOpen && (
-            <div className="mb-2 bg-white border border-slate-200/90 rounded-2xl shadow-2xl p-2 min-w-52 select-none space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-150">
+            <div className="mb-3 space-y-2 flex flex-col items-end animate-in fade-in slide-in-from-bottom-2 duration-150">
               <button
-                onClick={() => {
-                  setIsPlusMenuOpen(false);
-                  setGroupStep(1);
-                  setSelectedMembers([]);
-                  setGroupName('');
-                  setGroupDesc('');
-                  setGroupAvatarUrl('');
-                  setIsGroupModalOpen(true);
-                }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-[#111b21] hover:bg-[#008069]/10 hover:text-[#008069] transition-colors cursor-pointer text-left bg-white border border-slate-200/60 shadow-2xs"
+                onClick={() => { setIsPlusMenuOpen(false); setIsGroupModalOpen(true); }}
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white border border-slate-200/80 shadow-lg text-slate-700 text-xs font-bold hover:bg-slate-50 cursor-pointer active:scale-95 transition-all"
               >
-                <div className="p-2 rounded-lg bg-[#008069]/10 text-[#008069] shrink-0">
-                  <Users className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <span className="block font-black text-[#111b21] truncate">New Group</span>
-                  <span className="text-[10px] text-[#667781] font-medium block truncate mt-0.5">Create group with members</span>
-                </div>
+                <span>New Group</span>
+                <Users className="h-4 w-4 text-[#008069]" />
               </button>
-
               <button
-                onClick={() => {
-                  setIsPlusMenuOpen(false);
-                  setContactEmail('');
-                  setContactName('');
-                  setIsNewContactModalOpen(true);
-                }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-[#111b21] hover:bg-[#008069]/10 hover:text-[#008069] transition-colors cursor-pointer text-left bg-white border border-slate-200/60 shadow-2xs"
+                onClick={() => { setIsPlusMenuOpen(false); setIsNewContactModalOpen(true); }}
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white border border-slate-200/80 shadow-lg text-slate-700 text-xs font-bold hover:bg-slate-50 cursor-pointer active:scale-95 transition-all"
               >
-                <div className="p-2 rounded-lg bg-[#008069]/10 text-[#008069] shrink-0">
-                  <UserPlus className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <span className="block font-black text-[#111b21] truncate">New Contact</span>
-                  <span className="text-[10px] text-[#667781] font-medium block truncate mt-0.5">Search DB user by email</span>
-                </div>
+                <span>New Direct Message</span>
+                <UserPlus className="h-4 w-4 text-[#008069]" />
               </button>
             </div>
           )}
 
           <button
             onClick={() => setIsPlusMenuOpen(!isPlusMenuOpen)}
-            className={`p-3.5 rounded-full bg-[#00a884] hover:bg-[#008f6f] text-white shadow-md transition-all cursor-pointer transform hover:scale-105 active:scale-95 flex items-center justify-center ${isPlusMenuOpen ? 'rotate-45 bg-[#111b21]' : ''
+            className={`h-13 w-13 rounded-2xl flex items-center justify-center text-white shadow-xl transition-transform active:scale-95 cursor-pointer ${isPlusMenuOpen ? 'bg-slate-800 rotate-45' : 'bg-gradient-to-r from-[#008069] to-[#00a884] hover:scale-105'
               }`}
-            title="New Action Menu"
+            title="Create New Chat or Group"
           >
             <Plus className="h-6 w-6" />
           </button>
@@ -506,330 +373,24 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
 
       </div>
 
-      {/* NEW CONTACT MODAL */}
-      <Modal
+      {/* Reusable Modals */}
+      <NewContactModal
         isOpen={isNewContactModalOpen}
         onClose={() => setIsNewContactModalOpen(false)}
-        title="Start New Chat"
-        size="md"
-      >
-        <div className="space-y-4 text-left p-1 select-none">
-          <div className="relative">
-            <Search className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#667781] h-4.5 w-4.5 my-auto" />
-            <input
-              type="text"
-              placeholder="Search user by name or phone number..."
-              value={contactEmail}
-              onChange={(e) => setContactEmail(e.target.value)}
-              className="block w-full rounded-xl bg-[#f0f4f8] border border-slate-200/80 focus:border-[#008069] focus:ring-1 focus:ring-[#008069] text-xs py-2.5 pl-10 pr-4 outline-none text-[#111b21] placeholder-[#667781] font-medium"
-            />
-          </div>
+        allUsers={allUsers}
+        user={user}
+        handleStartDirectChat={handleStartDirectChat}
+      />
 
-          <div className="max-h-64 overflow-y-auto border border-slate-200/80 rounded-xl p-2 space-y-1.5 bg-[#f8fafc] no-scrollbar">
-            {allUsers
-              .filter(u => {
-                const uId = u.id || u._id?.toString();
-                const myRealId = user?.id || user?._id?.toString();
-                const isAdmin = u.role === 'admin' || u.role === 'Admin';
-                return uId !== 'user_me' && uId !== myRealId && u.email !== user?.email &&
-                  !isAdmin &&
-                  (u.name.toLowerCase().includes(contactEmail.toLowerCase()) ||
-                    (u.phone && u.phone.toLowerCase().includes(contactEmail.toLowerCase())) ||
-                    u.email.toLowerCase().includes(contactEmail.toLowerCase()));
-              })
-              .map((u) => {
-                const targetId = u.id || u._id?.toString();
-                return (
-                  <div
-                    key={targetId}
-                    onClick={() => handleStartDirectChat(u)}
-                    className="p-3 rounded-2xl flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors border bg-white border-slate-200/80 shadow-2xs"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Avatar src={u.avatar} name={u.name} size="sm" color={u.avatarColor} />
-                      <div className="text-left min-w-0">
-                        <div className="text-xs font-bold text-[#111b21] truncate">{u.name}</div>
-                        <div className="text-[11px] text-[#667781] font-medium truncate mt-0.5">{u.phone || "No phone number"}</div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            {allUsers.filter(u => {
-              const uId = u.id || u._id?.toString();
-              const myRealId = user?.id || user?._id?.toString();
-              const isAdmin = u.role === 'admin' || u.role === 'Admin';
-              return uId !== 'user_me' && uId !== myRealId && u.email !== user?.email && !isAdmin && (u.name.toLowerCase().includes(contactEmail.toLowerCase()) || (u.phone && u.phone.toLowerCase().includes(contactEmail.toLowerCase())) || u.email.toLowerCase().includes(contactEmail.toLowerCase()));
-            }).length === 0 && (
-                <div className="p-4 text-center text-xs text-[#667781] font-semibold">
-                  No users found
-                </div>
-              )}
-          </div>
-
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200/80">
-            <button
-              type="button"
-              onClick={() => setIsNewContactModalOpen(false)}
-              className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200/80 hover:text-slate-900 border border-slate-200/60 active:scale-95 transition-all cursor-pointer"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* 2-STEP NEW GROUP WIZARD MODAL */}
-      <Modal
+      <CreateGroupModal
         isOpen={isGroupModalOpen}
-        onClose={() => {
-          setIsGroupModalOpen(false);
-          setGroupStep(1);
-          setGroupName('');
-          setGroupDesc('');
-          setSelectedMembers([]);
-          setGroupAvatarFile(null);
-          setGroupAvatarUrl('');
-          setMemberSearchQuery('');
-        }}
-        title={groupStep === 1 ? "Create Group - Select Members (1/2)" : "Create Group - Group Details (2/2)"}
-        size="md"
-      >
-        <form onSubmit={handleCreateGroupSubmit} className="space-y-5 text-left p-1 select-none">
-
-          {/* STEP 1: Select Members */}
-          {groupStep === 1 && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-[#54656f]">
-                  Select members to add to the group ({selectedMembers.length} selected)
-                </span>
-              </div>
-
-              {/* Selected member chips */}
-              {selectedMembers.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 p-2 bg-[#f0f4f8] rounded-xl max-h-24 overflow-y-auto border border-slate-200/80">
-                  {selectedMembers.map(memberId => {
-                    const m = allUsers.find(u => u.id === memberId || u._id?.toString() === memberId);
-                    if (!m) return null;
-                    return (
-                      <div
-                        key={memberId}
-                        className="inline-flex items-center gap-1.5 bg-[#008069]/10 border border-[#008069]/30 pl-1.5 pr-2.5 py-1 rounded-full text-[11px] font-extrabold text-[#008069] shadow-2xs"
-                      >
-                        <Avatar src={m.avatar} name={m.name} size="xs" color={m.avatarColor} />
-                        <span>{m.name.split(' ')[0]}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleMember(memberId)}
-                          className="text-[#008069] hover:text-rose-500 transition-colors ml-0.5"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* In-modal member search */}
-              <div className="relative">
-                <Search className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#667781] h-4.5 w-4.5 my-auto" />
-                <input
-                  type="text"
-                  placeholder="Search user by name or phone number..."
-                  value={memberSearchQuery}
-                  onChange={(e) => setMemberSearchQuery(e.target.value)}
-                  className="block w-full rounded-xl bg-[#f0f4f8] border border-slate-200/80 focus:border-[#008069] focus:ring-1 focus:ring-[#008069] text-xs py-2.5 pl-10 pr-4 outline-none text-[#111b21] placeholder-[#667781] font-medium"
-                />
-              </div>
-
-              {/* Scrollable list of members */}
-              <div className="max-h-56 overflow-y-auto border border-slate-200/80 rounded-xl p-2 space-y-1.5 bg-[#f8fafc] no-scrollbar">
-                {allUsers
-                  .filter(u => {
-                    const uId = u.id || u._id?.toString();
-                    const myRealId = user?.id || user?._id?.toString();
-                    const isAdmin = u.role === 'admin' || u.role === 'Admin';
-                    return uId !== 'user_me' && uId !== myRealId && u.email !== user?.email &&
-                      !isAdmin &&
-                      (u.name.toLowerCase().includes(memberSearchQuery.toLowerCase()) ||
-                        (u.phone && u.phone.toLowerCase().includes(memberSearchQuery.toLowerCase())) ||
-                        u.email.toLowerCase().includes(memberSearchQuery.toLowerCase()));
-                  })
-                  .map((u) => {
-                    const uId = u.id || u._id?.toString();
-                    const isSelected = selectedMembers.includes(uId);
-                    return (
-                      <div
-                        key={uId}
-                        onClick={() => handleToggleMember(uId)}
-                        className={`
-                          p-3 rounded-2xl flex items-center justify-between cursor-pointer transition-all border ${isSelected
-                            ? 'bg-[#008069]/10 border-[#008069] shadow-2xs'
-                            : 'bg-white border-slate-200/80 shadow-2xs hover:bg-slate-50'
-                          }
-                        `}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <Avatar src={u.avatar} name={u.name} size="sm" color={u.avatarColor} />
-                          <div className="text-left min-w-0">
-                            <div className="text-xs font-bold text-[#111b21] truncate">{u.name}</div>
-                            <div className="text-[11px] text-[#667781] font-medium truncate mt-0.5">{u.phone || "No phone number"}</div>
-                          </div>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => { }} // Handled by container click
-                          className="h-4 w-4 accent-[#008069] rounded cursor-pointer"
-                        />
-                      </div>
-                    );
-                  })}
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200/80">
-                <button
-                  type="button"
-                  onClick={() => setIsGroupModalOpen(false)}
-                  className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200/80 hover:text-slate-900 border border-slate-200/60 active:scale-95 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  disabled={selectedMembers.length === 0}
-                  onClick={() => setGroupStep(2)}
-                  className={`
-                    px-6 py-2.5 rounded-full text-xs font-extrabold flex items-center gap-1.5 transition-all duration-200 shadow-sm
-                    ${selectedMembers.length > 0
-                      ? 'bg-gradient-to-r from-[#008069] to-[#00a884] hover:from-[#006e5a] hover:to-[#008069] text-white shadow-md shadow-[#008069]/25 hover:shadow-lg hover:shadow-[#008069]/35 active:scale-95 cursor-pointer'
-                      : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-200/60'
-                    }
-                  `}
-                >
-                  <span>Next</span>
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 2: Group Info & Selected Members Roster Preview */}
-          {groupStep === 2 && (
-            <div className="space-y-4">
-
-              {/* Avatar Upload Container */}
-              <div className="flex flex-col items-center justify-center gap-2 mb-2">
-                <div className="relative group cursor-pointer" onClick={handleGroupAvatarClick}>
-                  <Avatar
-                    src={groupAvatarUrl}
-                    name={groupName || "New Group"}
-                    size="xl"
-                    className="h-20 w-20 border-2 border-slate-200 object-cover shadow-md rounded-full transition-transform group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-slate-950/45 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera className="h-5 w-5 text-white" />
-                  </div>
-                  <input
-                    type="file"
-                    ref={groupAvatarInputRef}
-                    onChange={handleGroupAvatarChange}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                </div>
-                <span className="text-[10px] font-black uppercase text-[#667781] tracking-wider">
-                  {isUploadingGroupAvatar ? "Uploading icon..." : "Group Icon (Click to change)"}
-                </span>
-              </div>
-
-              {/* Group Name Input */}
-              <div className="space-y-1.5">
-                <label className="block text-[10px] font-black text-[#54656f] uppercase tracking-wider">
-                  Group Name <span className="text-rose-500 font-bold">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Developers, Marketing Team"
-                  value={groupName}
-                  onChange={(e) => setGroupName(e.target.value)}
-                  required
-                  className="block w-full rounded-xl bg-[#f0f4f8] border border-slate-200/80 focus:border-[#008069] focus:ring-1 focus:ring-[#008069] text-xs py-3 px-4 outline-none text-[#111b21] placeholder-[#667781] font-semibold"
-                />
-              </div>
-
-              {/* Description Textarea */}
-              <div className="space-y-1.5">
-                <label className="block text-[10px] font-black text-[#54656f] uppercase tracking-wider">
-                  Description (Optional)
-                </label>
-                <textarea
-                  placeholder="Provide a short summary of what this group is about..."
-                  value={groupDesc}
-                  onChange={(e) => setGroupDesc(e.target.value)}
-                  className="block w-full rounded-xl bg-[#f0f4f8] border border-slate-200/80 focus:border-[#008069] focus:ring-1 focus:ring-[#008069] text-xs p-3.5 outline-none text-[#111b21] placeholder-[#667781] font-semibold min-h-[70px] resize-none"
-                />
-              </div>
-
-              {/* Selected Members Roster Preview */}
-              <div className="space-y-2 pt-2 border-t border-slate-200/80">
-                <label className="block text-[10px] font-black text-[#54656f] uppercase tracking-wider">
-                  Selected Members ({selectedMembers.length})
-                </label>
-
-                <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1 no-scrollbar">
-                  {selectedMembers.map(memberId => {
-                    const m = allUsers.find(u => u.id === memberId || u._id?.toString() === memberId);
-                    if (!m) return null;
-                    return (
-                      <div
-                        key={memberId}
-                        className="flex items-center justify-between p-2.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Avatar src={m.avatar} name={m.name} size="sm" color={m.avatarColor} />
-                          <div className="min-w-0 text-left">
-                            <span className="font-bold text-xs text-[#111b21] block truncate">{m.name}</span>
-                            <span className="text-[10px] text-[#667781] block truncate">{m.phone || "No phone number"}</span>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleMember(memberId)}
-                          className="p-1 rounded-lg text-[#667781] hover:text-rose-500 hover:bg-rose-50 cursor-pointer transition-colors"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-200/80">
-                <button
-                  type="button"
-                  onClick={() => setGroupStep(1)}
-                  className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200/80 hover:text-slate-900 border border-slate-200/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  <span>Back</span>
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-full text-xs font-extrabold bg-gradient-to-r from-[#008069] to-[#00a884] hover:from-[#006e5a] hover:to-[#008069] text-white shadow-md shadow-[#008069]/25 hover:shadow-lg hover:shadow-[#008069]/35 active:scale-95 transition-all duration-200 cursor-pointer"
-                >
-                  Create Group
-                </button>
-              </div>
-            </div>
-          )}
-
-        </form>
-      </Modal>
+        onClose={() => setIsGroupModalOpen(false)}
+        allUsers={allUsers}
+        user={user}
+        uploadFile={uploadFile}
+        createGroup={createGroup}
+        showToast={showToast}
+      />
     </>
   );
 };

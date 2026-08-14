@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Pin, ChevronDown } from 'lucide-react';
 
-export const PinnedMessagesBar = ({ activeChat, messages, handleTogglePinMessage }) => {
+export const PinnedMessagesBar = ({
+  pinnedMessages,
+  handleTogglePinMessage
+}) => {
   const [pinnedBannerIndex, setPinnedBannerIndex] = useState(0);
   const [pinnedDropdownOpen, setPinnedDropdownOpen] = useState(false);
   const pinnedDropdownRef = useRef(null);
@@ -16,15 +19,7 @@ export const PinnedMessagesBar = ({ activeChat, messages, handleTogglePinMessage
     return () => document.removeEventListener('mousedown', handleClickOutsidePin);
   }, []);
 
-  const pinnedMessageIds = activeChat?.pinnedMessageIds || [];
-  const pinnedMessages = pinnedMessageIds
-    .map(p => {
-      const msg = messages.find(m => m.id === p.id);
-      return msg ? { ...msg, pinnedUntil: p.pinnedUntil } : null;
-    })
-    .filter(Boolean);
-
-  if (pinnedMessages.length === 0) return null;
+  if (!pinnedMessages || pinnedMessages.length === 0) return null;
 
   const safePinnedIndex = pinnedBannerIndex % pinnedMessages.length;
   const currentPinnedMsg = pinnedMessages[safePinnedIndex] || null;
@@ -38,17 +33,29 @@ export const PinnedMessagesBar = ({ activeChat, messages, handleTogglePinMessage
     return 'Attachment';
   };
 
+  if (!currentPinnedMsg) return null;
+
   return (
-    <div className="bg-[#f0f2f5] border-b border-[#e9edef] shrink-0 select-none z-10">
+    <div className="border-b border-[#e9edef] bg-[#f0f2f5] shrink-0 select-none relative">
       <div
-        className="max-w-4xl mx-auto flex items-center justify-between px-3 sm:px-4 py-1.5 cursor-pointer hover:bg-[#e9edef]/60 transition-colors relative"
+        className="flex items-stretch cursor-pointer hover:bg-black/5 transition-colors"
         onClick={() => {
-          if (pinnedMessages.length > 1) {
-            setPinnedBannerIndex(prev => (prev + 1) % pinnedMessages.length);
+          const nextIdx = (safePinnedIndex + 1) % pinnedMessages.length;
+          setPinnedBannerIndex(nextIdx);
+          const nextMsg = pinnedMessages[nextIdx];
+          if (nextMsg) {
+            const el = document.getElementById(nextMsg.id);
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el?.classList.add('bg-yellow-200/60');
+            setTimeout(() => el?.classList.remove('bg-yellow-200/60'), 1500);
           }
         }}
       >
-        <div className="flex-1 min-w-0 px-3 py-2 flex items-center gap-2 text-left">
+        <div className={`w-1 shrink-0 rounded-sm my-1 ml-2 ${safePinnedIndex % 3 === 0 ? 'bg-indigo-500' :
+            safePinnedIndex % 3 === 1 ? 'bg-emerald-500' : 'bg-amber-500'
+          }`} />
+
+        <div className="flex-1 min-w-0 px-3 py-2 flex items-center gap-2">
           <Pin className="h-3.5 w-3.5 text-[#54656f] shrink-0 transform rotate-45" />
           <p className="text-xs text-[#111b21] font-semibold truncate leading-none">
             {getPinnedPreview(currentPinnedMsg)}
@@ -103,3 +110,5 @@ export const PinnedMessagesBar = ({ activeChat, messages, handleTogglePinMessage
     </div>
   );
 };
+
+export default PinnedMessagesBar;

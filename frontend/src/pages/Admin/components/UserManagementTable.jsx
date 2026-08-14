@@ -1,23 +1,22 @@
 import React from 'react';
-import { Search, Phone, Trash2, UserX, UserCheck } from 'lucide-react';
+import { Search, Phone, UserCheck, UserX, Trash2 } from 'lucide-react';
 import { Avatar } from '../../../components/ui/ui';
 
 export const UserManagementTable = ({
-  usersList,
-  userSearch,
+  usersList = [],
+  userSearch = '',
   setUserSearch,
-  userFilter,
+  userFilter = 'all',
   setUserFilter,
   handleToggleBlockUserConfirmed,
   handleDeleteUserConfirmed
 }) => {
-  // Filter users: EXCLUDE ADMIN ACCOUNTS & filter by search / active / blocked
   const filteredUsers = (usersList || []).filter(u => {
     if (u.role === 'Admin' || u.role === 'admin') return false;
 
-    const matchesSearch = u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-      u.email.toLowerCase().includes(userSearch.toLowerCase()) ||
-      (u.phone && u.phone.toLowerCase().includes(userSearch.toLowerCase()));
+    const matchesSearch = (u.name || '').toLowerCase().includes((userSearch || '').toLowerCase()) ||
+      (u.email || '').toLowerCase().includes((userSearch || '').toLowerCase()) ||
+      (u.phone && u.phone.toLowerCase().includes((userSearch || '').toLowerCase()));
     if (!matchesSearch) return false;
 
     const isUserBlocked = u.statusText === 'Blocked' || u.isBlocked;
@@ -130,3 +129,5 @@ export const UserManagementTable = ({
     </div>
   );
 };
+
+export default UserManagementTable;

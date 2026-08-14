@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
-import { BrandLogo } from '../../components/ui/BrandLogo';
+import { BrandLogo } from '../../components/ui/ui';
 
 export const Login = () => {
   const { login } = useAuth();

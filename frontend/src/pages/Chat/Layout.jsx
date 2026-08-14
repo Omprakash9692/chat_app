@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import {
-  MessageSquare, Settings as SettingsIcon, ShieldCheck, LogOut, Menu, X,
-  User, Bell, Search, Info, HelpCircle
-} from 'lucide-react';
+import { MessageSquare, ShieldCheck, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useChat } from '../../context/ChatContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -12,25 +9,19 @@ import { SidebarRight } from './SidebarRight';
 import { ChatWindow } from './ChatWindow';
 import { Settings } from '../Profile/Settings';
 import { Dashboard } from '../Admin/Dashboard';
-import { Avatar } from '../../components/ui/Avatar';
-import { ThemeToggle } from '../../components/ui/ThemeToggle';
-import { Tooltip } from '../../components/ui/Tooltip';
-import { ToastContainer } from '../../components/ui/Toast';
-import { BrandLogo } from '../../components/ui/BrandLogo';
+import { Avatar, ToastContainer, BrandLogo } from '../../components/ui/ui';
 
 export const Layout = () => {
   const { user, logout } = useAuth();
   const { activeChatId, selectChat } = useChat();
-  const { showToast, notifications } = useNotifications();
+  const { showToast } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Route matches
   const isChatRoute = location.pathname === '/chat';
   const isSettingsRoute = location.pathname === '/settings';
   const isAdminRoute = location.pathname.startsWith('/admin');
 
-  // Responsive and desktop slide sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(true);
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
@@ -51,16 +42,14 @@ export const Layout = () => {
     setRightSidebarOpen(prev => !prev);
   };
 
-  const unreadNotifCount = notifications.filter(n => !n.read).length;
   const isAdminUser = user?.role === 'Admin';
 
   return (
     <div className="h-screen w-full max-w-full flex bg-[#f0f2f5] text-slate-800 overflow-x-hidden overflow-y-hidden font-sans transition-colors duration-300">
 
-      {/* 1. Global Navigation Strip (Thin Sidebar) - Desktop */}
+      {/* Global Navigation Strip - Desktop */}
       <aside className="hidden sm:flex flex-col items-center justify-between w-18 py-6 bg-[#f0f2f5] border-r border-slate-200/80 flex-shrink-0 z-20">
         <div className="flex flex-col items-center gap-6 w-full">
-          {/* Navigation Links */}
           <div className="flex flex-col gap-4.5 w-full items-center">
             {!isAdminUser && (
               <button
@@ -91,15 +80,14 @@ export const Layout = () => {
         </div>
 
         <div className="flex flex-col items-center gap-5 w-full">
-
           <button
             onClick={handleLogout}
             className="p-3 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all cursor-pointer"
+            title="Log Out"
           >
             <LogOut className="h-5.5 w-5.5" />
           </button>
 
-          {/* User profile button */}
           <Link to="/settings">
             <Avatar
               src={user?.avatar}
@@ -112,10 +100,10 @@ export const Layout = () => {
         </div>
       </aside>
 
-      {/* 2. Middle Content Container */}
+      {/* Middle Content Container */}
       <div className="flex-1 flex overflow-hidden relative w-full max-w-full">
 
-        {/* Mobile Header bar - Clean, only Sampark and Profile Avatar icon (only show on chat list / settings) */}
+        {/* Mobile Header bar */}
         {!activeChatId && (
           <div className="sm:hidden absolute top-0 left-0 right-0 h-14 bg-white/90 backdrop-blur-xl border-b border-slate-200 z-30 flex items-center justify-between px-4">
             <Link to="/chat" title="Return to main chats" className="cursor-pointer hover:opacity-80 transition-opacity">
@@ -129,7 +117,7 @@ export const Layout = () => {
           </div>
         )}
 
-        {/* Left conversations list sidebar drawer - only show on chat routes */}
+        {/* Left conversations list sidebar drawer */}
         {isChatRoute && (
           <div className={`
             absolute sm:static ${!activeChatId ? 'top-14 h-[calc(100vh-3.5rem)]' : 'top-0 h-full'} bottom-0 left-0 right-0 z-20 
@@ -170,11 +158,10 @@ export const Layout = () => {
           )}
 
           {isSettingsRoute && <Settings />}
-
           {isAdminRoute && <Dashboard />}
         </main>
 
-        {/* Right context info panel - only show on chat routes */}
+        {/* Right context info panel */}
         {isChatRoute && activeChatId && rightSidebarOpen && (
           <div className="absolute lg:static top-0 bottom-0 right-0 w-full sm:w-80 bg-white/94 backdrop-blur-xl border-l border-slate-200/80 z-30 lg:z-10 flex flex-col h-full flex-shrink-0">
             <SidebarRight onClose={toggleRightSidebar} />
@@ -187,4 +174,5 @@ export const Layout = () => {
     </div>
   );
 };
+
 export default Layout;

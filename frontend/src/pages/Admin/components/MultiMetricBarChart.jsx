@@ -1,5 +1,35 @@
 import React, { useState } from 'react';
-import { BarChart2, Calendar } from 'lucide-react';
+import { BarChart2, Calendar, ArrowLeft, Users, AlertTriangle } from 'lucide-react';
+
+const getMonthWeeksFallback = (mIndex) => {
+  const monthNamesShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const mName = monthNamesShort[mIndex] || "Month";
+
+  const generateDays = (start, end) => {
+    const days = [];
+    for (let d = start; d <= end; d++) {
+      days.push({ name: `${mName} ${d}`, date: `${mName} ${d}, 2026`, users: 0, groups: 0, reports: 0 });
+    }
+    return days;
+  };
+
+  return {
+    weeks: [
+      { id: "week1", name: "Week 1", date: `${mName} 1 - 7`, users: 0, groups: 0, reports: 0 },
+      { id: "week2", name: "Week 2", date: `${mName} 8 - 14`, users: 0, groups: 0, reports: 0 },
+      { id: "week3", name: "Week 3", date: `${mName} 15 - 21`, users: 0, groups: 0, reports: 0 },
+      { id: "week4", name: "Week 4", date: `${mName} 22 - 28`, users: 0, groups: 0, reports: 0 },
+      { id: "week5", name: "Week 5", date: `${mName} 29 - 31`, users: 0, groups: 0, reports: 0 }
+    ],
+    daysByWeek: {
+      week1: generateDays(1, 7),
+      week2: generateDays(8, 14),
+      week3: generateDays(15, 21),
+      week4: generateDays(22, 28),
+      week5: generateDays(29, 31)
+    }
+  };
+};
 
 export const MultiMetricBarChart = ({ weekData, monthDataMap, availableMonths, yearData }) => {
   const [timeframe, setTimeframe] = useState('week');
@@ -15,25 +45,30 @@ export const MultiMetricBarChart = ({ weekData, monthDataMap, availableMonths, y
     { index: 6, name: 'July' }, { index: 7, name: 'August' }
   ];
 
-  const rawMonthObj = monthDataMap
-    ? (monthDataMap[selectedMonthIndex] || monthDataMap[String(selectedMonthIndex)])
-    : null;
-
-  const availableWeekIds = (rawMonthObj && rawMonthObj.weeks && rawMonthObj.weeks.length > 0)
-    ? rawMonthObj.weeks.map(w => w.id)
-    : ['week1', 'week2', 'week3', 'week4', 'week5'];
+  React.useEffect(() => {
+    if (availableMonths && availableMonths.length > 0) {
+      const exists = availableMonths.some(m => m.index === selectedMonthIndex);
+      if (!exists) {
+        setSelectedMonthIndex(availableMonths[availableMonths.length - 1].index);
+      }
+    }
+  }, [availableMonths]);
 
   let activeData = [];
   if (timeframe === 'week') {
     activeData = (weekData && weekData.length > 0) ? weekData : [];
   } else if (timeframe === 'month') {
+    const rawMonthObj = monthDataMap
+      ? (monthDataMap[selectedMonthIndex] || monthDataMap[String(selectedMonthIndex)])
+      : null;
+
     let monthObj = null;
     if (rawMonthObj && Array.isArray(rawMonthObj)) {
       monthObj = { weeks: rawMonthObj, daysByWeek: {} };
     } else if (rawMonthObj && rawMonthObj.weeks) {
       monthObj = rawMonthObj;
     } else {
-      monthObj = { weeks: [], daysByWeek: {} };
+      monthObj = getMonthWeeksFallback(selectedMonthIndex);
     }
 
     if (selectedWeek === 'all') {
@@ -41,16 +76,16 @@ export const MultiMetricBarChart = ({ weekData, monthDataMap, availableMonths, y
     } else {
       activeData = (monthObj.daysByWeek && monthObj.daysByWeek[selectedWeek] && monthObj.daysByWeek[selectedWeek].length > 0)
         ? monthObj.daysByWeek[selectedWeek]
-        : [];
+        : getMonthWeeksFallback(selectedMonthIndex).daysByWeek[selectedWeek] || [];
     }
-  } else if (timeframe === 'year') {
+  } else {
     activeData = (yearData && yearData.length > 0) ? yearData : [];
   }
 
   const data = activeData;
 
   const maxVal = Math.max(
-    1,
+    5,
     ...data.flatMap(d => [
       visibleSeries.users ? (d.users || 0) : 0,
       visibleSeries.groups ? (d.groups || 0) : 0,
@@ -58,20 +93,56 @@ export const MultiMetricBarChart = ({ weekData, monthDataMap, availableMonths, y
     ])
   );
 
-  const getYRatio = (val) => (val / maxVal);
-  const chartHeight = 170;
+  const W = 760, H = 260, padTop = 30, padBottom = 40, padLeft = 35, padRight = 20;
+  const chartW = W - padLeft - padRight;
+  const chartH = H - padTop - padBottom;
 
-  const toggleSeries = (key) => {
-    setVisibleSeries(prev => ({ ...prev, [key]: !prev[key] }));
+  const numSlots = Math.max(1, data.length);
+  const slotW = chartW / numSlots;
+
+  const handleMouseMove = (e) => {
+    const svgRect = e.currentTarget.getBoundingClientRect();
+    if (!svgRect.width) return;
+    const mouseXInDOM = e.clientX - svgRect.left;
+    const svgX = (mouseXInDOM / svgRect.width) * W;
+    const idx = Math.floor((svgX - padLeft) / slotW);
+    const clampedIdx = Math.max(0, Math.min(numSlots - 1, idx));
+    setHoverIndex(clampedIdx);
   };
 
-  const selectedMonthObj = activeMonthsList.find(m => m.index === selectedMonthIndex);
+  const handleBarClick = (index) => {
+    if (timeframe === 'month' && selectedWeek === 'all') {
+      setSelectedWeek(`week${index + 1}`);
+      setHoverIndex(null);
+    }
+  };
+
+  const defaultIndex = React.useMemo(() => {
+    if (!data || data.length === 0) return 0;
+    if (timeframe === 'week') {
+      const todayDayIndex = (new Date().getDay() + 6) % 7;
+      return Math.min(todayDayIndex, data.length - 1);
+    }
+    return data.length - 1;
+  }, [data, timeframe]);
+
+  const activePoint = hoverIndex !== null && data[hoverIndex] ? data[hoverIndex] : data[defaultIndex];
+
+  const selectedMonthObj = activeMonthsList.find(m => m.index === selectedMonthIndex) || activeMonthsList[activeMonthsList.length - 1];
   const latestMonthObj = activeMonthsList[activeMonthsList.length - 1];
+  const displayYear = selectedMonthObj?.year || latestMonthObj?.year || new Date().getUTCFullYear();
+
+  const seriesConfig = [
+    { key: 'users', label: 'Users', color: '#6366f1', icon: Users },
+    { key: 'groups', label: 'Groups', color: '#10b981', icon: Users },
+    { key: 'reports', label: 'Report Log', color: '#f43f5e', icon: AlertTriangle }
+  ];
 
   const isTotalZero = data.every(d => (d.users || 0) === 0 && (d.groups || 0) === 0 && (d.reports || 0) === 0);
 
   return (
     <div className="glass-premium rounded-[24px] sm:rounded-[30px] p-4 sm:p-6 bg-white/85 border border-slate-200/60 text-left shadow-[0_15px_35px_rgba(15,23,42,0.03)] hover-glow-card flex flex-col gap-4 sm:gap-5">
+      {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 select-none">
         <div>
           <h3 className="text-base font-black text-slate-950 flex items-center gap-2">
@@ -91,6 +162,7 @@ export const MultiMetricBarChart = ({ weekData, monthDataMap, availableMonths, y
           </p>
         </div>
 
+        {/* Timeframe Buttons & Month/Week Dropdowns */}
         <div className="flex items-center gap-2 flex-wrap select-none">
           {timeframe === 'month' && (
             <div className="flex items-center gap-2 flex-wrap">
@@ -101,139 +173,249 @@ export const MultiMetricBarChart = ({ weekData, monthDataMap, availableMonths, y
                   onChange={(e) => {
                     setSelectedMonthIndex(Number(e.target.value));
                     setSelectedWeek('all');
+                    setHoverIndex(null);
                   }}
-                  className="bg-transparent text-xs font-black text-indigo-950 outline-none cursor-pointer"
+                  className="bg-transparent text-xs font-black text-indigo-950 outline-none cursor-pointer pr-1"
                 >
                   {activeMonthsList.map(m => (
-                    <option key={m.index} value={m.index}>{m.name} 2026</option>
+                    <option key={m.index} value={m.index} className="text-slate-900 font-medium">
+                      {m.name} {m.year || displayYear}
+                    </option>
                   ))}
                 </select>
               </div>
 
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200/60">
+              {/* Week Sub-Filter Dropdown */}
+              <div className="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-2xl shadow-xs">
+                <select
+                  value={selectedWeek}
+                  onChange={(e) => {
+                    setSelectedWeek(e.target.value);
+                    setHoverIndex(null);
+                  }}
+                  className="bg-transparent text-xs font-black text-white outline-none cursor-pointer pr-1"
+                >
+                  <option value="all" className="text-slate-900 font-medium">Overview (All Weeks)</option>
+                  <option value="week1" className="text-slate-900 font-medium">Week 1 (Days 1–7)</option>
+                  <option value="week2" className="text-slate-900 font-medium">Week 2 (Days 8–14)</option>
+                  <option value="week3" className="text-slate-900 font-medium">Week 3 (Days 15–21)</option>
+                  <option value="week4" className="text-slate-900 font-medium">Week 4 (Days 22–28)</option>
+                  <option value="week5" className="text-slate-900 font-medium">Week 5 (Days 29–31/Rest)</option>
+                </select>
+              </div>
+
+              {selectedWeek !== 'all' && (
                 <button
                   onClick={() => setSelectedWeek('all')}
-                  className={`px-3 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer ${selectedWeek === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                >All Weeks</button>
-                {availableWeekIds.map((w, idx) => (
-                  <button
-                    key={w}
-                    onClick={() => setSelectedWeek(w)}
-                    className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer ${selectedWeek === w ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                  >W{idx + 1}</button>
-                ))}
-              </div>
+                  className="px-3 py-1.5 rounded-2xl text-xs font-black bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border border-indigo-200/80 transition-all cursor-pointer shadow-xs flex items-center gap-1"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" /> Back to Overview
+                </button>
+              )}
             </div>
           )}
 
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200/60">
-            {['week', 'month', 'year'].map(t => (
+          {timeframe === 'year' && (
+            <div className="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-2xl text-xs font-black shadow-xs">
+              <Calendar className="h-3.5 w-3.5 text-indigo-400" />
+              <span>Year: {displayYear}</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-1.5 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/60">
+            {[
+              { id: 'week', label: 'Week (Days)' },
+              { id: 'month', label: 'Month (Weeks)' },
+              { id: 'year', label: 'Year (Months)' }
+            ].map(tf => (
               <button
-                key={t}
-                onClick={() => setTimeframe(t)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-extrabold capitalize transition-all cursor-pointer ${timeframe === t ? 'bg-slate-950 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-              >{t}</button>
+                key={tf.id}
+                onClick={() => { setTimeframe(tf.id); setSelectedWeek('all'); setHoverIndex(null); }}
+                className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${timeframe === tf.id
+                  ? 'bg-slate-950 text-white shadow-md scale-[1.02]'
+                  : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/50'
+                  }`}
+              >
+                {tf.label}
+              </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-y border-slate-100 py-2.5 px-1 select-none flex-wrap gap-2 text-xs font-bold">
-        <div className="flex items-center gap-4">
+      {/* Legend Toggles */}
+      <div className="flex items-center gap-4 flex-wrap text-xs font-bold select-none border-b border-slate-100 pb-3">
+        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-black">Legend:</span>
+        {seriesConfig.map(s => (
           <button
-            onClick={() => toggleSeries('users')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${visibleSeries.users ? 'bg-indigo-50 border-indigo-200 text-indigo-900' : 'bg-slate-50 border-slate-200 text-slate-400 opacity-60'}`}
+            key={s.key}
+            onClick={() => setVisibleSeries(prev => ({ ...prev, [s.key]: !prev[s.key] }))}
+            className={`flex items-center gap-2 px-3 py-1 rounded-full border transition-all cursor-pointer ${visibleSeries[s.key]
+              ? 'bg-slate-50 border-slate-200 text-slate-900 shadow-2xs'
+              : 'bg-slate-50/40 border-slate-100 text-slate-400 line-through opacity-60'
+              }`}
           >
-            <span className="h-3 w-3 rounded-md bg-indigo-600 inline-block" />
-            <span>Users Signed Up</span>
+            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+            <span>{s.label}</span>
           </button>
-          <button
-            onClick={() => toggleSeries('groups')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${visibleSeries.groups ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-400 opacity-60'}`}
-          >
-            <span className="h-3 w-3 rounded-md bg-emerald-500 inline-block" />
-            <span>Groups Created</span>
-          </button>
-          <button
-            onClick={() => toggleSeries('reports')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${visibleSeries.reports ? 'bg-rose-50 border-rose-200 text-rose-900' : 'bg-slate-50 border-slate-200 text-slate-400 opacity-60'}`}
-          >
-            <span className="h-3 w-3 rounded-md bg-rose-500 inline-block" />
-            <span>Reports Submitted</span>
-          </button>
-        </div>
+        ))}
       </div>
 
-      <div className="relative pt-6 pb-2 px-2">
-        <div className="flex items-end justify-between gap-2 sm:gap-4 h-[220px] w-full border-b border-slate-200 relative">
-          {[0, 0.25, 0.5, 0.75, 1].map((r, i) => (
-            <div
-              key={i}
-              className="absolute w-full border-b border-slate-100 pointer-events-none"
-              style={{ bottom: `${r * 100}%` }}
-            />
-          ))}
+      {/* Grouped Bar SVG Visualization */}
+      <div className="relative w-full overflow-x-auto no-scrollbar" style={{ height: 260 }}>
+        <div className="min-w-[600px] sm:min-w-full h-full">
+          <svg
+            className="w-full h-full cursor-crosshair select-none"
+            viewBox={`0 0 ${W} ${H}`}
+            preserveAspectRatio="none"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => setHoverIndex(null)}
+          >
+            {/* Horizontal Grid lines */}
+            {[0, 0.25, 0.5, 0.75, 1].map((r, i) => {
+              const y = padTop + chartH * r;
+              const gridVal = Math.round(maxVal * (1 - r));
+              return (
+                <g key={i}>
+                  <line
+                    x1={padLeft}
+                    y1={y}
+                    x2={W - padRight}
+                    y2={y}
+                    stroke="#f1f5f9"
+                    strokeDasharray="4 4"
+                    strokeWidth="1"
+                  />
+                  <text
+                    x={padLeft - 8}
+                    y={y + 3}
+                    textAnchor="end"
+                    fontSize="9"
+                    fontWeight="700"
+                    fill="#94a3b8"
+                  >
+                    {gridVal}
+                  </text>
+                </g>
+              );
+            })}
 
-          {data.map((item, idx) => {
-            const isHovered = hoverIndex === idx;
-            const uHeight = visibleSeries.users ? Math.max(8, getYRatio(item.users || 0) * chartHeight) : 0;
-            const gHeight = visibleSeries.groups ? Math.max(8, getYRatio(item.groups || 0) * chartHeight) : 0;
-            const rHeight = visibleSeries.reports ? Math.max(8, getYRatio(item.reports || 0) * chartHeight) : 0;
+            {/* Slots & Bars */}
+            {data.map((d, i) => {
+              const slotX = padLeft + i * slotW;
+              const isHovered = hoverIndex === i;
 
-            const isWeekBarInMonth = timeframe === 'month' && selectedWeek === 'all' && item.id;
+              const activeSeriesCount = Object.values(visibleSeries).filter(Boolean).length || 1;
+              const gap = 3;
+              const availableW = Math.min(slotW * 0.75, 45);
+              const barW = Math.max(4, (availableW - (activeSeriesCount - 1) * gap) / activeSeriesCount);
+              const groupW = activeSeriesCount * barW + (activeSeriesCount - 1) * gap;
+              const groupX = slotX + (slotW - groupW) / 2;
 
-            return (
-              <div
-                key={idx}
-                onMouseEnter={() => setHoverIndex(idx)}
-                onMouseLeave={() => setHoverIndex(null)}
-                onClick={() => {
-                  if (isWeekBarInMonth) {
-                    setSelectedWeek(item.id);
-                  }
-                }}
-                className={`flex-1 flex flex-col items-center justify-end h-full relative group cursor-pointer transition-all duration-200 ${isHovered ? 'bg-slate-50/80 rounded-2xl' : ''}`}
+              let currentOffset = 0;
+
+              return (
+                <g key={i} onClick={() => handleBarClick(i)} className={timeframe === 'month' && selectedWeek === 'all' ? 'cursor-pointer' : ''}>
+                  {isHovered && (
+                    <rect
+                      x={slotX + 2}
+                      y={padTop - 5}
+                      width={slotW - 4}
+                      height={chartH + 10}
+                      fill="rgba(99, 102, 241, 0.08)"
+                      rx="10"
+                    />
+                  )}
+
+                  {seriesConfig.map(s => {
+                    if (!visibleSeries[s.key]) return null;
+                    const val = d[s.key] || 0;
+                    const barH = (val / maxVal) * chartH;
+                    const barY = padTop + chartH - barH;
+                    const barX = groupX + currentOffset;
+
+                    currentOffset += barW + gap;
+
+                    return (
+                      <g key={s.key}>
+                        <rect
+                          x={barX}
+                          y={barY}
+                          width={barW}
+                          height={Math.max(2, barH)}
+                          rx={Math.min(4, barW / 2)}
+                          fill={s.color}
+                          opacity={isHovered ? 1 : 0.85}
+                          className="transition-all duration-200"
+                          style={{
+                            filter: isHovered ? `drop-shadow(0 0 6px ${s.color}80)` : 'none'
+                          }}
+                        />
+                      </g>
+                    );
+                  })}
+                </g>
+              );
+            })}
+          </svg>
+
+          {/* X-Axis Labels */}
+          <div className="flex justify-between text-[11px] text-slate-500 font-extrabold uppercase tracking-wider px-8 mt-1 select-none">
+            {data.map((d, i) => (
+              <span
+                key={i}
+                onClick={() => handleBarClick(i)}
+                className={`flex-1 text-center truncate px-0.5 ${hoverIndex === i ? 'text-indigo-600 font-black scale-110' : ''
+                  } ${timeframe === 'month' && selectedWeek === 'all' ? 'cursor-pointer hover:underline' : ''}`}
               >
-                {isHovered && (
-                  <div className="absolute -top-16 z-30 bg-slate-900 text-white text-[11px] py-1.5 px-3 rounded-xl shadow-xl border border-slate-700 whitespace-nowrap pointer-events-none flex flex-col items-center animate-fadeIn">
-                    <span className="font-extrabold text-slate-200 border-b border-slate-700/80 pb-0.5 mb-1 w-full text-center">{item.name || item.date}</span>
-                    <div className="flex items-center gap-3 font-bold text-[10px]">
-                      {visibleSeries.users && <span className="text-indigo-300">Users: {item.users || 0}</span>}
-                      {visibleSeries.groups && <span className="text-emerald-300">Groups: {item.groups || 0}</span>}
-                      {visibleSeries.reports && <span className="text-rose-300">Reports: {item.reports || 0}</span>}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-end gap-1.5 sm:gap-2 justify-center w-full px-1">
-                  {visibleSeries.users && (
-                    <div
-                      style={{ height: `${uHeight}px` }}
-                      className={`w-3 sm:w-5 md:w-6 rounded-t-xl bg-gradient-to-t from-indigo-700 to-indigo-500 shadow-md transition-all duration-300 ${isHovered ? 'brightness-125 scale-y-105' : 'opacity-90 hover:opacity-100'}`}
-                    />
-                  )}
-                  {visibleSeries.groups && (
-                    <div
-                      style={{ height: `${gHeight}px` }}
-                      className={`w-3 sm:w-5 md:w-6 rounded-t-xl bg-gradient-to-t from-emerald-600 to-emerald-400 shadow-md transition-all duration-300 ${isHovered ? 'brightness-125 scale-y-105' : 'opacity-90 hover:opacity-100'}`}
-                    />
-                  )}
-                  {visibleSeries.reports && (
-                    <div
-                      style={{ height: `${rHeight}px` }}
-                      className={`w-3 sm:w-5 md:w-6 rounded-t-xl bg-gradient-to-t from-rose-600 to-rose-400 shadow-md transition-all duration-300 ${isHovered ? 'brightness-125 scale-y-105' : 'opacity-90 hover:opacity-100'}`}
-                    />
-                  )}
-                </div>
-
-                <span className={`text-[10px] font-black mt-2.5 truncate max-w-full tracking-wider shrink-0 ${isHovered ? 'text-indigo-600' : 'text-slate-500'}`}>
-                  {item.name || item.shortName || item.date}
-                </span>
-              </div>
-            );
-          })}
+                {d.name}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Interactive Breakdown Hover Card */}
+      {activePoint && (
+        <div className="bg-slate-950 text-white rounded-2xl p-4 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-800 transition-all duration-200">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-black">
+              <Calendar className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="text-[10px] uppercase tracking-widest text-indigo-400 font-black">
+                {timeframe === 'week' ? 'Day View' : timeframe === 'month' ? `${selectedMonthObj?.name || 'Month'} (${selectedWeek === 'all' ? 'Overview' : selectedWeek.toUpperCase()})` : `${displayYear} Year View`}
+              </span>
+              <h4 className="text-sm font-black text-white">
+                {activePoint.date && activePoint.date.startsWith(activePoint.name)
+                  ? activePoint.date
+                  : `${activePoint.name}${activePoint.date ? ` (${activePoint.date})` : ''}`}
+              </h4>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6 flex-wrap w-full md:w-auto">
+            {seriesConfig.map(s => {
+              if (!visibleSeries[s.key]) return null;
+              const periodVal = activePoint[s.key] || 0;
+
+              return (
+                <div key={s.key} className="flex flex-col select-none">
+                  <div className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                    {s.label}
+                  </div>
+                  <div className="text-base font-black text-white pl-4 mt-0.5">
+                    {periodVal.toLocaleString()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+export default MultiMetricBarChart;

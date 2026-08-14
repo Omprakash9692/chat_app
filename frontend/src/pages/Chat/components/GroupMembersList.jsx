@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Shield, ShieldCheck, MoreVertical, Trash2, UserPlus, MessageSquare } from 'lucide-react';
-import { Avatar, Badge } from '../../../components/ui/ui';
+import { Users, ChevronDown, MessageSquare, ShieldCheck, UserMinus, Check, X } from 'lucide-react';
+import { Avatar } from '../../../components/ui/ui';
 
 export const GroupMembersList = ({
   group,
@@ -11,145 +11,229 @@ export const GroupMembersList = ({
   removeFromGroup,
   createDirectChat,
   selectChat,
-  chats,
   showToast,
-  setIsAddMembersModalOpen
+  onClose,
+  handleJoinRequest
 }) => {
-  const [memberSearch, setMemberSearch] = useState('');
   const [activeMemberMenuId, setActiveMemberMenuId] = useState(null);
 
   if (!group) return null;
 
-  const myRealId = user?.id?.toString() || user?._id?.toString();
-  const amIAdmin = (group.adminIds || []).some(id => id === 'user_me' || id === myRealId);
-
-  const groupMembers = (group.memberIds || []).map(id => {
-    return allUsers.find(u => u.id === id || u._id?.toString() === id) || {
-      id,
-      name: id === 'user_me' || id === myRealId ? (user?.name || 'You') : 'Group Member',
-      avatarColor: 'from-indigo-500 to-indigo-600'
-    };
+  const myRealId = user?.id || user?._id?.toString();
+  const amIAdmin = (group.adminIds || []).some(id => {
+    const idStr = typeof id === 'object' ? (id?._id?.toString() || id?.id) : id?.toString();
+    const myStr = user?._id?.toString() || user?.id;
+    return idStr === 'user_me' || idStr === myRealId || (myStr && idStr === myStr);
   });
 
-  const filteredMembers = groupMembers.filter(m =>
-    m.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
-    (m.phone && m.phone.toLowerCase().includes(memberSearch.toLowerCase()))
-  );
-
-  const handleStartDirectChatWithMember = async (targetUser) => {
-    const targetId = targetUser.id || targetUser._id?.toString();
-    if (targetId === 'user_me' || targetId === myRealId) return;
-
-    const existingChat = chats.find(c => c.type === 'direct' && c.participants.includes(targetId));
-    if (existingChat) {
-      selectChat(existingChat.id);
-    } else {
-      const newChat = await createDirectChat(targetId);
-      if (newChat) selectChat(newChat.id || newChat);
-    }
-  };
-
   return (
-    <div className="space-y-4 text-left">
-      <div className="flex items-center justify-between">
-        <h4 className="text-xs font-black uppercase text-slate-500 tracking-wider">
-          Group Members ({group.memberIds?.length || 0})
-        </h4>
-        {amIAdmin && (
-          <button
-            onClick={() => setIsAddMembersModalOpen(true)}
-            className="inline-flex items-center gap-1.5 text-xs font-extrabold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100 cursor-pointer"
-          >
-            <UserPlus className="h-3.5 w-3.5" /> Add Members
-          </button>
-        )}
-      </div>
+    <div className="p-4 bg-[#f0f4f8] border-b border-slate-200/80 text-left relative">
 
-      <div className="relative">
-        <Search className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 h-4 w-4 my-auto" />
-        <input
-          type="text"
-          placeholder="Search member..."
-          value={memberSearch}
-          onChange={(e) => setMemberSearch(e.target.value)}
-          className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs outline-none text-slate-800 font-medium"
+      {/* Backdrop click outside to close popover menu */}
+      {activeMemberMenuId && (
+        <div
+          className="fixed inset-0 z-30 bg-transparent"
+          onClick={() => setActiveMemberMenuId(null)}
         />
-      </div>
+      )}
 
-      <div className="space-y-2 max-h-72 overflow-y-auto no-scrollbar">
-        {filteredMembers.map((m) => {
-          const mId = m.id || m._id?.toString();
-          const isMe = mId === 'user_me' || mId === myRealId;
-          const isAdmin = (group.adminIds || []).includes(mId) || (group.adminIds || []).includes('user_me') && isMe;
+      {/* Pending Join Requests Section for Admins */}
+      {amIAdmin && group.joinRequests && group.joinRequests.length > 0 && (
+        <div className="mb-4 p-3 rounded-2xl bg-[#008069]/5 border border-[#008069]/20 space-y-2">
+          <h4 className="text-xs font-extrabold text-[#008069] flex items-center gap-1.5 tracking-wide uppercase">
+            <Users className="h-4 w-4 text-[#008069]" />
+            Pending Join Requests ({group.joinRequests.length})
+          </h4>
+          <div className="space-y-2">
+            {group.joinRequests.map((req) => {
+              const reqUser = typeof req.user === 'object' ? req.user : allUsers.find(u => u.id === req.user || u._id?.toString() === req.user);
+              if (!reqUser) return null;
+
+              const reqUserRealId = reqUser.id || reqUser._id?.toString() || req.user;
+              const requestedByObj = req.requestedBy === 'user_me' ? user : allUsers.find(u => u.id === req.requestedBy || u._id?.toString() === req.requestedBy);
+
+              return (
+                <div key={req.id || reqUserRealId} className="flex items-center justify-between p-3 rounded-2xl bg-white border border-[#008069]/25 shadow-2xs">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar src={reqUser.avatar} name={reqUser.name} size="sm" color={reqUser.avatarColor} />
+                    <div className="text-xs min-w-0 text-left">
+                      <span className="font-extrabold text-[#111b21] block truncate leading-tight">
+                        {reqUser.name}
+                      </span>
+                      <span className="text-[11px] font-medium text-[#667781] block truncate mt-0.5">
+                        Added by {requestedByObj?.name || 'Member'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const success = await handleJoinRequest(group.id, reqUserRealId, 'approve');
+                        if (success) {
+                          showToast("Member Approved", `${reqUser.name} has been added to the group.`, "success");
+                        }
+                      }}
+                      className="p-2 rounded-xl bg-[#008069] text-white hover:bg-[#006e5a] transition-all cursor-pointer flex items-center justify-center shadow-2xs"
+                      title="Approve Member"
+                    >
+                      <Check className="h-4 w-4 stroke-[2.5]" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const success = await handleJoinRequest(group.id, reqUserRealId, 'reject');
+                        if (success) {
+                          showToast("Request Rejected", `Join request for ${reqUser.name} was rejected.`, "info");
+                        }
+                      }}
+                      className="p-2 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-600 hover:text-white transition-all cursor-pointer flex items-center justify-center"
+                      title="Reject Request"
+                    >
+                      <X className="h-4 w-4 stroke-[2.5]" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <h4 className="text-xs font-bold text-[#111b21] flex items-center gap-1.5 mb-3.5 tracking-wide uppercase">
+        <Users className="h-4 w-4 text-[#008069]" />
+        Members list ({group.memberIds.length})
+      </h4>
+
+      <div className="space-y-2">
+        {group.memberIds.map(mid => {
+          const isMe = mid === 'user_me';
+          const member = isMe ? user : allUsers.find(u => u.id === mid || u._id?.toString() === mid);
+          if (!member) return null;
+
+          const memberRealId = member.id || member._id?.toString();
+
+          const isTargetAdmin = (group.adminIds || []).some(id => {
+            const idStr = typeof id === 'object' ? (id?._id?.toString() || id?.id) : id?.toString();
+            return idStr === mid || idStr === memberRealId || (isMe && idStr === 'user_me') || (member?._id && idStr === member._id.toString());
+          });
+
+          const isMenuOpen = activeMemberMenuId === mid;
 
           return (
-            <div key={mId} className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 border border-slate-200/60 relative">
-              <div className="flex items-center gap-3 min-w-0 cursor-pointer" onClick={() => !isMe && handleStartDirectChatWithMember(m)}>
-                <Avatar src={m.avatar} name={m.name} size="sm" color={m.avatarColor} />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-slate-900 truncate">{isMe ? `${m.name} (You)` : m.name}</span>
-                    {isAdmin && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-indigo-50 text-indigo-600 border border-indigo-100">
-                        <ShieldCheck className="h-3 w-3" /> Admin
-                      </span>
-                    )}
+            <div key={mid} className={`relative ${isMenuOpen ? 'z-50' : 'z-1'}`}>
+              <div
+                onClick={() => {
+                  if (!isMe) {
+                    setActiveMemberMenuId(isMenuOpen ? null : mid);
+                  }
+                }}
+                className={`flex items-center justify-between p-3 rounded-2xl bg-white border border-slate-200/80 shadow-2xs transition-all ${!isMe ? 'cursor-pointer hover:bg-slate-50 hover:border-[#008069]/40' : 'cursor-default'
+                  } ${isMenuOpen ? 'ring-2 ring-[#008069]/30 border-[#008069]' : ''}`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Avatar src={member.avatar} name={member.name} size="sm" color={member.avatarColor} />
+                  <div className="text-xs text-left min-w-0">
+                    <span className="font-bold text-[#111b21] block truncate text-xs leading-tight">
+                      {member.name} {isMe && "(You)"}
+                    </span>
+                    <span className="text-[11px] font-medium text-[#667781] block truncate mt-0.5">
+                      {member.phone || member.statusText || "No phone number"}
+                    </span>
                   </div>
-                  <p className="text-[10px] text-slate-500 font-medium truncate">{m.phone || "No phone number"}</p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {isTargetAdmin && (
+                    <span className="px-2 py-0.5 rounded-md bg-[#008069]/15 text-[#008069] border border-[#008069]/30 text-[10px] font-bold uppercase tracking-wider">
+                      Group admin
+                    </span>
+                  )}
+
+                  {!isMe && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMemberMenuId(isMenuOpen ? null : mid);
+                      }}
+                      className="p-1 rounded-lg text-[#667781] hover:text-[#111b21] hover:bg-slate-100 cursor-pointer transition-all shrink-0"
+                      title="Member options"
+                    >
+                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isMenuOpen ? 'rotate-180 text-[#008069]' : ''}`} />
+                    </button>
+                  )}
                 </div>
               </div>
 
-              {amIAdmin && !isMe && (
-                <div className="relative">
+              {/* WhatsApp style Member Context Action Dropdown Menu */}
+              {isMenuOpen && !isMe && (
+                <div className="absolute right-0 top-full mt-1.5 z-[100] w-64 rounded-2xl bg-white text-[#111b21] border border-slate-200 shadow-2xl p-2 space-y-1 animate-in fade-in zoom-in-95 duration-150 select-none">
                   <button
-                    onClick={() => setActiveMemberMenuId(activeMemberMenuId === mId ? null : mId)}
-                    className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 cursor-pointer"
+                    type="button"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      setActiveMemberMenuId(null);
+                      const targetId = member._id?.toString() || member.id;
+                      await createDirectChat(targetId);
+                      showToast("Opening Direct Chat", `Navigated to chat with ${member.name}.`, "info");
+                      if (onClose) onClose();
+                    }}
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl cursor-pointer transition-colors text-left"
                   >
-                    <MoreVertical className="h-4 w-4" />
+                    <MessageSquare className="h-4 w-4 text-indigo-500 shrink-0" />
+                    <span>Message {member.name}</span>
                   </button>
 
-                  {activeMemberMenuId === mId && (
-                    <div className="absolute right-0 top-full mt-1 z-50 bg-white rounded-2xl shadow-xl border border-slate-200 py-1 w-44 text-xs font-semibold select-none animate-fadeIn">
-                      <button
-                        onClick={() => handleStartDirectChatWithMember(m)}
-                        className="w-full px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700"
-                      >
-                        <MessageSquare className="h-3.5 w-3.5 text-slate-500" /> Direct Message
-                      </button>
-                      {isAdmin ? (
-                        <button
-                          onClick={async () => {
-                            setActiveMemberMenuId(null);
-                            await dismissGroupAdmin(group.id, mId);
-                            showToast("Admin Removed", `${m.name} is no longer admin.`, "info");
-                          }}
-                          className="w-full px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 text-amber-600 font-bold"
-                        >
-                          <Shield className="h-3.5 w-3.5 text-amber-500" /> Dismiss Admin
-                        </button>
-                      ) : (
-                        <button
-                          onClick={async () => {
-                            setActiveMemberMenuId(null);
-                            await makeGroupAdmin(group.id, mId);
-                            showToast("Admin Promoted", `${m.name} is now group admin.`, "success");
-                          }}
-                          className="w-full px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 text-indigo-600 font-bold"
-                        >
-                          <ShieldCheck className="h-3.5 w-3.5 text-indigo-600" /> Make Group Admin
-                        </button>
-                      )}
-                      <button
-                        onClick={async () => {
-                          setActiveMemberMenuId(null);
-                          await removeFromGroup(group.id, mId);
-                          showToast("Member Removed", `${m.name} removed from group.`, "danger");
-                        }}
-                        className="w-full px-3.5 py-2 hover:bg-rose-50 flex items-center gap-2 text-rose-600 font-bold border-t border-slate-100"
-                      >
-                        <Trash2 className="h-3.5 w-3.5 text-rose-500" /> Remove Member
-                      </button>
-                    </div>
+                  {amIAdmin && (
+                    <button
+                      type="button"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        setActiveMemberMenuId(null);
+                        const targetId = member._id?.toString() || member.id;
+                        if (isTargetAdmin) {
+                          const success = await dismissGroupAdmin(group.id, targetId);
+                          if (success) {
+                            showToast("Admin Dismissed", `${member.name} is no longer a group admin.`, "info");
+                          } else {
+                            showToast("Action Failed", "Could not revoke admin status.", "danger");
+                          }
+                        } else {
+                          const success = await makeGroupAdmin(group.id, targetId);
+                          if (success) {
+                            showToast("Admin Assigned", `${member.name} is now a group admin.`, "success");
+                          } else {
+                            showToast("Action Failed", "Could not assign admin permissions.", "danger");
+                          }
+                        }
+                      }}
+                      className="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 rounded-xl cursor-pointer transition-colors text-left"
+                    >
+                      <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
+                      <span>{isTargetAdmin ? "Dismiss as group admin" : "Make group admin"}</span>
+                    </button>
+                  )}
+
+                  {amIAdmin && (
+                    <button
+                      type="button"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        setActiveMemberMenuId(null);
+                        const targetId = member._id?.toString() || member.id;
+                        const success = await removeFromGroup(group.id, targetId);
+                        if (success) {
+                          showToast("Member Removed", `${member.name} was removed from space.`, "warning");
+                        } else {
+                          showToast("Action Failed", "Could not remove member.", "danger");
+                        }
+                      }}
+                      className="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl cursor-pointer transition-colors text-left border-t border-slate-100 mt-1 pt-2.5"
+                    >
+                      <UserMinus className="h-4 w-4 text-rose-500 shrink-0" />
+                      <span>Remove {member.name}</span>
+                    </button>
                   )}
                 </div>
               )}

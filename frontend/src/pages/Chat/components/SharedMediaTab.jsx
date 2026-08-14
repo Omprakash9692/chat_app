@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ImageIcon, FileText, Link as LinkIcon, Download } from 'lucide-react';
+import { ImageIcon, FileText, Link as LinkIcon, Download, X } from 'lucide-react';
 import { Tabs } from '../../../components/ui/ui';
 
 export const SharedMediaTab = ({ messages, allUsers, authUser, showToast }) => {
@@ -86,7 +86,7 @@ export const SharedMediaTab = ({ messages, allUsers, authUser, showToast }) => {
 
       {activeMediaTab === 'media' && (
         sharedImages.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 font-semibold text-xs">No media shared yet.</div>
+          <div className="p-8 text-center text-[#667781] font-semibold text-xs">No media shared yet.</div>
         ) : (
           <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto no-scrollbar">
             {sharedImages.map((m, idx) => (
@@ -100,21 +100,21 @@ export const SharedMediaTab = ({ messages, allUsers, authUser, showToast }) => {
 
       {activeMediaTab === 'files' && (
         sharedDocs.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 font-semibold text-xs">No files shared yet.</div>
+          <div className="p-8 text-center text-[#667781] font-semibold text-xs">No files shared yet.</div>
         ) : (
           <div className="space-y-2 max-h-60 overflow-y-auto no-scrollbar">
             {sharedDocs.map((m, idx) => (
-              <div key={m.id || idx} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200/60 hover:bg-slate-100/70 transition-colors">
+              <div key={m.id || idx} className="flex items-center justify-between p-3 rounded-2xl bg-white border border-slate-200/80 hover:bg-slate-50 transition-colors shadow-2xs">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-9 w-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                  <div className="h-9 w-9 rounded-xl bg-[#008069] text-white flex items-center justify-center shrink-0">
                     <FileText className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-900 truncate">{m.attachmentName || 'Document'}</p>
-                    <p className="text-[10px] text-slate-500 font-semibold">{m.attachmentSize || 'File'}</p>
+                    <p className="text-xs font-bold text-[#111b21] truncate">{m.attachmentName || 'Document'}</p>
+                    <p className="text-[10px] text-[#667781] font-semibold">{m.attachmentSize || 'File'}</p>
                   </div>
                 </div>
-                <button onClick={(e) => handleDownloadFile(e, m.attachmentUrl, m.attachmentName)} className="p-2 rounded-xl text-indigo-600 hover:bg-indigo-50 cursor-pointer">
+                <button onClick={(e) => handleDownloadFile(e, m.attachmentUrl, m.attachmentName)} className="p-2 rounded-xl text-[#008069] hover:bg-[#008069]/10 cursor-pointer">
                   <Download className="h-4 w-4" />
                 </button>
               </div>
@@ -125,18 +125,18 @@ export const SharedMediaTab = ({ messages, allUsers, authUser, showToast }) => {
 
       {activeMediaTab === 'links' && (
         sharedLinks.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 font-semibold text-xs">No links shared yet.</div>
+          <div className="p-8 text-center text-[#667781] font-semibold text-xs">No links shared yet.</div>
         ) : (
           <div className="space-y-2 max-h-60 overflow-y-auto no-scrollbar">
             {sharedLinks.map((link, idx) => (
-              <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200/60 hover:bg-slate-100/70 transition-colors">
+              <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 rounded-2xl bg-white border border-slate-200/80 hover:bg-slate-50 transition-colors shadow-2xs">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                  <div className="h-9 w-9 rounded-xl bg-[#008069] text-white flex items-center justify-center shrink-0">
                     <LinkIcon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-blue-600 truncate underline">{link.display}</p>
-                    <p className="text-[10px] text-slate-500 font-semibold">Shared by {link.senderName} • {link.timestamp}</p>
+                    <p className="text-xs font-bold text-[#008069] truncate underline">{link.display}</p>
+                    <p className="text-[10px] text-[#667781] font-semibold">Shared by {link.senderName} • {link.timestamp}</p>
                   </div>
                 </div>
               </a>

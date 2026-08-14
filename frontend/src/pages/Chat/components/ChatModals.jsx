@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Forward, Flag, Pin, Trash2, X, AlertTriangle, ShieldCheck } from 'lucide-react';
-import { Avatar, Badge } from '../../../components/ui/ui';
+import { Forward, Pin, X } from 'lucide-react';
+import { Avatar } from '../../../components/ui/ui';
 
 export const ForwardMessageModal = ({ forwardMessage, chats, allUsers, user, onClose, onSendForward }) => {
   const [selectedChatIds, setSelectedChatIds] = useState([]);
@@ -89,69 +89,6 @@ export const ForwardMessageModal = ({ forwardMessage, chats, allUsers, user, onC
               className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs disabled:opacity-50"
             >
               Send ({selectedChatIds.length})
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
-  );
-};
-
-export const ReportUserModal = ({ activeChat, recipient, isOpen, onClose, onSubmitReport }) => {
-  const [reason, setReason] = useState('Harassment & Bullying');
-  const [comment, setComment] = useState('');
-
-  if (!isOpen) return null;
-
-  const targetName = recipient?.name || activeChat?.name || 'User';
-
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm select-none">
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-left space-y-4"
-        >
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 className="text-base font-black text-rose-600 flex items-center gap-2">
-              <Flag className="h-5 w-5" /> Report {targetName}
-            </h3>
-            <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:bg-slate-100">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-
-          <p className="text-xs text-slate-600 font-medium">
-            Please select a reason for reporting this user. Incidents will be sent directly to admin compliance reviewers.
-          </p>
-
-          <div className="space-y-2">
-            {['Harassment & Bullying', 'Spam & Unsolicited Media', 'Hate Speech & Abuse', 'Inappropriate Content'].map(r => (
-              <label key={r} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer text-xs font-bold text-slate-800">
-                <input type="radio" name="reportReason" checked={reason === r} onChange={() => setReason(r)} className="text-rose-600" />
-                {r}
-              </label>
-            ))}
-          </div>
-
-          <textarea
-            placeholder="Add extra context or details (optional)..."
-            value={comment}
-            onChange={e => setComment(e.target.value)}
-            className="w-full h-20 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none"
-          />
-
-          <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100">
-            <button onClick={onClose} className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">
-              Cancel
-            </button>
-            <button
-              onClick={() => onSubmitReport(reason, comment)}
-              className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow-md"
-            >
-              Submit Report
             </button>
           </div>
         </motion.div>

@@ -10,12 +10,13 @@ const getSenderProfile = (senderId) => ({
 export const AdminReportsList = ({
   adminReports,
   reports,
-  reportFilter,
+  reportFilter = 'all',
   setReportFilter,
   handleDismissReport,
   handleResolveReport
 }) => {
-  const reportsData = ((adminReports && adminReports.length > 0 ? adminReports : (reports || [])) || []).filter(r => {
+  const rawList = (adminReports && adminReports.length > 0) ? adminReports : (reports || []);
+  const reportsData = (rawList || []).filter(r => {
     if (reportFilter === 'pending') return r.status === 'pending';
     if (reportFilter === 'resolved') return r.status === 'resolved';
     return true;
@@ -102,3 +103,5 @@ export const AdminReportsList = ({
     </div>
   );
 };
+
+export default AdminReportsList;

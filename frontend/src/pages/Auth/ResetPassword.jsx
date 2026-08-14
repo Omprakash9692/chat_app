@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Lock, ArrowLeft, ShieldCheck, KeyRound } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
-import { BrandLogo } from '../../components/ui/BrandLogo';
+import { BrandLogo } from '../../components/ui/ui';
 
 export const ResetPassword = () => {
   const { showToast } = useNotifications();

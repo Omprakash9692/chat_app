@@ -1,19 +1,19 @@
 import React from 'react';
-import { Search, Trash2, UserX, UserCheck } from 'lucide-react';
+import { Search, UserCheck, UserX, Trash2 } from 'lucide-react';
 import { Avatar, Badge } from '../../../components/ui/ui';
 
 export const GroupManagementTable = ({
-  groupsList,
-  groupSearch,
+  groupsList = [],
+  groupSearch = '',
   setGroupSearch,
-  groupFilter,
+  groupFilter = 'all',
   setGroupFilter,
   handleToggleBlockGroupConfirmed,
   handleDeleteGroupConfirmed
 }) => {
   const filteredGroups = (groupsList || []).filter(g => {
-    const matchesSearch = g.name.toLowerCase().includes(groupSearch.toLowerCase()) ||
-      (g.description && g.description.toLowerCase().includes(groupSearch.toLowerCase()));
+    const matchesSearch = (g.name || '').toLowerCase().includes((groupSearch || '').toLowerCase()) ||
+      (g.description && g.description.toLowerCase().includes((groupSearch || '').toLowerCase()));
     if (!matchesSearch) return false;
 
     if (groupFilter === 'active') return !g.isBlocked;
@@ -111,3 +111,5 @@ export const GroupManagementTable = ({
     </div>
   );
 };
+
+export default GroupManagementTable;

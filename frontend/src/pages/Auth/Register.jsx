@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, UserPlus, Phone, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
-import { BrandLogo } from '../../components/ui/BrandLogo';
+import { BrandLogo } from '../../components/ui/ui';
 
 export const Register = () => {
   const { register: registerUser } = useAuth();
@@ -173,29 +173,6 @@ export const Register = () => {
               <p className="text-[11px] font-bold text-rose-500 pl-1 mt-0.5">{errors.password.message}</p>
             )}
           </div>
-
-          {/* Confirm Password */}
-          <div className="space-y-1">
-            <label className="block text-[10px] font-black uppercase tracking-wider text-[#667781] ml-0.5">
-              Confirm Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#667781] h-4 w-4 my-auto" />
-              <input
-                type="password"
-                placeholder="••••••••"
-                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.confirmPassword ? 'border-rose-500' : 'border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]'} text-xs text-[#111b21] py-3 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
-                {...register('confirmPassword', {
-                  required: 'Confirm password is required',
-                  validate: value => value === password || 'Passwords do not match'
-                })}
-              />
-            </div>
-            {errors.confirmPassword && (
-              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-0.5">{errors.confirmPassword.message}</p>
-            )}
-          </div>
-
           {/* Terms checkbox */}
           <div className="flex items-start gap-2.5 pt-1">
             <input
