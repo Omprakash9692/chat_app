@@ -119,5 +119,8 @@ const messageSchema = new mongoose.Schema(
   }
 );
 
+// User and group deletion removes messages by conversation.
+messageSchema.index({ conversation: 1 });
+
 const Message = mongoose.model("Message", messageSchema);
 export default Message;

@@ -86,7 +86,7 @@ export const formatConversation = (conv, currentUserId, unreadCount = 0) => {
     pinned: hasUser(conv.pinnedBy, currentUserId),
     archived: hasUser(conv.archivedBy, currentUserId),
     favorite: hasUser(conv.favoriteBy, currentUserId),
-    isUnread: isMarkedUnread || unreadCount > 0,
+    isUnread: isMarkedUnread,
     unreadCount: isMarkedUnread ? Math.max(unreadCount, 1) : unreadCount,
     groupId: conv.type === "group" ? toStr(conv._id) : undefined,
     participants: (conv.participants || []).map((p) => meOrId(p, currentUserId)),

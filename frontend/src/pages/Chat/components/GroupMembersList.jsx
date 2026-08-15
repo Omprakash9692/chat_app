@@ -10,6 +10,7 @@ export const GroupMembersList = ({
   dismissGroupAdmin,
   removeFromGroup,
   createDirectChat,
+  selectChat,
   showToast,
   onClose,
   handleJoinRequest,

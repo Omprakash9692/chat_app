@@ -158,8 +158,10 @@ export const getAdminStats = async (req, res) => {
       }
     });
   } catch (error) {
-    return res.status(500).json({ success: false,
- message: error.message || "Failed to fetch admin stats" });
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch admin stats"
+    });
   }
 };
 
@@ -168,14 +170,18 @@ export const toggleBlockUser = async (req, res) => {
   try {
     const { userId } = req.params;
     if (req.user._id.toString() === userId) {
-      return res.status(400).json({ success: false,
- message: "You cannot block yourself" });
+      return res.status(400).json({
+        success: false,
+        message: "You cannot block yourself"
+      });
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ success: false,
- message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
     }
 
     user.isBlocked = !user.isBlocked;
@@ -191,8 +197,10 @@ export const toggleBlockUser = async (req, res) => {
       }
     });
   } catch (error) {
-    return res.status(500).json({ success: false,
- message: error.message || "Failed to toggle user block status" });
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to toggle user block status"
+    });
   }
 };
 
@@ -201,35 +209,57 @@ export const deleteUser = async (req, res) => {
   try {
     const { userId } = req.params;
     if (req.user._id.toString() === userId) {
-      return res.status(400).json({ success: false,
- message: "You cannot delete yourself" });
+      return res.status(400).json({
+        success: false,
+        message: "You cannot delete yourself"
+      });
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ success: false,
- message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
     }
 
     disconnectSockets(req, userId);
 
-    const directConvs = await Conversation.find({ type: "direct", participants: userId });
+    // Fetch only the identifiers needed for cleanup. The participants index keeps
+    // this fast even when the application has many conversations.
+    const directConvs = await Conversation.find(
+      { type: "direct", participants: userId },
+      { _id: 1 }
+    ).lean();
     const directConvIds = directConvs.map(c => c._id.toString());
 
-    if (directConvIds.length) {
-      await Message.deleteMany({ conversation: { $in: directConvIds } });
-      await Conversation.deleteMany({ _id: { $in: directConvIds } });
-    }
-
-    await Conversation.updateMany({ type: "group" }, { $pull: { participants: userId, adminIds: userId } });
-    await User.findByIdAndDelete(userId);
+    // These cleanups are independent, so waiting for them one at a time only
+    // makes the admin request slower. Limit the group update to groups that
+    // actually contain the user rather than scanning every group.
+    await Promise.all([
+      directConvIds.length
+        ? Message.deleteMany({ conversation: { $in: directConvIds } })
+        : Promise.resolve(),
+      directConvIds.length
+        ? Conversation.deleteMany({ _id: { $in: directConvIds } })
+        : Promise.resolve(),
+      Conversation.updateMany(
+        { type: "group", $or: [{ participants: userId }, { adminIds: userId }] },
+        { $pull: { participants: userId, adminIds: userId } }
+      ),
+      User.findByIdAndDelete(userId)
+    ]);
 
     req.app.get("io")?.emit("user-deleted", { userId: userId.toString(), conversationIds: directConvIds });
-    return res.status(200).json({ success: true,
- message: "User account deleted successfully" });
+    return res.status(200).json({
+      success: true,
+      message: "User account deleted successfully"
+    });
   } catch (error) {
-    return res.status(500).json({ success: false,
- message: error.message || "Failed to delete user" });
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete user"
+    });
   }
 };
 
@@ -238,13 +268,17 @@ export const createReport = async (req, res) => {
   try {
     const { reportedUserId, messageText, reason } = req.body;
     if (!reportedUserId || !messageText || !reason) {
-      return res.status(400).json({ success: false,
- message: "reportedUserId, messageText, and reason are required" });
+      return res.status(400).json({
+        success: false,
+        message: "reportedUserId, messageText, and reason are required"
+      });
     }
 
     if (!(await User.exists({ _id: reportedUserId }))) {
-      return res.status(404).json({ success: false,
- message: "Reported user not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Reported user not found"
+      });
     }
 
     const report = await Report.create({ reporter: req.user._id, reportedUser: reportedUserId, messageText, reason });
@@ -254,8 +288,10 @@ export const createReport = async (req, res) => {
       data: { report }
     });
   } catch (error) {
-    return res.status(500).json({ success: false,
- message: error.message || "Failed to create report" });
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to create report"
+    });
   }
 };
 
@@ -287,8 +323,10 @@ export const getReports = async (req, res) => {
       data: { reports: formattedReports }
     });
   } catch (error) {
-    return res.status(500).json({ success: false,
- message: error.message || "Failed to fetch reports" });
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch reports"
+    });
   }
 };
 
@@ -297,15 +335,25 @@ export const updateReportStatus = async (req, res) => {
   try {
     const { reportId } = req.params;
     const { status } = req.body;
+
     if (!["resolved", "dismissed"].includes(status)) {
-      return res.status(400).json({ success: false,
- message: "Valid status ('resolved', 'dismissed') is required" });
+      return res.status(400).json({
+        success: false,
+        message: "Valid status ('resolved', 'dismissed') is required"
+      });
     }
 
-    const report = await Report.findByIdAndUpdate(reportId, { status }, { new: true });
+    const report = await Report.findByIdAndUpdate(
+      reportId,
+      { status },
+      { new: true }
+    );
+
     if (!report) {
-      return res.status(404).json({ success: false,
- message: "Incident report not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Incident report not found"
+      });
     }
 
     return res.status(200).json({
@@ -313,9 +361,12 @@ export const updateReportStatus = async (req, res) => {
       message: `Incident report status updated to ${status}`,
       data: { report }
     });
+
   } catch (error) {
-    return res.status(500).json({ success: false,
- message: error.message || "Failed to update report status" });
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to update reports"
+    });
   }
 };
 
@@ -344,8 +395,10 @@ export const getAllGroups = async (req, res) => {
       data: { groups: formattedGroups }
     });
   } catch (error) {
-    return res.status(500).json({ success: false,
- message: error.message || "Failed to fetch groups" });
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch groups"
+    });
   }
 };
 
@@ -355,8 +408,10 @@ export const toggleBlockGroup = async (req, res) => {
     const { groupId } = req.params;
     const group = await Conversation.findOne({ _id: groupId, type: "group" });
     if (!group) {
-      return res.status(404).json({ success: false,
- message: "Group conversation not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Group conversation not found"
+      });
     }
 
     group.isBlocked = !group.isBlocked;
@@ -372,8 +427,10 @@ export const toggleBlockGroup = async (req, res) => {
       }
     });
   } catch (error) {
-    return res.status(500).json({ success: false,
- message: error.message || "Failed to toggle group block status" });
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to toggle group block status"
+    });
   }
 };
 
@@ -383,8 +440,10 @@ export const deleteGroup = async (req, res) => {
     const { groupId } = req.params;
     const group = await Conversation.findOne({ _id: groupId, type: "group" });
     if (!group) {
-      return res.status(404).json({ success: false,
- message: "Group conversation not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Group conversation not found"
+      });
     }
 
     await Message.deleteMany({ conversation: groupId });
@@ -392,10 +451,14 @@ export const deleteGroup = async (req, res) => {
 
     req.app.get("io")?.emit("group-deleted", { groupId });
 
-    return res.status(200).json({ success: true,
- message: "Group deleted successfully" });
+    return res.status(200).json({
+      success: true,
+      message: "Group deleted successfully"
+    });
   } catch (error) {
-    return res.status(500).json({ success: false,
- message: error.message || "Failed to delete group" });
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete group"
+    });
   }
 };

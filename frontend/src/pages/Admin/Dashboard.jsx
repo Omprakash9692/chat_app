@@ -1,17 +1,17 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Users, AlertTriangle, ShieldAlert, Shield, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Tabs } from '../../components/ui/ui';
+import { chatApi } from '../../services/chatApi';
 import { MultiMetricBarChart } from './components/MultiMetricBarChart';
 import { UserManagementTable } from './components/UserManagementTable';
 import { GroupManagementTable } from './components/GroupManagementTable';
 import { AdminReportsList } from './components/AdminReportsList';
 
 export const Dashboard = () => {
-  const { allUsers, fetchDbUsers, authFetch, user } = useAuth();
+  const { allUsers, fetchDbUsers, updateCachedUser, removeCachedUser, authFetch, user } = useAuth();
   const { showToast } = useNotifications();
 
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -29,37 +29,37 @@ export const Dashboard = () => {
 
   const fetchAdminStats = useCallback(async () => {
     try {
-      const res = await authFetch(`http://localhost:5000/api/auth/admin/stats`, { method: 'GET' });
+      const res = await chatApi.fetchAdminStats(authFetch);
       if (res.ok) {
         const result = await res.json();
         if (result.success && result.data?.stats) setAdminStats(result.data.stats);
       }
-    } catch {
-      // Ignore error
+    } catch (err) {
+      console.error("fetchAdminStats error:", err);
     }
   }, [authFetch]);
 
   const fetchAdminGroups = useCallback(async () => {
     try {
-      const res = await authFetch(`http://localhost:5000/api/auth/admin/groups`, { method: 'GET' });
+      const res = await chatApi.fetchAdminGroups(authFetch);
       if (res.ok) {
         const result = await res.json();
         if (result.success && result.data?.groups) setGroupsList(result.data.groups);
       }
-    } catch {
-      // Ignore error
+    } catch (err) {
+      console.error("fetchAdminGroups error:", err);
     }
   }, [authFetch]);
 
   const fetchAdminReports = useCallback(async () => {
     try {
-      const res = await authFetch(`http://localhost:5000/api/auth/admin/reports`, { method: 'GET' });
+      const res = await chatApi.fetchReports(authFetch);
       if (res.ok) {
         const result = await res.json();
         if (result.success && result.data?.reports) setAdminReports(result.data.reports);
       }
-    } catch {
-      // Ignore error
+    } catch (err) {
+      console.error("fetchAdminReports error:", err);
     }
   }, [authFetch]);
 
@@ -72,7 +72,7 @@ export const Dashboard = () => {
 
   useEffect(() => {
     refreshAllData();
-    pollIntervalRef.current = setInterval(refreshAllData, 5000);
+    pollIntervalRef.current = setInterval(refreshAllData, 30000);
     return () => { if (pollIntervalRef.current) clearInterval(pollIntervalRef.current); };
   }, [refreshAllData]);
 
@@ -87,10 +87,14 @@ export const Dashboard = () => {
       variant: isCurrentlyBlocked ? 'warning' : 'danger',
       onConfirm: async () => {
         try {
-          const res = await authFetch(`http://localhost:5000/api/auth/admin/users/${userId}/block`, { method: 'PUT' });
+          const res = await chatApi.adminBlockUser(authFetch, userId);
           if (res.ok) {
-            refreshAllData();
+            const result = await res.json();
+            updateCachedUser(result.data?.user);
+            void fetchAdminStats();
             showToast(isCurrentlyBlocked ? "User Unbanned" : "User Banned", `${userName} status updated.`, isCurrentlyBlocked ? "success" : "warning");
+          } else {
+            throw new Error('Unable to update user status');
           }
         } catch {
           showToast("Error", "Failed to update user ban status.", "error");
@@ -108,10 +112,13 @@ export const Dashboard = () => {
       variant: 'danger',
       onConfirm: async () => {
         try {
-          const res = await authFetch(`http://localhost:5000/api/auth/admin/users/${userId}`, { method: 'DELETE' });
+          const res = await chatApi.adminDeleteUser(authFetch, userId);
           if (res.ok) {
-            refreshAllData();
+            removeCachedUser(userId);
+            void fetchAdminStats();
             showToast("User Deleted", `${userName} was deleted from database.`, "success");
+          } else {
+            throw new Error('Unable to delete user');
           }
         } catch {
           showToast("Error", "Failed to delete user account.", "error");
@@ -129,7 +136,7 @@ export const Dashboard = () => {
       variant: isCurrentlyBlocked ? 'warning' : 'danger',
       onConfirm: async () => {
         try {
-          const res = await authFetch(`http://localhost:5000/api/auth/admin/groups/${groupId}/block`, { method: 'PUT' });
+          const res = await chatApi.adminBlockGroup(authFetch, groupId);
           if (res.ok) {
             refreshAllData();
             showToast(isCurrentlyBlocked ? "Group Unblocked" : "Group Suspended", `"${groupName}" status updated.`, isCurrentlyBlocked ? "success" : "warning");
@@ -150,7 +157,7 @@ export const Dashboard = () => {
       variant: 'danger',
       onConfirm: async () => {
         try {
-          const res = await authFetch(`http://localhost:5000/api/auth/admin/groups/${groupId}`, { method: 'DELETE' });
+          const res = await chatApi.adminDeleteGroup(authFetch, groupId);
           if (res.ok) {
             refreshAllData();
             showToast("Group Deleted", `"${groupName}" was deleted.`, "success");
@@ -164,11 +171,7 @@ export const Dashboard = () => {
 
   const handleResolveReport = async (reportId) => {
     try {
-      const res = await authFetch(`http://localhost:5000/api/auth/admin/reports/${reportId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'resolved' })
-      });
+      const res = await chatApi.updateReportStatus(authFetch, reportId, 'resolved');
       if (res.ok) {
         refreshAllData();
         showToast("Report Resolved", "Ticket marked as resolved.", "success");
@@ -180,11 +183,7 @@ export const Dashboard = () => {
 
   const handleDismissReport = async (reportId) => {
     try {
-      const res = await authFetch(`http://localhost:5000/api/auth/admin/reports/${reportId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'dismissed' })
-      });
+      const res = await chatApi.updateReportStatus(authFetch, reportId, 'dismissed');
       if (res.ok) {
         refreshAllData();
         showToast("Report Dismissed", "Ticket dismissed.", "info");

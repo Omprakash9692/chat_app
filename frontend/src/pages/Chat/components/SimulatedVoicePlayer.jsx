@@ -86,12 +86,12 @@ export const SimulatedVoicePlayer = ({ duration, url }) => {
   );
 };
 
-const getMsgDateKey = (dateString) => {
+export const getMsgDateKey = (dateString) => {
   const date = new Date(dateString);
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 };
 
-const formatDateSeparator = (dateString) => {
+export const formatDateSeparator = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -109,7 +109,7 @@ const formatDateSeparator = (dateString) => {
   }
 };
 
-const renderTextWithLinks = (text) => {
+export const renderTextWithLinks = (text) => {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const parts = text.split(urlRegex);
   return parts.map((part, i) =>

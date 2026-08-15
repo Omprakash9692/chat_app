@@ -1,8 +1,35 @@
 import { useState, useEffect } from 'react';
 import { chatApi } from '../services/chatApi';
 
-export const useChatMessages = ({ authFetch, logout, activeChatId, chats, setChats, setGroups }) => {
+export const useChatMessages = ({ user, authFetch, logout, activeChatId, chats, setChats, setGroups }) => {
   const [messages, setMessages] = useState([]);
+  const [starredMsgIds, setStarredMsgIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('starredMsgIds') || '[]');
+    } catch (e) {
+      return [];
+    }
+  });
+
+  const toggleStarMessage = (messageId) => {
+    setStarredMsgIds(prev => {
+      const isStarred = prev.includes(messageId);
+      const updated = isStarred
+        ? prev.filter(id => id !== messageId)
+        : [...prev, messageId];
+      try {
+        localStorage.setItem('starredMsgIds', JSON.stringify(updated));
+      } catch (e) { }
+      return updated;
+    });
+  };
+
+  const clearAllStarredMessages = () => {
+    setStarredMsgIds([]);
+    try {
+      localStorage.setItem('starredMsgIds', '[]');
+    } catch (e) { }
+  };
 
   const mergeMessagesPreservingStatus = (prevMessages, newMessages, currentChatId) => {
     const statusRank = { sent: 1, delivered: 2, seen: 3 };
@@ -312,31 +339,12 @@ export const useChatMessages = ({ authFetch, logout, activeChatId, chats, setCha
     saveReaction();
   };
 
-  const clearChatMessages = async (chatId) => {
-    if (!chatId) return;
-    const cIdStr = String(chatId);
-
-    setMessages(prev => prev.filter(m => !m.chatId || (String(m.chatId) !== cIdStr && m.chatId !== chatId)));
-
-    if (typeof setChats === 'function') {
-      setChats(prevChats =>
-        prevChats.map(c => {
-          const isMatch = String(c.id) === cIdStr || String(c._id) === cIdStr || (c.groupId && String(c.groupId) === cIdStr);
-          return isMatch ? { ...c, lastMessage: null, lastMessageId: null } : c;
-        })
-      );
-    }
-
-    try {
-      await chatApi.clearChatMessages(authFetch, chatId);
-    } catch (err) {
-      console.error("Failed to clear chat messages on backend:", err);
-    }
-  };
-
   return {
     messages,
     setMessages,
+    starredMsgIds,
+    toggleStarMessage,
+    clearAllStarredMessages,
     getChatMessages,
     sendMessage,
     uploadFile,
@@ -346,7 +354,6 @@ export const useChatMessages = ({ authFetch, logout, activeChatId, chats, setCha
     deleteMessage: deleteMessageForEveryone,
     togglePinnedMessage,
     addReaction,
-    clearChatMessages,
     mergeMessagesPreservingStatus
   };
 };

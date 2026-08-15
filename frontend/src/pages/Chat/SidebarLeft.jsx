@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search, Plus, Check, Users, MessageSquare, MoreVertical,
   X, Mail, UserPlus, Archive, Trash2, Eraser
@@ -12,11 +13,12 @@ import { CreateGroupModal } from './components/CreateGroupModal';
 
 export const SidebarLeft = ({ closeMobileSidebar }) => {
   const {
-    chats, groups, selectChat, activeChatId, createGroup, createDirectChat, uploadFile,
-    togglePinChat, toggleArchiveChat, toggleFavoriteChat, clearChatMessages, deleteChat
+    chats, messages, groups, selectChat, activeChatId, createGroup, createDirectChat, uploadFile,
+    togglePinChat, toggleArchiveChat, toggleFavoriteChat, toggleUnreadChat, clearChatMessages, deleteChat
   } = useChat();
   const { user, allUsers } = useAuth();
   const { showToast } = useNotifications();
+  const navigate = useNavigate();
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,20 +47,12 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
 
   // Fetch target info of a direct chat (recipient user profile)
   const getDirectChatInfo = (chat) => {
-    if (!chat || !chat.participants) {
-      return { name: chat?.name || "Unknown User", status: "offline", avatar: "", avatarColor: "from-slate-500 to-slate-600" };
-    }
-    const myIdStr = user?._id?.toString() || user?.id;
-    const recipientId = chat.participants.find(p => {
-      const pStr = typeof p === 'object' ? (p._id?.toString() || p.id) : String(p);
-      return pStr !== 'user_me' && pStr !== myIdStr;
-    });
+    const recipientId = chat.participants.find(p => p !== 'user_me');
     const recipient = allUsers.find(u => u.id === recipientId || u._id?.toString() === recipientId);
     if (!recipient) {
-      return { name: chat.name || "Unknown User", status: "offline", avatar: "", avatarColor: "from-slate-500 to-slate-600" };
+      return { name: "Unknown User", status: "offline", avatar: "", avatarColor: "from-slate-500 to-slate-600" };
     }
     return {
-      name: recipient.name || chat.name || "Unknown User",
       ...recipient,
       status: recipient.isOnline ? 'online' : 'offline'
     };
@@ -66,14 +60,8 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
 
   // Fetch target info of a group chat
   const getGroupChatInfo = (chat) => {
-    if (!chat) return { name: "Unknown Group", description: "", avatar: "", avatarColor: "from-indigo-650 to-indigo-650" };
-    const group = groups.find(g => g.id === chat.groupId || g.id === chat.id);
-    return {
-      name: group?.name || chat.name || "Unknown Group",
-      description: group?.description || chat.description || "",
-      avatar: group?.avatar || chat.avatar || "",
-      avatarColor: group?.avatarColor || chat.avatarColor || "from-indigo-650 to-indigo-650"
-    };
+    const group = groups.find(g => g.id === chat.groupId);
+    return group || { name: "Unknown Group", description: "", avatar: "", avatarColor: "from-indigo-650 to-indigo-650" };
   };
 
   // Get last message text snippet
@@ -112,12 +100,9 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
 
   // Filter conversations list
   const filteredChats = chats.filter(chat => {
-    if (!chat) return false;
     // 1. Search Query filter
-    const info = chat.type === 'group' ? getGroupChatInfo(chat) : getDirectChatInfo(chat);
-    const title = (info?.name || chat?.name || '').toString();
-    const query = (searchQuery || '').toString().toLowerCase();
-    const matchesSearch = title.toLowerCase().includes(query);
+    const title = chat.type === 'group' ? getGroupChatInfo(chat).name : getDirectChatInfo(chat).name;
+    const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (!matchesSearch) return false;
 
@@ -317,6 +302,12 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
                           className="w-full text-left px-3.5 py-2 hover:bg-slate-100 flex items-center gap-2 cursor-pointer"
                         >
                           <span>{chat.favorite ? '⭐ Remove Favorite' : '⭐ Mark Favorite'}</span>
+                        </button>
+                        <button
+                          onClick={() => { toggleUnreadChat(chat.id); setOpenMenuChatId(null); }}
+                          className="w-full text-left px-3.5 py-2 hover:bg-slate-100 flex items-center gap-2 cursor-pointer"
+                        >
+                          <span>{isUnread ? '✉️ Mark as Read' : '✉️ Mark as Unread'}</span>
                         </button>
                         <button
                           onClick={() => { toggleArchiveChat(chat.id); setOpenMenuChatId(null); }}

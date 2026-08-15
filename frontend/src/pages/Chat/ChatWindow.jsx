@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X } from 'lucide-react';
@@ -33,8 +32,8 @@ const formatDateSeparator = (dateString) => {
 export const ChatWindow = ({ toggleRightSidebar, isRightSidebarOpen, onBack }) => {
   const {
     chats, activeChatId, getActiveChat, getChatMessages, sendMessage, uploadFile,
-    editMessage, deleteMessageForMe, deleteMessageForEveryone, togglePinnedMessage, addReaction, typingUsers, groups,
-    unblockUser, reportUser, socket, blockedUserIds, selectChat
+    editMessage, deleteMessage, deleteMessageForMe, deleteMessageForEveryone, togglePinnedMessage, addReaction, typingUsers, groups,
+    blockUser, unblockUser, reportUser, socket, blockedUserIds, selectChat, starredMsgIds, toggleStarMessage
   } = useChat();
   const { user, allUsers } = useAuth();
   const { showToast } = useNotifications();
@@ -104,6 +103,11 @@ export const ChatWindow = ({ toggleRightSidebar, isRightSidebarOpen, onBack }) =
     return () => document.removeEventListener('mousedown', handleClickOutsideMsgMenu);
   }, []);
 
+  const handleToggleStarMsg = (msgId) => {
+    const isStarred = starredMsgIds.includes(msgId);
+    toggleStarMessage(msgId);
+    showToast(isStarred ? "Message Unstarred" : "Message Starred", isStarred ? "Removed from starred" : "Saved to starred messages", "info");
+  };
 
   const handleCopyMsgText = (text) => {
     if (!text) return;
@@ -590,7 +594,7 @@ export const ChatWindow = ({ toggleRightSidebar, isRightSidebarOpen, onBack }) =
                   )}
                   <MessageBubble
                     msg={msg} index={index} filteredMessagesCount={filteredMessages.length} isMe={isMe} sender={sender} activeChat={activeChat}
-                    replyCtx={replyCtx} handleCopyMsgText={handleCopyMsgText}
+                    replyCtx={replyCtx} starredMsgIds={starredMsgIds} handleCopyMsgText={handleCopyMsgText} handleToggleStarMsg={handleToggleStarMsg}
                     setReplyMessage={setReplyMessage} setEditingMessage={setEditingMessage} setInputText={setInputText} setForwardMessage={setForwardMessage}
                     handleTogglePinMessage={handleTogglePinMessage} handleDownloadFile={handleDownloadFile} setLightboxImage={setLightboxImage}
                     setMsgInfoTarget={setMsgInfoTarget} setTargetDeleteMessage={setTargetDeleteMessage} setDeleteModalOpen={setDeleteModalOpen}

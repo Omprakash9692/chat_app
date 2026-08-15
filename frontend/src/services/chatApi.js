@@ -152,6 +152,52 @@ export const chatApi = {
     return res;
   },
 
+  fetchAdminStats: async (authFetch) => {
+    const res = await authFetch(`${API_BASE}/auth/admin/stats`, {
+      method: "GET"
+    });
+    return res;
+  },
+
+  fetchAdminGroups: async (authFetch) => {
+    const res = await authFetch(`${API_BASE}/auth/admin/groups`, {
+      method: "GET"
+    });
+    return res;
+  },
+
+  adminBlockUser: async (authFetch, userId) => {
+    const res = await authFetch(`${API_BASE}/auth/admin/users/${userId}/block`, {
+      method: "PUT",
+      credentials: "include"
+    });
+    return res;
+  },
+
+  adminDeleteUser: async (authFetch, userId) => {
+    const res = await authFetch(`${API_BASE}/auth/admin/users/${userId}`, {
+      method: "DELETE",
+      credentials: "include"
+    });
+    return res;
+  },
+
+  adminBlockGroup: async (authFetch, groupId) => {
+    const res = await authFetch(`${API_BASE}/auth/admin/groups/${groupId}/block`, {
+      method: "PUT",
+      credentials: "include"
+    });
+    return res;
+  },
+
+  adminDeleteGroup: async (authFetch, groupId) => {
+    const res = await authFetch(`${API_BASE}/auth/admin/groups/${groupId}`, {
+      method: "DELETE",
+      credentials: "include"
+    });
+    return res;
+  },
+
   makeGroupAdmin: async (authFetch, chatId, targetUserId) => {
     const res = await authFetch(`${API_BASE}/chats/${chatId}/make-admin`, {
       method: "PUT",

@@ -125,6 +125,11 @@ const conversationSchema = new mongoose.Schema(
   }
 );
 
+// Supports fast direct-chat lookup and targeted group cleanup when an admin
+// deletes a user.
+conversationSchema.index({ type: 1, participants: 1 });
+conversationSchema.index({ type: 1, adminIds: 1 });
+
 const Conversation = mongoose.model("Conversation", conversationSchema);
 
 export default Conversation;

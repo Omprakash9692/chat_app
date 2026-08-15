@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import {motion, AnimatePresence } from 'framer-motion';
 import {
   Eye,
   EyeOff,
@@ -468,7 +468,7 @@ export const Tabs = ({
 /* ==========================================================================
    9. TOAST COMPONENTS
    ========================================================================== */
-export const ToastItem = ({ id, title, description, type, onClose }) => {
+export const ToastItem = ({ title, description, type, onClose }) => {
   const icons = {
     success: <CheckCircle className="h-5 w-5 text-[#008069] shrink-0" />,
     info: <Info className="h-5 w-5 text-sky-600 shrink-0" />,
@@ -633,7 +633,7 @@ const UserRow = ({ user, time, detail }) => (
   </div>
 );
 
-const SectionHeader = ({ icon: Icon, label, count, iconBg }) => (
+const SectionHeader = ({  label, count, iconBg }) => (
   <div className="flex items-center gap-2 mb-3">
     <div className={`h-7 w-7 rounded-lg flex items-center justify-center ${iconBg}`}>
       <Icon className="h-3.5 w-3.5" />

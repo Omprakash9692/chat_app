@@ -73,33 +73,22 @@ export const useChatSocket = ({
         return [...prev, message];
       });
 
-      const isActiveChat = activeChatId && (
-        String(message.chatId) === String(activeChatId)
-      );
-
-      if (isActiveChat && socket && user) {
-        socket.emit("join-chat", { userId: user.id || user._id, chatId: activeChatId });
-      }
-
+      const isActiveChat = message.chatId === activeChatId;
       setChats(prevChats => {
-        const chatExists = prevChats.some(c => String(c.id) === String(message.chatId) || String(c._id) === String(message.chatId) || String(c.groupId) === String(message.chatId));
+        const chatExists = prevChats.some(c => c.id === message.chatId || c.groupId === message.chatId);
         if (!chatExists) {
           loadChats();
           return prevChats;
         }
-        return prevChats.map(c => {
-          const isTarget = String(c.id) === String(message.chatId) || String(c._id) === String(message.chatId) || String(c.groupId) === String(message.chatId);
-          if (!isTarget) return c;
-          const isThisActive = activeChatId && (String(c.id) === String(activeChatId) || String(c._id) === String(activeChatId) || String(c.groupId) === String(activeChatId));
-          return {
+        return prevChats.map(c =>
+          (c.id === message.chatId || c.groupId === message.chatId) ? {
             ...c,
             lastMessageId: message.id,
             createdTime: message.timestamp,
             lastMessage: message,
-            unreadCount: isThisActive ? 0 : (c.unreadCount || 0) + 1,
-            isUnread: isThisActive ? false : true
-          };
-        });
+            unreadCount: isActiveChat ? 0 : (c.unreadCount || 0) + 1
+          } : c
+        );
       });
 
       const isWindowHidden = document.visibilityState === 'hidden';
@@ -210,15 +199,15 @@ export const useChatSocket = ({
         prev.map(m =>
           m.id === messageId
             ? {
-                ...m,
-                text: "This message was deleted.",
-                isDeleted: true,
-                type: "text",
-                attachmentUrl: "",
-                attachmentName: "",
-                attachmentSize: "",
-                attachmentDuration: ""
-              }
+              ...m,
+              text: "This message was deleted.",
+              isDeleted: true,
+              type: "text",
+              attachmentUrl: "",
+              attachmentName: "",
+              attachmentSize: "",
+              attachmentDuration: ""
+            }
             : m
         )
       );
@@ -244,7 +233,7 @@ export const useChatSocket = ({
       );
     };
 
-    const handleUserDeleted = ({ conversationIds }) => {
+    const handleUserDeleted = ({ userId, conversationIds }) => {
       if (Array.isArray(conversationIds) && conversationIds.length > 0) {
         setChats(prev => prev.filter(c => !conversationIds.includes(c.id)));
         setMessages(prev => prev.filter(m => !conversationIds.includes(m.chatId)));

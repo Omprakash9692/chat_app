@@ -203,14 +203,15 @@ export const verifyEmail = async (req, res) => {
     user.verificationCodeExpires = null;
     await user.save();
 
+    const token = generateAccessToken(user._id);
+
     return res.status(200).json({
       success: true,
       message: "Account verified successfully",
-      data: { user: formatUser(user) }
+      data: { user: formatUser(user), token }
     });
   } catch (error) {
-    return res.status(500).json({ success: false,
- message: error.message || "Verification failed" });
+    return res.status(500).json({ success: false, message: error.message || "Verification failed" });
   }
 };
 

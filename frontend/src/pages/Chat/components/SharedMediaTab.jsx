@@ -23,7 +23,7 @@ export const SharedMediaTab = ({ messages, allUsers, authUser, showToast }) => {
           try {
             const parsed = new URL(cleanUrl);
             displayDomain = parsed.hostname + (parsed.pathname !== '/' ? parsed.pathname : '');
-          } catch {
+          } catch (e) {
             displayDomain = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
           }
 
@@ -66,7 +66,7 @@ export const SharedMediaTab = ({ messages, allUsers, authUser, showToast }) => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
       showToast("Downloaded", "File downloaded successfully.", "success");
-    } catch {
+    } catch (error) {
       window.open(url, '_blank', 'noopener,noreferrer');
       showToast("Opened", "Opened file preview in a new tab.", "info");
     }

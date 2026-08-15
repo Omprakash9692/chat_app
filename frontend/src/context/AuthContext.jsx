@@ -55,6 +55,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateCachedUser = useCallback((updatedUser) => {
+    if (!updatedUser?.id) return;
+    setDbUsers(previous => previous.map(existing => (
+      existing.id === updatedUser.id
+        ? { ...existing, ...updatedUser }
+        : existing
+    )));
+  }, []);
+
+  const removeCachedUser = useCallback((userId) => {
+    setDbUsers(previous => previous.filter(existing => existing.id !== userId));
+  }, []);
+
   // Restore session on load
   useEffect(() => {
     const checkSession = async () => {
@@ -170,6 +183,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       setUser(result.data.user);
+      if (result.data?.token) saveToken(result.data.token);
       sessionStorage.removeItem('pendingVerificationEmail');
       return result.data.user;
     } catch (err) {
@@ -285,7 +299,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, allUsers, token, authFetch, login, register, logout, verifyEmail, resendVerification, forgotPassword, resetPassword, updateProfile, updateUserSettings, fetchDbUsers }}>
+    <AuthContext.Provider value={{ user, loading, allUsers, token, authFetch, login, register, logout, verifyEmail, resendVerification, forgotPassword, resetPassword, updateProfile, updateUserSettings, fetchDbUsers, updateCachedUser, removeCachedUser }}>
       {children}
     </AuthContext.Provider>
   );
