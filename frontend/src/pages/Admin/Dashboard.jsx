@@ -91,7 +91,7 @@ export const Dashboard = () => {
           if (res.ok) {
             const result = await res.json();
             updateCachedUser(result.data?.user);
-            void fetchAdminStats();
+            // void fetchAdminStats();
             showToast(isCurrentlyBlocked ? "User Unbanned" : "User Banned", `${userName} status updated.`, isCurrentlyBlocked ? "success" : "warning");
           } else {
             throw new Error('Unable to update user status');
@@ -138,8 +138,14 @@ export const Dashboard = () => {
         try {
           const res = await chatApi.adminBlockGroup(authFetch, groupId);
           if (res.ok) {
-            refreshAllData();
-            showToast(isCurrentlyBlocked ? "Group Unblocked" : "Group Suspended", `"${groupName}" status updated.`, isCurrentlyBlocked ? "success" : "warning");
+            const result = await res.json();
+            const updatedBlocked = result.data?.group?.isBlocked ?? !isCurrentlyBlocked;
+            setGroupsList(prev => prev.map(g => g.id === groupId ? { ...g, isBlocked: updatedBlocked } : g));
+            showToast(updatedBlocked ? "Group Suspended" : "Group Unblocked", `"${groupName}" status updated.`, updatedBlocked ? "warning" : "success");
+            void fetchAdminStats();
+          } else {
+            const errJson = await res.json().catch(() => ({}));
+            showToast("Action Failed", errJson.message || "Failed to update group status.", "error");
           }
         } catch {
           showToast("Error", "Failed to update group status.", "error");
@@ -159,8 +165,12 @@ export const Dashboard = () => {
         try {
           const res = await chatApi.adminDeleteGroup(authFetch, groupId);
           if (res.ok) {
-            refreshAllData();
+            setGroupsList(prev => prev.filter(g => g.id !== groupId));
             showToast("Group Deleted", `"${groupName}" was deleted.`, "success");
+            void fetchAdminStats();
+          } else {
+            const errJson = await res.json().catch(() => ({}));
+            showToast("Action Failed", errJson.message || "Failed to delete group.", "error");
           }
         } catch {
           showToast("Error", "Failed to delete group.", "error");
@@ -170,25 +180,37 @@ export const Dashboard = () => {
   };
 
   const handleResolveReport = async (reportId) => {
+    // Optimistically update UI immediately
+    setAdminReports(prev => prev.map(r => r.id === reportId ? { ...r, status: 'resolved' } : r));
+    showToast("Report Resolved", "Ticket marked as resolved.", "success");
+
     try {
       const res = await chatApi.updateReportStatus(authFetch, reportId, 'resolved');
-      if (res.ok) {
-        refreshAllData();
-        showToast("Report Resolved", "Ticket marked as resolved.", "success");
+      if (!res.ok) {
+        fetchAdminReports();
+      } else {
+        void fetchAdminStats();
       }
     } catch {
+      fetchAdminReports();
       showToast("Error", "Failed to resolve report.", "error");
     }
   };
 
   const handleDismissReport = async (reportId) => {
+    // Optimistically update UI immediately
+    setAdminReports(prev => prev.map(r => r.id === reportId ? { ...r, status: 'dismissed' } : r));
+    showToast("Report Dismissed", "Ticket dismissed.", "info");
+
     try {
       const res = await chatApi.updateReportStatus(authFetch, reportId, 'dismissed');
-      if (res.ok) {
-        refreshAllData();
-        showToast("Report Dismissed", "Ticket dismissed.", "info");
+      if (!res.ok) {
+        fetchAdminReports();
+      } else {
+        void fetchAdminStats();
       }
     } catch {
+      fetchAdminReports();
       showToast("Error", "Failed to dismiss report.", "error");
     }
   };

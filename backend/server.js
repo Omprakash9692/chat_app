@@ -4,6 +4,8 @@ import http from "http";
 import cors from "cors";
 
 import connectDB from "./config/db.js";
+
+//Routes
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import conversationRoutes from "./routes/conversation.routes.js";
@@ -12,7 +14,12 @@ import groupRoutes from "./routes/group.routes.js";
 import { initSocket, userSockets, userActiveChats } from "./sockets/socket.js";
 
 const app = express();
+const PORT = 5000;
 
+//connect to database
+connectDB();
+
+//Middleware
 app.use(cors({
     origin: "http://localhost:5173",
     credentials: true,
@@ -29,15 +36,14 @@ app.use("/api/chats", conversationRoutes);
 app.use("/api/chats", messageRoutes);
 app.use("/api/chats", groupRoutes);
 
-app.get("/", (req, res) => {
-    res.json({
-        message: "API Running"
-    });
-});
+app.get('/', (req, res) => {
+  res.json({ message: "API is working" })
+})
 
-const PORT = 5000;
 
-connectDB();
+
+
+
 
 const server = http.createServer(app);
 

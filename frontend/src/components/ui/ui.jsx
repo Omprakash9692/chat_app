@@ -633,7 +633,7 @@ const UserRow = ({ user, time, detail }) => (
   </div>
 );
 
-const SectionHeader = ({  label, count, iconBg }) => (
+const SectionHeader = ({ icon: Icon, label, count, iconBg }) => (
   <div className="flex items-center gap-2 mb-3">
     <div className={`h-7 w-7 rounded-lg flex items-center justify-center ${iconBg}`}>
       <Icon className="h-3.5 w-3.5" />

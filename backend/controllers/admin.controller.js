@@ -28,18 +28,12 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export const getAdminStats = async (req, res) => {
   try {
     const [
-      totalUsers, onlineUsers, totalGroups, activeChats,
-      totalMessages, totalReports, pendingReports, blockedUsers, verifiedUsers
+      totalUsers, totalGroups, totalReports, pendingReports
     ] = await Promise.all([
       User.countDocuments({ role: "user" }),
-      User.countDocuments({ isOnline: true, role: "user" }),
       Conversation.countDocuments({ type: "group" }),
-      Conversation.countDocuments(),
-      Message.countDocuments(),
       Report.countDocuments(),
-      Report.countDocuments({ status: "pending" }),
-      User.countDocuments({ role: "user", isBlocked: true }),
-      User.countDocuments({ role: "user", isVerified: true })
+      Report.countDocuments({ status: "pending" })
     ]);
 
     const now = new Date();
@@ -154,7 +148,7 @@ export const getAdminStats = async (req, res) => {
       success: true,
       message: "Admin statistics fetched successfully",
       data: {
-        stats: { totalUsers, onlineUsers, totalGroups, activeChats, totalMessages, totalReports, pendingReports, blockedUsers, verifiedUsers, weekData, monthDataMap, availableMonths, yearData, reportsByStatus }
+        stats: { totalUsers, totalGroups, totalReports, pendingReports, weekData, monthDataMap, availableMonths, yearData, reportsByStatus }
       }
     });
   } catch (error) {
@@ -224,18 +218,11 @@ export const deleteUser = async (req, res) => {
     }
 
     disconnectSockets(req, userId);
-
-    // Fetch only the identifiers needed for cleanup. The participants index keeps
-    // this fast even when the application has many conversations.
     const directConvs = await Conversation.find(
       { type: "direct", participants: userId },
       { _id: 1 }
     ).lean();
     const directConvIds = directConvs.map(c => c._id.toString());
-
-    // These cleanups are independent, so waiting for them one at a time only
-    // makes the admin request slower. Limit the group update to groups that
-    // actually contain the user rather than scanning every group.
     await Promise.all([
       directConvIds.length
         ? Message.deleteMany({ conversation: { $in: directConvIds } })

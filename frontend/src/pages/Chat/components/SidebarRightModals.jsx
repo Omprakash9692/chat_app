@@ -10,6 +10,7 @@ export const SidebarRightModals = ({
 }) => {
   const [selectedPromoteAdminId, setSelectedPromoteAdminId] = useState('');
   const [isAdminPickerOpen, setIsAdminPickerOpen] = useState(false);
+  const [isConfirmAssignLeaveOpen, setIsConfirmAssignLeaveOpen] = useState(false);
   const selectedMember = groupOtherMembers.find(m => (m.id || m._id) === selectedPromoteAdminId) || null;
   return (
     <>
@@ -101,7 +102,7 @@ export const SidebarRightModals = ({
               <Button
                 variant="danger"
                 disabled={!selectedPromoteAdminId}
-                onClick={() => handleMakeAdminAndLeave(selectedPromoteAdminId)}
+                onClick={() => setIsConfirmAssignLeaveOpen(true)}
               >
                 Assign & Leave
               </Button>
@@ -110,6 +111,28 @@ export const SidebarRightModals = ({
                 Leave Group
               </Button>
             )}
+          </div>
+        </div>
+      </Modal>
+
+      {/* Confirm Assign & Exit Modal */}
+      <Modal isOpen={isConfirmAssignLeaveOpen} onClose={() => setIsConfirmAssignLeaveOpen(false)} title="Confirm Admin Assignment & Exit" size="sm">
+        <div className="space-y-4 text-left p-1 select-none">
+          <p className="text-xs text-slate-600 font-medium leading-relaxed">
+            Are you sure you want to assign <span className="font-extrabold text-slate-900">{selectedMember?.name}</span> as the new group admin and exit <span className="font-extrabold text-slate-900">"{groupName}"</span>?
+          </p>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={() => setIsConfirmAssignLeaveOpen(false)}>Cancel</Button>
+            <Button
+              variant="danger"
+              onClick={async () => {
+                setIsConfirmAssignLeaveOpen(false);
+                await handleMakeAdminAndLeave(selectedPromoteAdminId);
+                setSelectedPromoteAdminId('');
+              }}
+            >
+              Confirm & Exit
+            </Button>
           </div>
         </div>
       </Modal>
