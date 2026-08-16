@@ -23,6 +23,7 @@ export const Dashboard = () => {
   const [userFilter, setUserFilter] = useState('all');
   const [groupFilter, setGroupFilter] = useState('all');
   const [reportFilter, setReportFilter] = useState('all');
+  const [reportActionInProgress, setReportActionInProgress] = useState({});
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', confirmText: 'Confirm', variant: 'danger', onConfirm: null });
 
   const pollIntervalRef = useRef(null);
@@ -179,41 +180,35 @@ export const Dashboard = () => {
     });
   };
 
-  const handleResolveReport = async (reportId) => {
-    // Optimistically update UI immediately
-    setAdminReports(prev => prev.map(r => r.id === reportId ? { ...r, status: 'resolved' } : r));
-    showToast("Report Resolved", "Ticket marked as resolved.", "success");
+  const updateReportStatus = async (reportId, status) => {
+    if (reportActionInProgress[reportId]) return;
 
+    setReportActionInProgress(prev => ({ ...prev, [reportId]: status }));
     try {
-      const res = await chatApi.updateReportStatus(authFetch, reportId, 'resolved');
+      const res = await chatApi.updateReportStatus(authFetch, reportId, status);
       if (!res.ok) {
-        fetchAdminReports();
-      } else {
-        void fetchAdminStats();
+        throw new Error('Unable to update report status');
       }
+
+      setAdminReports(prev => prev.map(r => r.id === reportId ? { ...r, status } : r));
+      showToast(
+        status === 'resolved' ? 'Report Resolved' : 'Report Dismissed',
+        status === 'resolved' ? 'Ticket marked as resolved.' : 'Ticket dismissed.',
+        status === 'resolved' ? 'success' : 'info'
+      );
+      void fetchAdminStats();
     } catch {
-      fetchAdminReports();
-      showToast("Error", "Failed to resolve report.", "error");
+      showToast('Error', `Failed to ${status === 'resolved' ? 'resolve' : 'dismiss'} report.`, 'error');
+    } finally {
+      setReportActionInProgress(prev => {
+        const { [reportId]: _, ...remaining } = prev;
+        return remaining;
+      });
     }
   };
 
-  const handleDismissReport = async (reportId) => {
-    // Optimistically update UI immediately
-    setAdminReports(prev => prev.map(r => r.id === reportId ? { ...r, status: 'dismissed' } : r));
-    showToast("Report Dismissed", "Ticket dismissed.", "info");
-
-    try {
-      const res = await chatApi.updateReportStatus(authFetch, reportId, 'dismissed');
-      if (!res.ok) {
-        fetchAdminReports();
-      } else {
-        void fetchAdminStats();
-      }
-    } catch {
-      fetchAdminReports();
-      showToast("Error", "Failed to dismiss report.", "error");
-    }
-  };
+  const handleResolveReport = (reportId) => updateReportStatus(reportId, 'resolved');
+  const handleDismissReport = (reportId) => updateReportStatus(reportId, 'dismissed');
 
   if (!user || (user.role !== 'Admin' && user.role !== 'admin')) {
     return (
@@ -360,6 +355,7 @@ export const Dashboard = () => {
             reports={adminReports || []}
             reportFilter={reportFilter}
             setReportFilter={setReportFilter}
+            reportActionInProgress={reportActionInProgress}
             handleDismissReport={handleDismissReport}
             handleResolveReport={handleResolveReport}
           />

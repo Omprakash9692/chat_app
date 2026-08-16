@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, ShieldCheck, CheckCircle2, XCircle } from 'lucide-react';
+import { Calendar, ShieldCheck, CheckCircle2, XCircle, LoaderCircle } from 'lucide-react';
 
 
 
@@ -8,6 +8,7 @@ export const AdminReportsList = ({
   reports = [],
   reportFilter = 'all',
   setReportFilter,
+  reportActionInProgress = {},
   handleDismissReport,
   handleResolveReport
 }) => {
@@ -49,6 +50,8 @@ export const AdminReportsList = ({
             const isResolved = rep.status === 'resolved';
             const isDismissed = rep.status === 'dismissed';
             const isPending = rep.status === 'pending' || (!isResolved && !isDismissed);
+            const pendingAction = reportActionInProgress[reportId];
+            const isUpdating = Boolean(pendingAction);
 
             const borderClass = isResolved
               ? 'border-l-emerald-500 border-slate-200/80'
@@ -99,13 +102,17 @@ export const AdminReportsList = ({
                   <div className="flex gap-2.5 shrink-0 select-none w-full md:w-auto">
                     <button
                       onClick={() => handleDismissReport(reportId)}
-                      className="flex-1 md:flex-none text-center px-4 py-2.5 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 font-bold rounded-xl text-slate-700 transition-all text-xs cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
-                    >Dismiss Ticket</button>
+                      disabled={isUpdating}
+                      className="flex-1 md:flex-none text-center px-4 py-2.5 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 font-bold rounded-xl text-slate-700 transition-all text-xs cursor-pointer hover:scale-105 active:scale-95 shadow-sm disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
+                    >
+                      {pendingAction === 'dismissed' ? <span className="inline-flex items-center gap-1.5"><LoaderCircle className="h-4 w-4 animate-spin" /> Dismissing...</span> : 'Dismiss Ticket'}
+                    </button>
                     <button
                       onClick={() => handleResolveReport(reportId)}
-                      className="flex-1 md:flex-none text-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl transition-all text-xs cursor-pointer hover:scale-105 active:scale-95 shadow-md shadow-emerald-600/10 inline-flex items-center justify-center gap-1.5"
+                      disabled={isUpdating}
+                      className="flex-1 md:flex-none text-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl transition-all text-xs cursor-pointer hover:scale-105 active:scale-95 shadow-md shadow-emerald-600/10 inline-flex items-center justify-center gap-1.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
                     >
-                      <ShieldCheck className="h-4 w-4" /> Resolve Report
+                      {pendingAction === 'resolved' ? <><LoaderCircle className="h-4 w-4 animate-spin" /> Resolving...</> : <><ShieldCheck className="h-4 w-4" /> Resolve Report</>}
                     </button>
                   </div>
                 ) : isResolved ? (
