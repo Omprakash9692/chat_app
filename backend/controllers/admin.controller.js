@@ -209,7 +209,7 @@ export const deleteUser = async (req, res) => {
       });
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findByIdAndDelete(userId, { projection: { _id: 1 } }).lean();
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -223,7 +223,7 @@ export const deleteUser = async (req, res) => {
       { _id: 1 }
     ).lean();
     const directConvIds = directConvs.map(c => c._id.toString());
-    await Promise.all([
+    const cleanupUserData = Promise.all([
       directConvIds.length
         ? Message.deleteMany({ conversation: { $in: directConvIds } })
         : Promise.resolve(),
@@ -233,15 +233,14 @@ export const deleteUser = async (req, res) => {
       Conversation.updateMany(
         { type: "group", $or: [{ participants: userId }, { adminIds: userId }] },
         { $pull: { participants: userId, adminIds: userId } }
-      ),
-      User.findByIdAndDelete(userId)
+      )
     ]);
-
     req.app.get("io")?.emit("user-deleted", { userId: userId.toString(), conversationIds: directConvIds });
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "User account deleted successfully"
     });
+    void cleanupUserData.catch(error => console.error("Failed to clean up deleted user data:", error));
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -425,7 +424,10 @@ export const toggleBlockGroup = async (req, res) => {
 export const deleteGroup = async (req, res) => {
   try {
     const { groupId } = req.params;
-    const group = await Conversation.findOne({ _id: groupId, type: "group" });
+    const group = await Conversation.findOneAndDelete(
+      { _id: groupId, type: "group" },
+      { projection: { _id: 1 } }
+    ).lean();
     if (!group) {
       return res.status(404).json({
         success: false,
@@ -433,15 +435,13 @@ export const deleteGroup = async (req, res) => {
       });
     }
 
-    await Message.deleteMany({ conversation: groupId });
-    await Conversation.findByIdAndDelete(groupId);
-
     req.app.get("io")?.emit("group-deleted", { groupId });
-
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "Group deleted successfully"
     });
+    void Message.deleteMany({ conversation: groupId })
+      .catch(error => console.error("Failed to clean up deleted group messages:", error));
   } catch (error) {
     return res.status(500).json({
       success: false,
