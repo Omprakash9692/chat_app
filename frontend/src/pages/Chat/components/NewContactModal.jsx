@@ -1,30 +1,42 @@
-import React, { useState } from 'react';
-import { Search } from 'lucide-react';
-import { Avatar, Modal } from '../../../components/ui/ui';
+import React, { useState } from "react";
+import { Search } from "lucide-react";
+import { Avatar, Modal } from "../../../components/ui/ui";
 
-export const NewContactModal = ({ isOpen, onClose, allUsers, user, handleStartDirectChat }) => {
-  const [contactSearch, setContactSearch] = useState('');
+export const NewContactModal = ({
+  isOpen,
+  onClose,
+  allUsers,
+  user,
+  handleStartDirectChat,
+}) => {
+  const [contactSearch, setContactSearch] = useState("");
 
   if (!isOpen) return null;
 
-  const filteredUsers = allUsers.filter(u => {
+  const filteredUsers = allUsers.filter((u) => {
     const uId = u.id || u._id?.toString();
     const myRealId = user?.id || user?._id?.toString();
-    const isAdmin = u.role === 'admin' || u.role === 'Admin';
+    const isAdmin = u.role === "admin" || u.role === "Admin";
 
-    return uId !== 'user_me' &&
+    return (
+      uId !== "user_me" &&
       uId !== myRealId &&
       u.email !== user?.email &&
       !isAdmin &&
       (u.name.toLowerCase().includes(contactSearch.toLowerCase()) ||
-        (u.phone && u.phone.toLowerCase().includes(contactSearch.toLowerCase())) ||
-        u.email.toLowerCase().includes(contactSearch.toLowerCase()));
+        (u.phone &&
+          u.phone.toLowerCase().includes(contactSearch.toLowerCase())) ||
+        u.email.toLowerCase().includes(contactSearch.toLowerCase()))
+    );
   });
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={() => { setContactSearch(''); onClose(); }}
+      onClose={() => {
+        setContactSearch("");
+        onClose();
+      }}
       title="Start New Chat"
       size="md"
     >
@@ -51,14 +63,26 @@ export const NewContactModal = ({ isOpen, onClose, allUsers, user, handleStartDi
               return (
                 <div
                   key={targetId}
-                  onClick={() => { setContactSearch(''); handleStartDirectChat(u); }}
+                  onClick={() => {
+                    setContactSearch("");
+                    handleStartDirectChat(u);
+                  }}
                   className="p-3 rounded-2xl flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors border bg-white border-slate-200/80 shadow-2xs"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <Avatar src={u.avatar} name={u.name} size="sm" color={u.avatarColor} />
+                    <Avatar
+                      src={u.avatar}
+                      name={u.name}
+                      size="sm"
+                      color={u.avatarColor}
+                    />
                     <div className="text-left min-w-0">
-                      <div className="text-xs font-bold text-[#111b21] truncate">{u.name}</div>
-                      <div className="text-[11px] text-[#667781] font-medium truncate mt-0.5">{u.phone || "No phone number"}</div>
+                      <div className="text-xs font-bold text-[#111b21] truncate">
+                        {u.name}
+                      </div>
+                      <div className="text-[11px] text-[#667781] font-medium truncate mt-0.5">
+                        {u.phone || "No phone number"}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -70,7 +94,10 @@ export const NewContactModal = ({ isOpen, onClose, allUsers, user, handleStartDi
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200/80">
           <button
             type="button"
-            onClick={() => { setContactSearch(''); onClose(); }}
+            onClick={() => {
+              setContactSearch("");
+              onClose();
+            }}
             className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200/80 hover:text-slate-900 border border-slate-200/60 active:scale-95 transition-all cursor-pointer"
           >
             Cancel

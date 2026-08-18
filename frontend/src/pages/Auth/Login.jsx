@@ -1,41 +1,49 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
-import { BrandLogo } from '../../components/ui/ui';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import { Mail, Lock, LogIn, AlertCircle } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useNotifications } from "../../context/NotificationContext";
+import { BrandLogo } from "../../components/ui/ui";
 
 export const Login = () => {
   const { login } = useAuth();
   const { showToast } = useNotifications();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
-      email: '',
-      password: ''
-    }
+      email: "",
+      password: "",
+    },
   });
 
   const onSubmit = async (data) => {
     setLoading(true);
-    setErrorMsg('');
+    setErrorMsg("");
     try {
       const loggedInUser = await login(data.email, data.password);
       if (!loggedInUser.isVerified) {
-        sessionStorage.setItem('pendingVerificationEmail', loggedInUser.email);
-        showToast("Email Verification Required", "Please verify your email address to complete login.", "warning");
-        navigate('/email-verification');
+        sessionStorage.setItem("pendingVerificationEmail", loggedInUser.email);
+        showToast(
+          "Email Verification Required",
+          "Please verify your email address to complete login.",
+          "warning",
+        );
+        navigate("/email-verification");
         return;
       }
       showToast("Access Granted", "Logged in successfully!", "success");
-      navigate(loggedInUser.role === 'Admin' ? '/admin' : '/chat');
+      navigate(loggedInUser.role === "Admin" ? "/admin" : "/chat");
     } catch (err) {
-      setErrorMsg(err.message || 'Authentication failed');
-      showToast("Access Denied", err.message || 'Login failed', "danger");
+      setErrorMsg(err.message || "Authentication failed");
+      showToast("Access Denied", err.message || "Login failed", "danger");
     } finally {
       setLoading(false);
     }
@@ -43,13 +51,11 @@ export const Login = () => {
 
   return (
     <div className="min-h-screen bg-[#efeae2] text-[#111b21] flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden font-sans select-none">
-      
       {/* WhatsApp Chat UI Wallpaper Pattern Overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px] opacity-60 pointer-events-none -z-10" />
 
       {/* Main Clean Card */}
       <div className="w-full max-w-md bg-white rounded-3xl p-7 sm:p-9 border border-[#e9edef] shadow-[0_12px_40px_rgba(11,20,26,0.08)] relative z-10">
-        
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-6">
           <BrandLogo size="lg" showSubtitle={false} className="mb-2" />
@@ -79,7 +85,6 @@ export const Login = () => {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-left">
-          
           {/* Email Address */}
           <div className="space-y-1.5">
             <label className="block text-[10px] font-black uppercase tracking-wider text-[#667781] ml-0.5">
@@ -90,18 +95,20 @@ export const Login = () => {
               <input
                 type="email"
                 placeholder="name@example.com"
-                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.email ? 'border-rose-500' : 'border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]'} text-xs text-[#111b21] py-3.5 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
-                {...register('email', {
-                  required: 'Email is required',
+                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.email ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3.5 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
+                {...register("email", {
+                  required: "Email is required",
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address'
-                  }
+                    message: "Invalid email address",
+                  },
                 })}
               />
             </div>
             {errors.email && (
-              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-1">{errors.email.message}</p>
+              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -111,7 +118,10 @@ export const Login = () => {
               <label className="block text-[10px] font-black uppercase tracking-wider text-[#667781] ml-0.5">
                 Password
               </label>
-              <Link to="/forgot-password" className="text-[11px] font-bold text-[#00a884] hover:text-[#008069] transition-colors">
+              <Link
+                to="/forgot-password"
+                className="text-[11px] font-bold text-[#00a884] hover:text-[#008069] transition-colors"
+              >
                 Forgot Password?
               </Link>
             </div>
@@ -120,18 +130,20 @@ export const Login = () => {
               <input
                 type="password"
                 placeholder="••••••••"
-                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.password ? 'border-rose-500' : 'border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]'} text-xs text-[#111b21] py-3.5 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
-                {...register('password', {
-                  required: 'Password is required',
+                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.password ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3.5 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
+                {...register("password", {
+                  required: "Password is required",
                   minLength: {
                     value: 6,
-                    message: 'Password must be at least 6 characters'
-                  }
+                    message: "Password must be at least 6 characters",
+                  },
                 })}
               />
             </div>
             {errors.password && (
-              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-1">{errors.password.message}</p>
+              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-1">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
@@ -156,12 +168,14 @@ export const Login = () => {
 
         {/* Footer Link */}
         <div className="mt-6 border-t border-[#f0f2f5] pt-4 text-center text-xs text-[#667781] font-medium">
-          Don't have an account?{' '}
-          <Link to="/register" className="font-bold text-[#00a884] hover:text-[#008069] transition-colors">
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            className="font-bold text-[#00a884] hover:text-[#008069] transition-colors"
+          >
             Register now
           </Link>
         </div>
-
       </div>
     </div>
   );

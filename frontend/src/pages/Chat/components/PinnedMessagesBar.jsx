@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Pin, ChevronDown } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { Pin, ChevronDown } from "lucide-react";
 
 export const PinnedMessagesBar = ({
   pinnedMessages,
-  handleTogglePinMessage
+  handleTogglePinMessage,
 }) => {
   const [pinnedBannerIndex, setPinnedBannerIndex] = useState(0);
   const [pinnedDropdownOpen, setPinnedDropdownOpen] = useState(false);
@@ -11,12 +11,16 @@ export const PinnedMessagesBar = ({
 
   useEffect(() => {
     const handleClickOutsidePin = (e) => {
-      if (pinnedDropdownRef.current && !pinnedDropdownRef.current.contains(e.target)) {
+      if (
+        pinnedDropdownRef.current &&
+        !pinnedDropdownRef.current.contains(e.target)
+      ) {
         setPinnedDropdownOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutsidePin);
-    return () => document.removeEventListener('mousedown', handleClickOutsidePin);
+    document.addEventListener("mousedown", handleClickOutsidePin);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutsidePin);
   }, []);
 
   if (!pinnedMessages || pinnedMessages.length === 0) return null;
@@ -25,12 +29,12 @@ export const PinnedMessagesBar = ({
   const currentPinnedMsg = pinnedMessages[safePinnedIndex] || null;
 
   const getPinnedPreview = (msg) => {
-    if (!msg) return '';
-    if (msg.type === 'image') return '📷 Photo';
-    if (msg.type === 'audio') return '🎤 Voice message';
-    if (msg.type === 'file') return `📄 ${msg.attachmentName || 'Document'}`;
+    if (!msg) return "";
+    if (msg.type === "image") return "📷 Photo";
+    if (msg.type === "audio") return "🎤 Voice message";
+    if (msg.type === "file") return `📄 ${msg.attachmentName || "Document"}`;
     if (msg.text) return msg.text;
-    return 'Attachment';
+    return "Attachment";
   };
 
   if (!currentPinnedMsg) return null;
@@ -45,15 +49,21 @@ export const PinnedMessagesBar = ({
           const nextMsg = pinnedMessages[nextIdx];
           if (nextMsg) {
             const el = document.getElementById(nextMsg.id);
-            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            el?.classList.add('bg-yellow-200/60');
-            setTimeout(() => el?.classList.remove('bg-yellow-200/60'), 1500);
+            el?.scrollIntoView({ behavior: "smooth", block: "center" });
+            el?.classList.add("bg-yellow-200/60");
+            setTimeout(() => el?.classList.remove("bg-yellow-200/60"), 1500);
           }
         }}
       >
-        <div className={`w-1 shrink-0 rounded-sm my-1 ml-2 ${safePinnedIndex % 3 === 0 ? 'bg-indigo-500' :
-            safePinnedIndex % 3 === 1 ? 'bg-emerald-500' : 'bg-amber-500'
-          }`} />
+        <div
+          className={`w-1 shrink-0 rounded-sm my-1 ml-2 ${
+            safePinnedIndex % 3 === 0
+              ? "bg-indigo-500"
+              : safePinnedIndex % 3 === 1
+                ? "bg-emerald-500"
+                : "bg-amber-500"
+          }`}
+        />
 
         <div className="flex-1 min-w-0 px-3 py-2 flex items-center gap-2">
           <Pin className="h-3.5 w-3.5 text-[#54656f] shrink-0 transform rotate-45" />
@@ -65,14 +75,16 @@ export const PinnedMessagesBar = ({
         <div
           ref={pinnedDropdownRef}
           className="relative flex items-center px-3 shrink-0"
-          onClick={e => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
         >
           <button
             className="p-1.5 rounded-full hover:bg-black/10 transition-colors text-[#54656f]"
-            onClick={() => setPinnedDropdownOpen(prev => !prev)}
+            onClick={() => setPinnedDropdownOpen((prev) => !prev)}
             title="Pinned message options"
           >
-            <ChevronDown className={`h-4 w-4 transition-transform ${pinnedDropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${pinnedDropdownOpen ? "rotate-180" : ""}`}
+            />
           </button>
 
           {pinnedDropdownOpen && (
@@ -82,12 +94,23 @@ export const PinnedMessagesBar = ({
                 onClick={() => {
                   setPinnedDropdownOpen(false);
                   const el = document.getElementById(currentPinnedMsg.id);
-                  el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  el?.classList.add('bg-yellow-200/60');
-                  setTimeout(() => el?.classList.remove('bg-yellow-200/60'), 1500);
+                  el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  el?.classList.add("bg-yellow-200/60");
+                  setTimeout(
+                    () => el?.classList.remove("bg-yellow-200/60"),
+                    1500,
+                  );
                 }}
               >
-                <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  className="h-4 w-4 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
                 Go to message

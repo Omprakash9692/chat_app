@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import {motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Eye,
   EyeOff,
@@ -12,41 +12,43 @@ import {
   ArrowLeft,
   Check,
   Loader2,
-} from 'lucide-react';
-import { useNotifications } from '../../context/NotificationContext';
-import { useChat } from '../../context/ChatContext';
-import { useAuth } from '../../context/AuthContext';
+} from "lucide-react";
+import { useNotifications } from "../../context/NotificationContext";
+import { useChat } from "../../context/ChatContext";
+import { useAuth } from "../../context/AuthContext";
 
 /* ==========================================================================
    1. AVATAR COMPONENT
    ========================================================================== */
 export const Avatar = ({
   src,
-  name = '',
-  size = 'md',
+  name = "",
+  size = "md",
   status = null, // 'online', 'offline', 'away'
-  className = '',
-  color = 'from-indigo-500 to-purple-600',
+  className = "",
+  color = "from-indigo-500 to-purple-600",
   onClick,
 }) => {
   const getInitials = (fullName) => {
-    if (!fullName) return '?';
-    const parts = fullName.split(' ');
+    if (!fullName) return "?";
+    const parts = fullName.split(" ");
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    return (
+      parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+    ).toUpperCase();
   };
 
   const getInitialsColor = (fullName) => {
-    if (color && color !== 'from-indigo-500 to-purple-600') return color;
+    if (color && color !== "from-indigo-500 to-purple-600") return color;
     const colors = [
-      'from-blue-500 to-indigo-600',
-      'from-emerald-500 to-teal-600',
-      'from-violet-500 to-purple-600',
-      'from-pink-500 to-rose-600',
-      'from-amber-500 to-orange-600',
-      'from-cyan-500 to-blue-600',
-      'from-fuchsia-500 to-pink-600',
-      'from-lime-500 to-green-600',
+      "from-blue-500 to-indigo-600",
+      "from-emerald-500 to-teal-600",
+      "from-violet-500 to-purple-600",
+      "from-pink-500 to-rose-600",
+      "from-amber-500 to-orange-600",
+      "from-cyan-500 to-blue-600",
+      "from-fuchsia-500 to-pink-600",
+      "from-lime-500 to-green-600",
     ];
     if (!fullName) return colors[0];
     let hash = 0;
@@ -58,32 +60,32 @@ export const Avatar = ({
   };
 
   const sizes = {
-    xs: 'h-6 w-6 text-[10px]',
-    sm: 'h-8 w-8 text-xs',
-    md: 'h-10 w-10 text-sm font-semibold',
-    lg: 'h-14 w-14 text-lg font-semibold',
-    xl: 'h-20 w-20 text-2xl font-bold',
-    xxl: 'h-24 w-24 text-3xl font-bold',
+    xs: "h-6 w-6 text-[10px]",
+    sm: "h-8 w-8 text-xs",
+    md: "h-10 w-10 text-sm font-semibold",
+    lg: "h-14 w-14 text-lg font-semibold",
+    xl: "h-20 w-20 text-2xl font-bold",
+    xxl: "h-24 w-24 text-3xl font-bold",
   };
 
   const statusSizes = {
-    xs: 'h-1.5 w-1.5 border-[1px]',
-    sm: 'h-2 w-2 border-[1.5px]',
-    md: 'h-2.5 w-2.5 border-[2px]',
-    lg: 'h-3.5 w-3.5 border-[2px]',
-    xl: 'h-4 w-4 border-[2px]',
-    xxl: 'h-5 w-5 border-[3px]',
+    xs: "h-1.5 w-1.5 border-[1px]",
+    sm: "h-2 w-2 border-[1.5px]",
+    md: "h-2.5 w-2.5 border-[2px]",
+    lg: "h-3.5 w-3.5 border-[2px]",
+    xl: "h-4 w-4 border-[2px]",
+    xxl: "h-5 w-5 border-[3px]",
   };
 
   const statusColors = {
-    online: 'bg-emerald-500',
-    away: 'bg-amber-500',
-    offline: 'bg-slate-400 dark:bg-slate-500',
+    online: "bg-emerald-500",
+    away: "bg-amber-500",
+    offline: "bg-slate-400 dark:bg-slate-500",
   };
 
   return (
     <div
-      className={`relative inline-flex flex-shrink-0 select-none ${onClick ? 'cursor-pointer' : ''}`}
+      className={`relative inline-flex flex-shrink-0 select-none ${onClick ? "cursor-pointer" : ""}`}
       onClick={onClick}
     >
       {src ? (
@@ -92,8 +94,9 @@ export const Avatar = ({
           alt={name}
           className={`rounded-full object-cover border border-slate-100 dark:border-slate-800/50 ${sizes[size]} ${className}`}
           onError={(e) => {
-            e.target.style.display = 'none';
-            if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+            e.target.style.display = "none";
+            if (e.target.nextSibling)
+              e.target.nextSibling.style.display = "flex";
           }}
         />
       ) : null}
@@ -101,7 +104,7 @@ export const Avatar = ({
       <div
         className={`
           ${sizes[size]} rounded-full flex items-center justify-center text-white font-medium bg-gradient-to-tr ${getInitialsColor(name)}
-          ${src ? 'hidden' : 'flex'}
+          ${src ? "hidden" : "flex"}
           border border-white/10 ${className}
         `}
       >
@@ -124,16 +127,17 @@ export const Avatar = ({
 /* ==========================================================================
    3. BADGE COMPONENT
    ========================================================================== */
-export const Badge = ({ children, variant = 'primary', className = '' }) => {
+export const Badge = ({ children, variant = "primary", className = "" }) => {
   const variants = {
-    primary: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
-    secondary: 'bg-slate-500/10 text-slate-600 dark:text-slate-400',
-    success: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-    warning: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-    danger: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
-    info: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
-    neutral: 'bg-slate-100 text-slate-800 dark:bg-slate-850 dark:text-slate-200',
-    unread: 'bg-[#008069] text-white shadow-sm ring-1 ring-white',
+    primary: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+    secondary: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
+    success: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    warning: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    danger: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+    info: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+    neutral:
+      "bg-slate-100 text-slate-800 dark:bg-slate-850 dark:text-slate-200",
+    unread: "bg-[#008069] text-white shadow-sm ring-1 ring-white",
   };
 
   return (
@@ -152,17 +156,17 @@ export const Badge = ({ children, variant = 'primary', className = '' }) => {
 /* ==========================================================================
    4. BRAND LOGO COMPONENT
    ========================================================================== */
-export const BrandLogo = ({ size = 'md', className = '' }) => {
+export const BrandLogo = ({ size = "md", className = "" }) => {
   const titleSizes = {
-    sm: 'text-lg',
-    md: 'text-xl sm:text-2xl',
-    lg: 'text-2xl sm:text-3xl',
+    sm: "text-lg",
+    md: "text-xl sm:text-2xl",
+    lg: "text-2xl sm:text-3xl",
   };
 
   const dotSizes = {
-    sm: 'h-1.5 w-1.5',
-    md: 'h-2 w-2',
-    lg: 'h-2.5 w-2.5',
+    sm: "h-1.5 w-1.5",
+    md: "h-2 w-2",
+    lg: "h-2.5 w-2.5",
   };
 
   return (
@@ -185,37 +189,39 @@ export const BrandLogo = ({ size = 'md', className = '' }) => {
 export const Button = ({
   children,
   onClick,
-  type = 'button',
-  variant = 'primary',
-  size = 'md',
+  type = "button",
+  variant = "primary",
+  size = "md",
   disabled = false,
   loading = false,
-  className = '',
+  className = "",
   icon: Icon = null,
-  iconPosition = 'left',
+  iconPosition = "left",
   fullWidth = false,
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer';
+    "inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer";
 
   const variants = {
     primary:
-      'bg-slate-900 hover:bg-slate-800 text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] focus:ring-slate-400 border border-slate-900',
+      "bg-slate-900 hover:bg-slate-800 text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] focus:ring-slate-400 border border-slate-900",
     secondary:
-      'bg-white hover:bg-slate-50 text-slate-800 shadow-[0_12px_30px_rgba(15,23,42,0.06)] focus:ring-slate-300 border border-slate-200',
-    outline: 'bg-transparent border border-slate-300 hover:bg-white text-slate-700 focus:ring-slate-300',
+      "bg-white hover:bg-slate-50 text-slate-800 shadow-[0_12px_30px_rgba(15,23,42,0.06)] focus:ring-slate-300 border border-slate-200",
+    outline:
+      "bg-transparent border border-slate-300 hover:bg-white text-slate-700 focus:ring-slate-300",
     danger:
-      'bg-rose-600 hover:bg-rose-500 text-white shadow-sm shadow-rose-600/10 focus:ring-rose-500 border border-transparent',
-    ghost: 'bg-transparent hover:bg-white text-slate-600 focus:ring-slate-300 border border-transparent',
+      "bg-rose-600 hover:bg-rose-500 text-white shadow-sm shadow-rose-600/10 focus:ring-rose-500 border border-transparent",
+    ghost:
+      "bg-transparent hover:bg-white text-slate-600 focus:ring-slate-300 border border-transparent",
   };
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-xs',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base',
+    sm: "px-3 py-1.5 text-xs",
+    md: "px-4 py-2 text-sm",
+    lg: "px-6 py-3 text-base",
   };
 
-  const widthStyle = fullWidth ? 'w-full' : '';
+  const widthStyle = fullWidth ? "w-full" : "";
 
   return (
     <motion.button
@@ -226,8 +232,19 @@ export const Button = ({
       className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${widthStyle} ${className}`}
     >
       {loading && (
-        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <svg
+          className="animate-spin -ml-1 mr-2 h-4 w-4 text-current"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
           <path
             className="opacity-75"
             fill="currentColor"
@@ -235,12 +252,12 @@ export const Button = ({
           />
         </svg>
       )}
-      {!loading && Icon && iconPosition === 'left' && (
-        <Icon className={`h-4 w-4 ${children ? 'mr-2' : ''}`} />
+      {!loading && Icon && iconPosition === "left" && (
+        <Icon className={`h-4 w-4 ${children ? "mr-2" : ""}`} />
       )}
       <span>{children}</span>
-      {!loading && Icon && iconPosition === 'right' && (
-        <Icon className={`h-4 w-4 ${children ? 'ml-2' : ''}`} />
+      {!loading && Icon && iconPosition === "right" && (
+        <Icon className={`h-4 w-4 ${children ? "ml-2" : ""}`} />
       )}
     </motion.button>
   );
@@ -253,29 +270,36 @@ export const Input = React.forwardRef(
   (
     {
       label,
-      type = 'text',
+      type = "text",
       placeholder,
       error,
       icon: Icon = null,
-      className = '',
+      className = "",
       id,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [showPassword, setShowPassword] = useState(false);
-    const isPassword = type === 'password';
+    const isPassword = type === "password";
 
     const togglePasswordVisibility = () => {
       setShowPassword((prev) => !prev);
     };
 
-    const currentType = isPassword ? (showPassword ? 'text' : 'password') : type;
+    const currentType = isPassword
+      ? showPassword
+        ? "text"
+        : "password"
+      : type;
 
     return (
       <div className={`w-full text-left ${className}`}>
         {label && (
-          <label htmlFor={id} className="block text-xs font-semibold text-slate-500 uppercase tracking-[0.18em] mb-2">
+          <label
+            htmlFor={id}
+            className="block text-xs font-semibold text-slate-500 uppercase tracking-[0.18em] mb-2"
+          >
             {label}
           </label>
         )}
@@ -293,12 +317,13 @@ export const Input = React.forwardRef(
             className={`
               block w-full rounded-xl transition-all duration-200 border text-sm
               bg-white/90 text-slate-800
-              ${Icon ? 'pl-11' : 'pl-4'}
-              ${isPassword ? 'pr-11' : 'pr-4'}
+              ${Icon ? "pl-11" : "pl-4"}
+              ${isPassword ? "pr-11" : "pr-4"}
               py-2.5
-              ${error
-                ? 'border-rose-500 focus:border-rose-500 focus:ring-1 focus:ring-rose-500'
-                : 'border-slate-200 focus:border-slate-400 focus:ring-1 focus:ring-slate-300'
+              ${
+                error
+                  ? "border-rose-500 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                  : "border-slate-200 focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
               }
               outline-none
             `}
@@ -310,7 +335,11 @@ export const Input = React.forwardRef(
               onClick={togglePasswordVisibility}
               className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           )}
         </div>
@@ -321,9 +350,9 @@ export const Input = React.forwardRef(
         )}
       </div>
     );
-  }
+  },
 );
-Input.displayName = 'Input';
+Input.displayName = "Input";
 
 /* ==========================================================================
    7. MODAL COMPONENT
@@ -333,25 +362,25 @@ export const Modal = ({
   onClose,
   title,
   children,
-  size = 'md',
+  size = "md",
   closeOnOverlayClick = true,
 }) => {
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
   const sizes = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
+    sm: "max-w-md",
+    md: "max-w-lg",
+    lg: "max-w-2xl",
+    xl: "max-w-4xl",
   };
 
   return (
@@ -370,7 +399,7 @@ export const Modal = ({
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            transition={{ type: 'spring', duration: 0.4 }}
+            transition={{ type: "spring", duration: 0.4 }}
             className={`
               relative w-full rounded-2xl shadow-2xl overflow-hidden border border-slate-200/80
               bg-white text-[#111b21] max-h-[90vh] flex flex-col
@@ -407,17 +436,18 @@ export const Tabs = ({
   tabs,
   activeTab,
   onChange,
-  className = '',
-  variant = 'pill',
+  className = "",
+  variant = "pill",
 }) => {
   return (
     <div className={`flex select-none ${className}`}>
       <div
         className={`
           flex items-center gap-1 p-1 
-          ${variant === 'pill'
-            ? 'bg-slate-100/90 border border-slate-200/80 rounded-2xl shadow-xs'
-            : 'border-b border-slate-200 w-full'
+          ${
+            variant === "pill"
+              ? "bg-slate-100/90 border border-slate-200/80 rounded-2xl shadow-xs"
+              : "border-b border-slate-200 w-full"
           }
         `}
       >
@@ -429,31 +459,34 @@ export const Tabs = ({
               onClick={() => onChange(tab.id)}
               className={`
                 relative px-4 py-2 text-xs font-black rounded-xl transition-all cursor-pointer focus:outline-none flex items-center justify-center
-                ${isActive
-                  ? 'text-slate-950 font-black'
-                  : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200/50 font-extrabold'
+                ${
+                  isActive
+                    ? "text-slate-950 font-black"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-slate-200/50 font-extrabold"
                 }
               `}
             >
-              {isActive && variant === 'pill' && (
+              {isActive && variant === "pill" && (
                 <motion.div
                   layoutId="activeTabBackground"
                   className="absolute inset-0 bg-white rounded-xl shadow-[0_4px_16px_rgba(15,23,42,0.08)] border border-slate-200/80 z-0"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
               )}
 
-              {isActive && variant === 'underline' && (
+              {isActive && variant === "underline" && (
                 <motion.div
                   layoutId="activeTabUnderline"
                   className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 z-10"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
               )}
 
               <span className="relative z-10 flex items-center gap-2">
                 {tab.icon && (
-                  <tab.icon className={`h-4 w-4 ${isActive ? 'text-indigo-600' : 'text-slate-500'}`} />
+                  <tab.icon
+                    className={`h-4 w-4 ${isActive ? "text-indigo-600" : "text-slate-500"}`}
+                  />
                 )}
                 <span>{tab.label}</span>
               </span>
@@ -477,10 +510,10 @@ export const ToastItem = ({ title, description, type, onClose }) => {
   };
 
   const borders = {
-    success: 'bg-white border-emerald-200/90 shadow-2xl shadow-emerald-500/10',
-    info: 'bg-white border-sky-200/90 shadow-2xl shadow-sky-500/10',
-    warning: 'bg-white border-amber-200/90 shadow-2xl shadow-amber-500/10',
-    danger: 'bg-white border-rose-200/90 shadow-2xl shadow-rose-500/10',
+    success: "bg-white border-emerald-200/90 shadow-2xl shadow-emerald-500/10",
+    info: "bg-white border-sky-200/90 shadow-2xl shadow-sky-500/10",
+    warning: "bg-white border-amber-200/90 shadow-2xl shadow-amber-500/10",
+    danger: "bg-white border-rose-200/90 shadow-2xl shadow-rose-500/10",
   };
 
   return (
@@ -546,23 +579,25 @@ export const ToastContainer = () => {
 export const Tooltip = ({
   children,
   content,
-  position = 'top',
-  className = '',
+  position = "top",
+  className = "",
 }) => {
   const [show, setShow] = useState(false);
 
   const positionStyles = {
-    top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
-    bottom: 'top-full left-1/2 -translate-x-1/2 mt-2',
-    left: 'right-full top-1/2 -translate-y-1/2 mr-2',
-    right: 'left-full top-1/2 -translate-y-1/2 ml-2',
+    top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
+    bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
+    left: "right-full top-1/2 -translate-y-1/2 mr-2",
+    right: "left-full top-1/2 -translate-y-1/2 ml-2",
   };
 
   const arrowStyles = {
-    top: 'top-full left-1/2 -translate-x-1/2 border-t-slate-800 dark:border-t-slate-900 border-x-transparent border-b-transparent',
-    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-b-slate-800 dark:border-b-slate-900 border-x-transparent border-t-transparent',
-    left: 'left-full top-1/2 -translate-y-1/2 border-l-slate-800 dark:border-l-slate-900 border-y-transparent border-r-transparent',
-    right: 'right-full top-1/2 -translate-y-1/2 border-r-slate-800 dark:border-r-slate-900 border-y-transparent border-l-transparent',
+    top: "top-full left-1/2 -translate-x-1/2 border-t-slate-800 dark:border-t-slate-900 border-x-transparent border-b-transparent",
+    bottom:
+      "bottom-full left-1/2 -translate-x-1/2 border-b-slate-800 dark:border-b-slate-900 border-x-transparent border-t-transparent",
+    left: "left-full top-1/2 -translate-y-1/2 border-l-slate-800 dark:border-l-slate-900 border-y-transparent border-r-transparent",
+    right:
+      "right-full top-1/2 -translate-y-1/2 border-r-slate-800 dark:border-r-slate-900 border-y-transparent border-l-transparent",
   };
 
   return (
@@ -585,7 +620,9 @@ export const Tooltip = ({
           >
             <div className="bg-slate-800 text-slate-100 dark:bg-slate-950 dark:text-slate-200 text-xs px-2.5 py-1.5 rounded-lg shadow-lg font-medium whitespace-nowrap relative border border-slate-700/30 dark:border-slate-800">
               {content}
-              <div className={`absolute border-[5px] ${arrowStyles[position]}`} />
+              <div
+                className={`absolute border-[5px] ${arrowStyles[position]}`}
+              />
             </div>
           </motion.div>
         )}
@@ -600,7 +637,7 @@ export const Tooltip = ({
 const PAGE_LIMIT = 10;
 
 const formatTime = (isoString) => {
-  if (!isoString) return '';
+  if (!isoString) return "";
   const d = new Date(isoString);
   const now = new Date();
   const isToday =
@@ -609,21 +646,30 @@ const formatTime = (isoString) => {
     d.getFullYear() === now.getFullYear();
 
   if (isToday) {
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
   return (
-    d.toLocaleDateString([], { month: 'short', day: 'numeric' }) +
-    ' · ' +
-    d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    d.toLocaleDateString([], { month: "short", day: "numeric" }) +
+    " · " +
+    d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
   );
 };
 
 const UserRow = ({ user, time, detail }) => (
   <div className="flex items-center gap-3 py-3 px-1">
-    <Avatar src={user?.avatar} name={user?.name} size="md" color={user?.avatarColor} />
+    <Avatar
+      src={user?.avatar}
+      name={user?.name}
+      size="md"
+      color={user?.avatarColor}
+    />
     <div className="flex-1 min-w-0">
-      <p className="text-sm font-bold text-slate-900 truncate">{user?.name || 'Unknown'}</p>
-      <p className="text-[11px] text-slate-400 font-medium truncate mt-0.5">{detail || '—'}</p>
+      <p className="text-sm font-bold text-slate-900 truncate">
+        {user?.name || "Unknown"}
+      </p>
+      <p className="text-[11px] text-slate-400 font-medium truncate mt-0.5">
+        {detail || "—"}
+      </p>
     </div>
     {time && (
       <span className="text-[10px] text-slate-400 font-semibold whitespace-nowrap shrink-0 ml-2">
@@ -635,10 +681,14 @@ const UserRow = ({ user, time, detail }) => (
 
 const SectionHeader = ({ icon: Icon, label, count, iconBg }) => (
   <div className="flex items-center gap-2 mb-3">
-    <div className={`h-7 w-7 rounded-lg flex items-center justify-center ${iconBg}`}>
+    <div
+      className={`h-7 w-7 rounded-lg flex items-center justify-center ${iconBg}`}
+    >
       <Icon className="h-3.5 w-3.5" />
     </div>
-    <span className="text-xs font-black text-slate-800 uppercase tracking-wider">{label}</span>
+    <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+      {label}
+    </span>
     <span className="ml-auto text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
       {count}
     </span>
@@ -671,22 +721,27 @@ export const MessageInfoPanel = ({ message, onClose }) => {
 
       try {
         const res = await authFetch(
-          `http://localhost:5000/api/chats/messages/${msgId}/info?page=1&limit=${PAGE_LIMIT}`
+          `http://localhost:5000/api/chats/messages/${msgId}/info?page=1&limit=${PAGE_LIMIT}`,
         );
         if (res.ok) {
           const result = await res.json();
-          const { readBy: rb, deliveredTo: dt, totalRead: tr, totalDelivered: td } = result.data;
+          const {
+            readBy: rb,
+            deliveredTo: dt,
+            totalRead: tr,
+            totalDelivered: td,
+          } = result.data;
           setReadBy(rb || []);
           setDeliveredTo(dt || []);
           setTotalRead(tr || 0);
           setTotalDelivered(td || 0);
         }
       } catch (err) {
-        console.error('Failed to fetch message info:', err);
+        console.error("Failed to fetch message info:", err);
       }
       setLoading(false);
     },
-    [authFetch]
+    [authFetch],
   );
 
   const refreshSilent = useCallback(
@@ -694,21 +749,26 @@ export const MessageInfoPanel = ({ message, onClose }) => {
       if (!msgId) return;
       try {
         const res = await authFetch(
-          `http://localhost:5000/api/chats/messages/${msgId}/info?page=1&limit=${PAGE_LIMIT}`
+          `http://localhost:5000/api/chats/messages/${msgId}/info?page=1&limit=${PAGE_LIMIT}`,
         );
         if (res.ok) {
           const result = await res.json();
-          const { readBy: rb, deliveredTo: dt, totalRead: tr, totalDelivered: td } = result.data;
+          const {
+            readBy: rb,
+            deliveredTo: dt,
+            totalRead: tr,
+            totalDelivered: td,
+          } = result.data;
           setReadBy(rb || []);
           setDeliveredTo(dt || []);
           setTotalRead(tr || 0);
           setTotalDelivered(td || 0);
         }
       } catch (err) {
-        console.error('Failed to silently refresh message info:', err);
+        console.error("Failed to silently refresh message info:", err);
       }
     },
-    [authFetch]
+    [authFetch],
   );
 
   const loadedMsgIdRef = useRef(null);
@@ -729,14 +789,14 @@ export const MessageInfoPanel = ({ message, onClose }) => {
       refreshSilent(message.id);
     };
 
-    socket.on('messages-seen', handleSocketUpdate);
-    socket.on('messages-delivered', handleSocketUpdate);
-    socket.on('receive-message', handleSocketUpdate);
+    socket.on("messages-seen", handleSocketUpdate);
+    socket.on("messages-delivered", handleSocketUpdate);
+    socket.on("receive-message", handleSocketUpdate);
 
     return () => {
-      socket.off('messages-seen', handleSocketUpdate);
-      socket.off('messages-delivered', handleSocketUpdate);
-      socket.off('receive-message', handleSocketUpdate);
+      socket.off("messages-seen", handleSocketUpdate);
+      socket.off("messages-delivered", handleSocketUpdate);
+      socket.off("receive-message", handleSocketUpdate);
     };
   }, [socket, isOpen, message?.id, refreshSilent]);
 
@@ -755,7 +815,7 @@ export const MessageInfoPanel = ({ message, onClose }) => {
     setLoadingMoreRead(true);
     try {
       const res = await authFetch(
-        `http://localhost:5000/api/chats/messages/${message.id}/info?page=${nextPage}&limit=${PAGE_LIMIT}`
+        `http://localhost:5000/api/chats/messages/${message.id}/info?page=${nextPage}&limit=${PAGE_LIMIT}`,
       );
       if (res.ok) {
         const result = await res.json();
@@ -763,7 +823,7 @@ export const MessageInfoPanel = ({ message, onClose }) => {
         setReadPage(nextPage);
       }
     } catch (err) {
-      console.error('Failed to load more read receipts:', err);
+      console.error("Failed to load more read receipts:", err);
     } finally {
       setLoadingMoreRead(false);
     }
@@ -774,7 +834,7 @@ export const MessageInfoPanel = ({ message, onClose }) => {
     setLoadingMoreDelivered(true);
     try {
       const res = await authFetch(
-        `http://localhost:5000/api/chats/messages/${message.id}/info?page=${nextPage}&limit=${PAGE_LIMIT}`
+        `http://localhost:5000/api/chats/messages/${message.id}/info?page=${nextPage}&limit=${PAGE_LIMIT}`,
       );
       if (res.ok) {
         const result = await res.json();
@@ -782,7 +842,7 @@ export const MessageInfoPanel = ({ message, onClose }) => {
         setDeliveredPage(nextPage);
       }
     } catch (err) {
-      console.error('Failed to load more delivery receipts:', err);
+      console.error("Failed to load more delivery receipts:", err);
     } finally {
       setLoadingMoreDelivered(false);
     }
@@ -793,15 +853,15 @@ export const MessageInfoPanel = ({ message, onClose }) => {
 
   const msgPreview = message?.text
     ? message.text.length > 80
-      ? message.text.slice(0, 80) + '…'
+      ? message.text.slice(0, 80) + "…"
       : message.text
-    : message?.type === 'image'
-    ? '🖼️ Image'
-    : message?.type === 'file'
-    ? `📄 ${message.attachmentName || 'Document'}`
-    : message?.type === 'audio'
-    ? '🎵 Voice Note'
-    : '—';
+    : message?.type === "image"
+      ? "🖼️ Image"
+      : message?.type === "file"
+        ? `📄 ${message.attachmentName || "Document"}`
+        : message?.type === "audio"
+          ? "🎵 Voice Note"
+          : "—";
 
   return (
     <AnimatePresence>
@@ -818,10 +878,10 @@ export const MessageInfoPanel = ({ message, onClose }) => {
 
           <motion.div
             key="panel"
-            initial={{ x: '100%' }}
+            initial={{ x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 280 }}
             className="fixed top-0 right-0 h-full w-full max-w-sm z-50 bg-white shadow-2xl flex flex-col"
           >
             <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 shrink-0">
@@ -831,7 +891,9 @@ export const MessageInfoPanel = ({ message, onClose }) => {
               >
                 <ArrowLeft className="h-4.5 w-4.5" />
               </button>
-              <h2 className="text-sm font-black text-slate-900">Message Info</h2>
+              <h2 className="text-sm font-black text-slate-900">
+                Message Info
+              </h2>
               <button
                 onClick={onClose}
                 className="ml-auto p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors cursor-pointer"
@@ -849,10 +911,10 @@ export const MessageInfoPanel = ({ message, onClose }) => {
                 <span className="text-[10px] text-slate-400 font-semibold">
                   {message?.timestamp
                     ? new Date(message.timestamp).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })
-                    : ''}
+                    : ""}
                 </span>
               </div>
             </div>
@@ -861,7 +923,9 @@ export const MessageInfoPanel = ({ message, onClose }) => {
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
                   <Loader2 className="h-6 w-6 animate-spin" />
-                  <span className="text-xs font-semibold">Loading receipts…</span>
+                  <span className="text-xs font-semibold">
+                    Loading receipts…
+                  </span>
                 </div>
               ) : (
                 <>
@@ -951,4 +1015,3 @@ export const MessageInfoPanel = ({ message, onClose }) => {
     </AnimatePresence>
   );
 };
-

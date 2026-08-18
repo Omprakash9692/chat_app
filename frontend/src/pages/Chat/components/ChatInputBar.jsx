@@ -1,24 +1,67 @@
 /* eslint-disable no-unused-vars */
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import EmojiPicker from 'emoji-picker-react';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import EmojiPicker from "emoji-picker-react";
 import {
-  Send, Smile, Mic, Image as ImageIcon, FileText, X, Reply, Edit2, UserX,
-  AlertTriangle, Lock, Plus, Loader2
-} from 'lucide-react';
-import { Tooltip } from '../../../components/ui/ui';
+  Send,
+  Smile,
+  Mic,
+  Image as ImageIcon,
+  FileText,
+  X,
+  Reply,
+  Edit2,
+  UserX,
+  AlertTriangle,
+  Lock,
+  Plus,
+  Loader2,
+} from "lucide-react";
+import { Tooltip } from "../../../components/ui/ui";
 
 export const ChatInputBar = ({
-  inputText, setInputText, handleInputChange, handleKeyPress, handleSend, replyMessage, setReplyMessage, editingMessage, setEditingMessage,
-  isRecording, startRecording, stopRecording, cancelRecording, recordTimer, showEmojiPicker, setShowEmojiPicker, emojiPickerRef,
-  showAttachmentMenu, setShowAttachmentMenu, attachmentMenuRef, handleSimulateAttachment, pendingAttachment, handleRemovePendingAttachment,
-  isUploadingAttachment, uploadingFileName, uploadingFileType, imageInputRef, fileInputRef, handleImageSelection, handleFileSelection,
-  isBlocked, isGroupBlocked, isMessagingRestricted, targetUnblockId, unblockUser, recipient, showToast, getSenderProfile
+  inputText,
+  setInputText,
+  handleInputChange,
+  handleKeyPress,
+  handleSend,
+  replyMessage,
+  setReplyMessage,
+  editingMessage,
+  setEditingMessage,
+  isRecording,
+  startRecording,
+  stopRecording,
+  cancelRecording,
+  recordTimer,
+  showEmojiPicker,
+  setShowEmojiPicker,
+  emojiPickerRef,
+  showAttachmentMenu,
+  setShowAttachmentMenu,
+  attachmentMenuRef,
+  handleSimulateAttachment,
+  pendingAttachment,
+  handleRemovePendingAttachment,
+  isUploadingAttachment,
+  uploadingFileName,
+  uploadingFileType,
+  imageInputRef,
+  fileInputRef,
+  handleImageSelection,
+  handleFileSelection,
+  isBlocked,
+  isGroupBlocked,
+  isMessagingRestricted,
+  targetUnblockId,
+  unblockUser,
+  recipient,
+  showToast,
+  getSenderProfile,
 }) => {
   return (
     <div className="border-t border-slate-200/80 bg-white/86 backdrop-blur-xl shrink-0">
       <div className="max-w-3xl md:max-w-4xl mx-auto p-3 flex flex-col gap-2 w-full">
-
         {/* Hidden inputs */}
         <input
           ref={imageInputRef}
@@ -42,12 +85,22 @@ export const ChatInputBar = ({
               <Reply className="h-4 w-4 text-indigo-500 shrink-0" />
               <div className="truncate text-left">
                 <span className="font-bold text-slate-700 block">
-                  Replying to {replyMessage.senderId === 'user_me' ? 'You' : (getSenderProfile ? getSenderProfile(replyMessage.senderId).name : 'User')}
+                  Replying to{" "}
+                  {replyMessage.senderId === "user_me"
+                    ? "You"
+                    : getSenderProfile
+                      ? getSenderProfile(replyMessage.senderId).name
+                      : "User"}
                 </span>
-                <span className="text-[11px] text-slate-450 truncate">{replyMessage.text || 'Media attachment'}</span>
+                <span className="text-[11px] text-slate-450 truncate">
+                  {replyMessage.text || "Media attachment"}
+                </span>
               </div>
             </div>
-            <button onClick={() => setReplyMessage(null)} className="p-1 rounded-md text-slate-400 hover:text-slate-600">
+            <button
+              onClick={() => setReplyMessage(null)}
+              className="p-1 rounded-md text-slate-400 hover:text-slate-600"
+            >
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -60,10 +113,18 @@ export const ChatInputBar = ({
               <Edit2 className="h-4 w-4 text-indigo-500 shrink-0" />
               <div className="truncate text-left text-indigo-650">
                 <span className="font-bold block">Editing message</span>
-                <span className="text-[11px] truncate opacity-90">{editingMessage.text}</span>
+                <span className="text-[11px] truncate opacity-90">
+                  {editingMessage.text}
+                </span>
               </div>
             </div>
-            <button onClick={() => { setEditingMessage(null); setInputText(''); }} className="p-1 rounded-md text-slate-400 hover:text-slate-650">
+            <button
+              onClick={() => {
+                setEditingMessage(null);
+                setInputText("");
+              }}
+              className="p-1 rounded-md text-slate-400 hover:text-slate-650"
+            >
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -84,9 +145,14 @@ export const ChatInputBar = ({
               <button
                 type="button"
                 onClick={() => {
-                  if (targetUnblockId && typeof unblockUser === 'function') {
+                  if (targetUnblockId && typeof unblockUser === "function") {
                     unblockUser(targetUnblockId);
-                    if (showToast) showToast("Contact Unblocked", `${recipient?.name || 'Contact'} is now unblocked.`, "success");
+                    if (showToast)
+                      showToast(
+                        "Contact Unblocked",
+                        `${recipient?.name || "Contact"} is now unblocked.`,
+                        "success",
+                      );
                   }
                 }}
                 className="px-4 py-1.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all cursor-pointer shrink-0 shadow-xs active:scale-95"
@@ -98,7 +164,10 @@ export const ChatInputBar = ({
         ) : isGroupBlocked ? (
           <div className="bg-amber-50/80 p-3.5 rounded-2xl flex items-center justify-center text-center text-xs font-bold text-amber-700 border border-amber-200/80 select-none shadow-2xs leading-relaxed gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
-            <span>This group has been suspended by the administrator. Sending messages is disabled.</span>
+            <span>
+              This group has been suspended by the administrator. Sending
+              messages is disabled.
+            </span>
           </div>
         ) : isMessagingRestricted ? (
           <div className="bg-[#f0f2f5] p-3.5 rounded-2xl flex items-center justify-center text-center text-xs font-medium text-[#54656f] border border-[#e9edef] select-none shadow-2xs leading-relaxed gap-2">
@@ -110,7 +179,8 @@ export const ChatInputBar = ({
             <div className="flex items-center gap-3.5 pl-3.5">
               <span className="h-2.5 w-2.5 bg-rose-500 rounded-full animate-ping shrink-0" />
               <span className="text-xs font-bold font-mono text-rose-500">
-                Recording: {Math.floor(recordTimer / 60)}:{(recordTimer % 60).toString().padStart(2, '0')}
+                Recording: {Math.floor(recordTimer / 60)}:
+                {(recordTimer % 60).toString().padStart(2, "0")}
               </span>
             </div>
             <div className="flex gap-2">
@@ -130,7 +200,6 @@ export const ChatInputBar = ({
           </div>
         ) : (
           <div className="p-3 bg-transparent border-0 select-none w-full">
-
             {/* Pending Selected Attachment Preview Banner */}
             <AnimatePresence>
               {pendingAttachment && !isUploadingAttachment && (
@@ -141,7 +210,8 @@ export const ChatInputBar = ({
                   className="mb-2.5 p-2.5 rounded-2xl bg-white border border-emerald-500/40 shadow-md flex items-center justify-between gap-3 text-xs select-none relative"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    {pendingAttachment.type === 'image' && pendingAttachment.previewUrl ? (
+                    {pendingAttachment.type === "image" &&
+                    pendingAttachment.previewUrl ? (
                       <img
                         src={pendingAttachment.previewUrl}
                         alt="Selected preview"
@@ -189,7 +259,7 @@ export const ChatInputBar = ({
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="p-2.5 rounded-xl bg-[#008069]/10 text-[#008069] shrink-0">
-                      {uploadingFileType === 'image' ? (
+                      {uploadingFileType === "image" ? (
                         <ImageIcon className="h-4 w-4" />
                       ) : (
                         <FileText className="h-4 w-4" />
@@ -198,14 +268,17 @@ export const ChatInputBar = ({
                     <div className="min-w-0 text-left">
                       <div className="flex items-center gap-2">
                         <span className="font-extrabold text-[#111b21] truncate">
-                          Uploading {uploadingFileType === 'image' ? 'Image' : 'PDF / Document'}
+                          Uploading{" "}
+                          {uploadingFileType === "image"
+                            ? "Image"
+                            : "PDF / Document"}
                         </span>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#008069]/15 text-[#008069] animate-pulse shrink-0">
                           Uploading...
                         </span>
                       </div>
                       <p className="text-[11px] font-medium text-[#667781] truncate mt-0.5">
-                        {uploadingFileName || 'Processing attachment...'}
+                        {uploadingFileName || "Processing attachment..."}
                       </p>
                     </div>
                   </div>
@@ -218,7 +291,6 @@ export const ChatInputBar = ({
 
             {/* Single Unified Pill Capsule */}
             <div className="flex items-center gap-1.5 w-full bg-white rounded-full px-3 py-1.5 border border-slate-200/80 shadow-2xs">
-
               {/* 1. Plus (+) Attachments trigger */}
               <div className="relative shrink-0" ref={attachmentMenuRef}>
                 <Tooltip content="Attach File">
@@ -241,17 +313,19 @@ export const ChatInputBar = ({
                     >
                       <button
                         type="button"
-                        onClick={() => handleSimulateAttachment('image')}
+                        onClick={() => handleSimulateAttachment("image")}
                         className="flex items-center gap-2.5 px-3 py-2 w-full text-slate-800 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors font-semibold"
                       >
-                        <ImageIcon className="h-4 w-4 text-emerald-600" /> Share Image
+                        <ImageIcon className="h-4 w-4 text-emerald-600" /> Share
+                        Image
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleSimulateAttachment('pdf')}
+                        onClick={() => handleSimulateAttachment("pdf")}
                         className="flex items-center gap-2.5 px-3 py-2 w-full text-slate-800 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors font-semibold"
                       >
-                        <FileText className="h-4 w-4 text-rose-500" /> Share PDF Document
+                        <FileText className="h-4 w-4 text-rose-500" /> Share PDF
+                        Document
                       </button>
                     </motion.div>
                   )}
@@ -280,12 +354,17 @@ export const ChatInputBar = ({
                     >
                       <EmojiPicker
                         onEmojiClick={(emojiData) => {
-                          setInputText(prev => prev + emojiData.emoji);
+                          setInputText((prev) => prev + emojiData.emoji);
                         }}
                         skinTonesDisabled={false}
                         searchPlaceholder="Search emoji..."
                         height={320}
-                        width={Math.min(300, typeof window !== 'undefined' ? window.innerWidth - 32 : 300)}
+                        width={Math.min(
+                          300,
+                          typeof window !== "undefined"
+                            ? window.innerWidth - 32
+                            : 300,
+                        )}
                         previewConfig={{ showPreview: false }}
                         theme="light"
                       />
@@ -333,7 +412,6 @@ export const ChatInputBar = ({
                   </Tooltip>
                 )}
               </div>
-
             </div>
           </div>
         )}

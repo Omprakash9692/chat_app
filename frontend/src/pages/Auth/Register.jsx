@@ -1,39 +1,51 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, UserPlus, Phone, AlertCircle } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
-import { BrandLogo } from '../../components/ui/ui';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import { Mail, Lock, User, UserPlus, Phone, AlertCircle } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useNotifications } from "../../context/NotificationContext";
+import { BrandLogo } from "../../components/ui/ui";
 
 export const Register = () => {
   const { register: registerUser } = useAuth();
   const { showToast } = useNotifications();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
-      name: '',
-      email: '',
-      phone: '',
-      password: '',
-      acceptTerms: false
-    }
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      acceptTerms: false,
+    },
   });
 
   const onSubmit = async (data) => {
     setLoading(true);
-    setErrorMsg('');
+    setErrorMsg("");
     try {
       await registerUser(data.email, data.name, data.password, data.phone);
-      sessionStorage.setItem('pendingVerificationEmail', data.email);
-      showToast("Account Created", "Check your email for the 6-digit verification code!", "success");
-      navigate('/email-verification', { state: { justRegistered: true } });
+      sessionStorage.setItem("pendingVerificationEmail", data.email);
+      showToast(
+        "Account Created",
+        "Check your email for the 6-digit verification code!",
+        "success",
+      );
+      navigate("/email-verification", { state: { justRegistered: true } });
     } catch (err) {
       setErrorMsg(err.message || "Something went wrong");
-      showToast("Registration Failed", err.message || "Something went wrong", "danger");
+      showToast(
+        "Registration Failed",
+        err.message || "Something went wrong",
+        "danger",
+      );
     } finally {
       setLoading(false);
     }
@@ -41,13 +53,11 @@ export const Register = () => {
 
   return (
     <div className="min-h-screen bg-[#efeae2] text-[#111b21] flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden font-sans select-none my-6 sm:my-0">
-      
       {/* WhatsApp Chat UI Wallpaper Pattern Overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px] opacity-60 pointer-events-none -z-10" />
 
       {/* Main Clean Card */}
       <div className="w-full max-w-md bg-white rounded-3xl p-7 sm:p-9 border border-[#e9edef] shadow-[0_12px_40px_rgba(11,20,26,0.08)] relative z-10 my-4">
-        
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-6">
           <BrandLogo size="lg" showSubtitle={false} className="mb-2" />
@@ -79,8 +89,10 @@ export const Register = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5 text-left">
-          
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-3.5 text-left"
+        >
           {/* Full Name */}
           <div className="space-y-1">
             <label className="block text-[10px] font-black uppercase tracking-wider text-[#667781] ml-0.5">
@@ -91,15 +103,20 @@ export const Register = () => {
               <input
                 type="text"
                 placeholder="John Doe"
-                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.name ? 'border-rose-500' : 'border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]'} text-xs text-[#111b21] py-3 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
-                {...register('name', {
-                  required: 'Full name is required',
-                  minLength: { value: 3, message: 'Name must be at least 3 characters' }
+                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.name ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
+                {...register("name", {
+                  required: "Full name is required",
+                  minLength: {
+                    value: 3,
+                    message: "Name must be at least 3 characters",
+                  },
                 })}
               />
             </div>
             {errors.name && (
-              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-0.5">{errors.name.message}</p>
+              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-0.5">
+                {errors.name.message}
+              </p>
             )}
           </div>
 
@@ -113,18 +130,20 @@ export const Register = () => {
               <input
                 type="email"
                 placeholder="name@example.com"
-                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.email ? 'border-rose-500' : 'border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]'} text-xs text-[#111b21] py-3 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
-                {...register('email', {
-                  required: 'Email is required',
+                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.email ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
+                {...register("email", {
+                  required: "Email is required",
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address'
-                  }
+                    message: "Invalid email address",
+                  },
                 })}
               />
             </div>
             {errors.email && (
-              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-0.5">{errors.email.message}</p>
+              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-0.5">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -140,19 +159,24 @@ export const Register = () => {
                 inputMode="numeric"
                 maxLength={15}
                 placeholder="e.g. 9876543210"
-                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.phone ? 'border-rose-500' : 'border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]'} text-xs text-[#111b21] py-3 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
-                {...register('phone', {
-                  required: 'Phone number is required',
-                  validate: value => {
-                    if (!value) return 'Phone number is required';
-                    const digitsOnly = value.replace(/\D/g, '');
-                    return digitsOnly.length <= 10 || 'Phone number must not exceed 10 digits';
-                  }
+                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.phone ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
+                {...register("phone", {
+                  required: "Phone number is required",
+                  validate: (value) => {
+                    if (!value) return "Phone number is required";
+                    const digitsOnly = value.replace(/\D/g, "");
+                    return (
+                      digitsOnly.length <= 10 ||
+                      "Phone number must not exceed 10 digits"
+                    );
+                  },
                 })}
               />
             </div>
             {errors.phone && (
-              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-0.5">{errors.phone.message}</p>
+              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-0.5">
+                {errors.phone.message}
+              </p>
             )}
           </div>
 
@@ -166,15 +190,20 @@ export const Register = () => {
               <input
                 type="password"
                 placeholder="••••••••"
-                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.password ? 'border-rose-500' : 'border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]'} text-xs text-[#111b21] py-3 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
-                {...register('password', {
-                  required: 'Password is required',
-                  minLength: { value: 6, message: 'Password must be at least 6 characters' }
+                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.password ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
                 })}
               />
             </div>
             {errors.password && (
-              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-0.5">{errors.password.message}</p>
+              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-0.5">
+                {errors.password.message}
+              </p>
             )}
           </div>
           {/* Terms checkbox */}
@@ -183,16 +212,24 @@ export const Register = () => {
               id="acceptTerms"
               type="checkbox"
               className="mt-0.5 h-4 w-4 rounded border-[#e9edef] bg-[#f0f2f5] text-[#00a884] focus:ring-[#00a884] cursor-pointer"
-              {...register('acceptTerms', {
-                required: 'You must accept the terms & privacy policies'
+              {...register("acceptTerms", {
+                required: "You must accept the terms & privacy policies",
               })}
             />
-            <label htmlFor="acceptTerms" className="text-[11px] leading-tight text-[#667781] select-none">
-              I agree to the <span className="font-bold text-[#111b21]">Terms of Service</span> and <span className="font-bold text-[#111b21]">Privacy Policy</span>.
+            <label
+              htmlFor="acceptTerms"
+              className="text-[11px] leading-tight text-[#667781] select-none"
+            >
+              I agree to the{" "}
+              <span className="font-bold text-[#111b21]">Terms of Service</span>{" "}
+              and{" "}
+              <span className="font-bold text-[#111b21]">Privacy Policy</span>.
             </label>
           </div>
           {errors.acceptTerms && (
-            <p className="text-[11px] font-bold text-rose-500 pl-1">{errors.acceptTerms.message}</p>
+            <p className="text-[11px] font-bold text-rose-500 pl-1">
+              {errors.acceptTerms.message}
+            </p>
           )}
 
           {/* Register Button */}
@@ -216,12 +253,14 @@ export const Register = () => {
 
         {/* Footer Link */}
         <div className="mt-6 border-t border-[#f0f2f5] pt-4 text-center text-xs text-[#667781] font-medium">
-          Already have an account?{' '}
-          <Link to="/login" className="font-bold text-[#00a884] hover:text-[#008069] transition-colors">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="font-bold text-[#00a884] hover:text-[#008069] transition-colors"
+          >
             Sign in
           </Link>
         </div>
-
       </div>
     </div>
   );

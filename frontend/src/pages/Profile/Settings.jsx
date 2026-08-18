@@ -1,11 +1,18 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 
 import {
-  User, Mail, Camera, Lock, LogOut, Save, Loader2, Phone
-} from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
-import { Avatar } from '../../components/ui/ui';
+  User,
+  Mail,
+  Camera,
+  Lock,
+  LogOut,
+  Save,
+  Loader2,
+  Phone,
+} from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useNotifications } from "../../context/NotificationContext";
+import { Avatar } from "../../components/ui/ui";
 
 export const Settings = () => {
   const { user, updateProfile, logout } = useAuth();
@@ -18,21 +25,21 @@ export const Settings = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   // Profile forms fields state
-  const [name, setName] = useState(user?.name || '');
-  const [bio, setBio] = useState(user?.bio || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [statusText, setStatusText] = useState(user?.statusText || 'Online');
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
+  const [name, setName] = useState(user?.name || "");
+  const [bio, setBio] = useState(user?.bio || "");
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [statusText, setStatusText] = useState(user?.statusText || "Online");
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar || "");
   const [avatarFile, setAvatarFile] = useState(null);
 
   const handleCancelEdit = () => {
-    setName(user?.name || '');
-    setBio(user?.bio || '');
-    setPhone(user?.phone || '');
-    setEmail(user?.email || '');
-    setStatusText(user?.statusText || 'Online');
-    setAvatarUrl(user?.avatar || '');
+    setName(user?.name || "");
+    setBio(user?.bio || "");
+    setPhone(user?.phone || "");
+    setEmail(user?.email || "");
+    setStatusText(user?.statusText || "Online");
+    setAvatarUrl(user?.avatar || "");
     setAvatarFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -55,11 +62,19 @@ export const Settings = () => {
 
     try {
       await updateProfile(formData);
-      showToast("Profile Updated", "Your profile details have been saved successfully.", "success");
+      showToast(
+        "Profile Updated",
+        "Your profile details have been saved successfully.",
+        "success",
+      );
       setIsEditing(false);
       setAvatarFile(null);
     } catch (err) {
-      showToast("Update Failed", err.message || "Failed to update profile", "danger");
+      showToast(
+        "Update Failed",
+        err.message || "Failed to update profile",
+        "danger",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -75,7 +90,11 @@ export const Settings = () => {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        showToast("Invalid File Type", "Please select an image file.", "danger");
+        showToast(
+          "Invalid File Type",
+          "Please select an image file.",
+          "danger",
+        );
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
@@ -85,7 +104,11 @@ export const Settings = () => {
       setAvatarFile(file);
       const previewUrl = URL.createObjectURL(file);
       setAvatarUrl(previewUrl);
-      showToast("Image Selected", "Click Save Changes to upload the image.", "info");
+      showToast(
+        "Image Selected",
+        "Click Save Changes to upload the image.",
+        "info",
+      );
     }
   };
 
@@ -93,13 +116,11 @@ export const Settings = () => {
 
   return (
     <div className="flex-grow flex h-full overflow-hidden select-none bg-slate-50/50 relative">
-
       {/* Grid background overlay for design consistency */}
       <div className="absolute inset-0 bg-grid-pattern mask-radial-fade pointer-events-none -z-10 opacity-60" />
 
       <main className="flex-grow overflow-y-auto p-6 md:p-12 no-scrollbar">
         <div className="max-w-xl md:max-w-2xl mx-auto space-y-8 select-none text-left">
-
           {/* Top Profile Header */}
           <div className="flex flex-col items-center justify-center text-center pb-4">
             <div className="relative group">
@@ -134,18 +155,23 @@ export const Settings = () => {
 
           {/* Form wrapper */}
           <form onSubmit={handleProfileSave} className="space-y-6">
-
             {/* Section 1: Personal Information */}
             <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-[0_12px_30px_rgba(15,23,42,0.02)] space-y-5">
               <div>
-                <h3 className="text-sm font-black text-slate-950">Personal Information</h3>
-                <p className="text-[11px] text-slate-400 font-bold mt-0.5">Update your profile details and how others see you.</p>
+                <h3 className="text-sm font-black text-slate-950">
+                  Personal Information
+                </h3>
+                <p className="text-[11px] text-slate-400 font-bold mt-0.5">
+                  Update your profile details and how others see you.
+                </p>
               </div>
 
               <div className="space-y-4">
                 {/* Full name field */}
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">Full Name</label>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                    Full Name
+                  </label>
                   <div className="relative">
                     <User className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 h-4 w-4 my-auto" />
                     <input
@@ -163,7 +189,9 @@ export const Settings = () => {
                 {/* Email address field — always read-only */}
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">Email Address</label>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      Email Address
+                    </label>
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-[9px] font-black uppercase tracking-wider text-slate-400">
                       <Lock className="h-2.5 w-2.5" /> Locked
                     </span>
@@ -178,13 +206,17 @@ export const Settings = () => {
                       className="block w-full rounded-xl bg-slate-50 text-slate-400 border border-slate-200 text-xs py-3 pl-11 outline-none transition-all font-medium shadow-xs cursor-not-allowed select-none"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-400 font-bold">Your email address cannot be changed.</p>
+                  <p className="text-[10px] text-slate-400 font-bold">
+                    Your email address cannot be changed.
+                  </p>
                 </div>
 
                 {/* Phone Number field — always read-only */}
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">Phone Number</label>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      Phone Number
+                    </label>
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-[9px] font-black uppercase tracking-wider text-slate-400">
                       <Lock className="h-2.5 w-2.5" /> Locked
                     </span>
@@ -199,12 +231,16 @@ export const Settings = () => {
                       className="block w-full rounded-xl bg-slate-50 text-slate-400 border border-slate-200 text-xs py-3 pl-11 outline-none transition-all font-medium shadow-xs cursor-not-allowed select-none"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-400 font-bold">Your phone number cannot be changed.</p>
+                  <p className="text-[10px] text-slate-400 font-bold">
+                    Your phone number cannot be changed.
+                  </p>
                 </div>
 
                 {/* Bio field */}
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">Bio</label>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                    Bio
+                  </label>
                   <textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value.substring(0, 200))}
@@ -265,33 +301,36 @@ export const Settings = () => {
             {/* Divider zone */}
             <div className="relative py-4 flex items-center select-none justify-center">
               <div className="absolute inset-x-0 h-px bg-slate-200" />
-              <span className="relative px-4 text-[9px] font-black uppercase bg-slate-50 text-slate-400 tracking-[0.22em]">Danger Zone</span>
+              <span className="relative px-4 text-[9px] font-black uppercase bg-slate-50 text-slate-400 tracking-[0.22em]">
+                Danger Zone
+              </span>
             </div>
 
             {/* Section 4: Danger Zone */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-2 select-none">
-
               {/* Sign out button */}
               <button
                 type="button"
                 onClick={() => {
                   logout();
-                  showToast("Signed Out", "Terminated authentication session successfully.", "info");
+                  showToast(
+                    "Signed Out",
+                    "Terminated authentication session successfully.",
+                    "info",
+                  );
                 }}
                 className="w-full sm:w-auto px-6 py-3 border border-rose-200 hover:border-rose-300 bg-white text-rose-600 font-black rounded-2xl cursor-pointer hover:bg-rose-50/60 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xs flex items-center justify-center gap-2 text-xs"
               >
                 <LogOut className="h-4.5 w-4.5" /> Sign Out of SAMPARK
               </button>
             </div>
-
           </form>
 
           {/* Page Footer */}
           <div className="pt-12 pb-6 text-center text-[10px] text-slate-400 font-bold leading-relaxed border-t border-slate-200 select-none">
-            Version 2.4.0 (Build 992) <br />
-            © 2026 SAMPARK Messenger. All rights reserved.
+            Version 2.4.0 (Build 992) <br />© 2026 SAMPARK Messenger. All rights
+            reserved.
           </div>
-
         </div>
       </main>
     </div>

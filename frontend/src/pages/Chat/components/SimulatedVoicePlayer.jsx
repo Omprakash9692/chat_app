@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { Play, Pause } from "lucide-react";
 
 export const SimulatedVoicePlayer = ({ duration, url }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -7,7 +7,7 @@ export const SimulatedVoicePlayer = ({ duration, url }) => {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    if (url && url !== '#') {
+    if (url && url !== "#") {
       audioRef.current = new Audio(url);
 
       const onTimeUpdate = () => {
@@ -40,17 +40,24 @@ export const SimulatedVoicePlayer = ({ duration, url }) => {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play().catch(err => console.error("Audio play failed:", err));
+      audioRef.current
+        .play()
+        .catch((err) => console.error("Audio play failed:", err));
       setIsPlaying(true);
     }
   };
 
-  const waveBars = [15, 24, 18, 30, 42, 20, 12, 28, 35, 22, 10, 18, 25, 32, 40, 26, 12, 18, 30, 38, 22, 14, 26, 32, 18, 10];
+  const waveBars = [
+    15, 24, 18, 30, 42, 20, 12, 28, 35, 22, 10, 18, 25, 32, 40, 26, 12, 18, 30,
+    38, 22, 14, 26, 32, 18, 10,
+  ];
 
   const formatTime = (time) => {
     if (isNaN(time)) return "0:00";
     const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60).toString().padStart(2, '0');
+    const seconds = Math.floor(time % 60)
+      .toString()
+      .padStart(2, "0");
     return `${minutes}:${seconds}`;
   };
 
@@ -60,7 +67,11 @@ export const SimulatedVoicePlayer = ({ duration, url }) => {
         onClick={togglePlay}
         className="h-8 w-8 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center cursor-pointer transition-colors shrink-0"
       >
-        {isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current ml-0.5" />}
+        {isPlaying ? (
+          <Pause className="h-4 w-4 fill-current" />
+        ) : (
+          <Play className="h-4 w-4 fill-current ml-0.5" />
+        )}
       </button>
 
       <div className="flex-1">
@@ -72,13 +83,17 @@ export const SimulatedVoicePlayer = ({ duration, url }) => {
               <div
                 key={idx}
                 style={{ height: `${height}%` }}
-                className={`w-[3px] rounded-full transition-colors duration-150 ${isActive ? 'bg-indigo-600 dark:bg-indigo-400' : 'bg-slate-350 dark:bg-slate-700'}`}
+                className={`w-[3px] rounded-full transition-colors duration-150 ${isActive ? "bg-indigo-600 dark:bg-indigo-400" : "bg-slate-350 dark:bg-slate-700"}`}
               />
             );
           })}
         </div>
         <div className="flex items-center justify-between text-[9px] text-slate-400 dark:text-slate-500 mt-1 select-none font-semibold">
-          <span>{audioRef.current ? formatTime(audioRef.current.currentTime) : '0:00'}</span>
+          <span>
+            {audioRef.current
+              ? formatTime(audioRef.current.currentTime)
+              : "0:00"}
+          </span>
           <span>{duration || "0:00"}</span>
         </div>
       </div>
@@ -105,7 +120,11 @@ export const formatDateSeparator = (dateString) => {
   } else if (msgDate.getTime() === yesterday.getTime()) {
     return "Yesterday";
   } else {
-    return date.toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString([], {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
   }
 };
 
@@ -119,13 +138,13 @@ export const renderTextWithLinks = (text) => {
         href={part}
         target="_blank"
         rel="noopener noreferrer"
-        className='text-blue-500 underline underline-offset-2 hover:text-blue-600 break-all relative z-10'
+        className="text-blue-500 underline underline-offset-2 hover:text-blue-600 break-all relative z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {part}
       </a>
     ) : (
       <span key={i}>{part}</span>
-    )
+    ),
   );
 };

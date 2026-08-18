@@ -1,6 +1,6 @@
-import React from 'react';
-import { ArrowLeft, Search, Info, X } from 'lucide-react';
-import { Avatar } from '../../../components/ui/ui';
+import React from "react";
+import { ArrowLeft, Search, Info, X } from "lucide-react";
+import { Avatar } from "../../../components/ui/ui";
 
 export const ChatHeaderBar = ({
   chatTitle,
@@ -13,7 +13,7 @@ export const ChatHeaderBar = ({
   isRightSidebarOpen,
   toggleRightSidebar,
   onBack,
-  selectChat
+  selectChat,
 }) => {
   return (
     <div className="h-16 px-3 sm:px-4 border-b border-[#e9edef] bg-[#f0f2f5] flex items-center justify-between z-10 shrink-0 select-none">
@@ -37,14 +37,18 @@ export const ChatHeaderBar = ({
           src={isDirect ? recipient?.avatar : group?.avatar}
           name={chatTitle}
           size="md"
-          status={isDirect ? (recipient?.isOnline ? 'online' : 'offline') : null}
+          status={
+            isDirect ? (recipient?.isOnline ? "online" : "offline") : null
+          }
           color={isDirect ? recipient?.avatarColor : group?.avatarColor}
         />
         <div className="text-left min-w-0">
           <h4 className="text-sm font-bold text-[#111b21] truncate">
             {chatTitle}
           </h4>
-          <p className={`text-[10px] truncate ${isDirect && recipient?.isOnline ? 'text-[#00a884] font-semibold' : 'text-[#667781]'}`}>
+          <p
+            className={`text-[10px] truncate ${isDirect && recipient?.isOnline ? "text-[#00a884] font-semibold" : "text-[#667781]"}`}
+          >
             {chatSubtitle}
           </p>
         </div>
@@ -53,13 +57,13 @@ export const ChatHeaderBar = ({
       <div className="flex items-center gap-1">
         <button
           onClick={() => setShowSearchInChat(!showSearchInChat)}
-          className={`p-2 rounded-xl cursor-pointer ${showSearchInChat ? 'bg-slate-900 text-white' : 'text-slate-450 hover:text-slate-750 hover:bg-slate-100'}`}
+          className={`p-2 rounded-xl cursor-pointer ${showSearchInChat ? "bg-slate-900 text-white" : "text-slate-450 hover:text-slate-750 hover:bg-slate-100"}`}
         >
           <Search className="h-4.5 w-4.5" />
         </button>
         <button
           onClick={toggleRightSidebar}
-          className={`p-2 rounded-xl cursor-pointer ${isRightSidebarOpen ? 'bg-slate-900 text-white' : 'text-slate-450 hover:text-slate-750 hover:bg-slate-100'}`}
+          className={`p-2 rounded-xl cursor-pointer ${isRightSidebarOpen ? "bg-slate-900 text-white" : "text-slate-450 hover:text-slate-750 hover:bg-slate-100"}`}
         >
           <Info className="h-4.5 w-4.5" />
         </button>

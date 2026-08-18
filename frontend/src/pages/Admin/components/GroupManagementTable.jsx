@@ -1,23 +1,29 @@
-import React from 'react';
-import { Search, UserCheck, UserX, Trash2 } from 'lucide-react';
-import { Avatar, Badge } from '../../../components/ui/ui';
+import React from "react";
+import { Search, UserCheck, UserX, Trash2 } from "lucide-react";
+import { Avatar, Badge } from "../../../components/ui/ui";
 
 export const GroupManagementTable = ({
   groupsList = [],
-  groupSearch = '',
+  groupSearch = "",
   setGroupSearch,
-  groupFilter = 'all',
+  groupFilter = "all",
   setGroupFilter,
   handleToggleBlockGroupConfirmed,
-  handleDeleteGroupConfirmed
+  handleDeleteGroupConfirmed,
 }) => {
-  const filteredGroups = (groupsList || []).filter(g => {
-    const matchesSearch = (g.name || '').toLowerCase().includes((groupSearch || '').toLowerCase()) ||
-      (g.description && g.description.toLowerCase().includes((groupSearch || '').toLowerCase()));
+  const filteredGroups = (groupsList || []).filter((g) => {
+    const matchesSearch =
+      (g.name || "")
+        .toLowerCase()
+        .includes((groupSearch || "").toLowerCase()) ||
+      (g.description &&
+        g.description
+          .toLowerCase()
+          .includes((groupSearch || "").toLowerCase()));
     if (!matchesSearch) return false;
 
-    if (groupFilter === 'active') return !g.isBlocked;
-    if (groupFilter === 'blocked') return !!g.isBlocked;
+    if (groupFilter === "active") return !g.isBlocked;
+    if (groupFilter === "blocked") return !!g.isBlocked;
     return true;
   });
 
@@ -35,12 +41,14 @@ export const GroupManagementTable = ({
           />
         </div>
         <div className="flex gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 no-scrollbar select-none items-center">
-          {['all', 'active', 'blocked'].map(filter => (
+          {["all", "active", "blocked"].map((filter) => (
             <button
               key={filter}
               onClick={() => setGroupFilter(filter)}
-              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer shrink-0 ${groupFilter === filter ? 'bg-slate-950 text-white shadow-sm' : 'bg-white text-slate-700 hover:text-black border border-slate-200 hover:bg-slate-50'}`}
-            >{filter}</button>
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer shrink-0 ${groupFilter === filter ? "bg-slate-950 text-white shadow-sm" : "bg-white text-slate-700 hover:text-black border border-slate-200 hover:bg-slate-50"}`}
+            >
+              {filter}
+            </button>
           ))}
         </div>
       </div>
@@ -59,7 +67,10 @@ export const GroupManagementTable = ({
             <tbody className="divide-y divide-slate-100 text-xs font-semibold">
               {filteredGroups.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="px-6 py-12 text-center text-slate-500 font-extrabold">
+                  <td
+                    colSpan="4"
+                    className="px-6 py-12 text-center text-slate-500 font-extrabold"
+                  >
                     No groups found matching the search criteria.
                   </td>
                 </tr>
@@ -67,33 +78,60 @@ export const GroupManagementTable = ({
                 filteredGroups.map((g) => {
                   const isGroupBlocked = g.isBlocked;
                   return (
-                    <tr key={g.id} className="hover:bg-slate-50/50 transition-colors">
+                    <tr
+                      key={g.id}
+                      className="hover:bg-slate-50/50 transition-colors"
+                    >
                       <td className="px-6 py-4 flex items-center gap-3">
                         <Avatar src={g.avatar} name={g.name} size="sm" />
                         <div>
-                          <span className="font-black text-slate-900 block text-sm">{g.name}</span>
-                          <span className="text-[10px] text-slate-400 font-bold block truncate max-w-xs">{g.description || 'No description'}</span>
+                          <span className="font-black text-slate-900 block text-sm">
+                            {g.name}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-bold block truncate max-w-xs">
+                            {g.description || "No description"}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 select-none">
-                        <Badge variant="secondary">{g.membersCount} Members</Badge>
+                        <Badge variant="secondary">
+                          {g.membersCount} Members
+                        </Badge>
                       </td>
                       <td className="px-6 py-4 select-none">
-                        <span className={`inline-flex items-center gap-2 text-xs font-extrabold ${isGroupBlocked ? 'text-rose-500' : 'text-emerald-500'}`}>
-                          <span className={`h-2 w-2 rounded-full ${isGroupBlocked ? 'bg-rose-500' : 'bg-emerald-500'} ${!isGroupBlocked && 'animate-pulse'}`} />
-                          {isGroupBlocked ? 'Blocked' : 'Active'}
+                        <span
+                          className={`inline-flex items-center gap-2 text-xs font-extrabold ${isGroupBlocked ? "text-rose-500" : "text-emerald-500"}`}
+                        >
+                          <span
+                            className={`h-2 w-2 rounded-full ${isGroupBlocked ? "bg-rose-500" : "bg-emerald-500"} ${!isGroupBlocked && "animate-pulse"}`}
+                          />
+                          {isGroupBlocked ? "Blocked" : "Active"}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right select-none space-x-2.5">
                         <button
-                          onClick={() => handleToggleBlockGroupConfirmed(g.id, g.name, isGroupBlocked)}
-                          className={`inline-flex p-2 rounded-xl border cursor-pointer hover:scale-105 active:scale-95 transition-all ${isGroupBlocked ? 'border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100'}`}
-                          title={isGroupBlocked ? 'Unblock Group' : 'Block Group'}
+                          onClick={() =>
+                            handleToggleBlockGroupConfirmed(
+                              g.id,
+                              g.name,
+                              isGroupBlocked,
+                            )
+                          }
+                          className={`inline-flex p-2 rounded-xl border cursor-pointer hover:scale-105 active:scale-95 transition-all ${isGroupBlocked ? "border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100" : "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"}`}
+                          title={
+                            isGroupBlocked ? "Unblock Group" : "Block Group"
+                          }
                         >
-                          {isGroupBlocked ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
+                          {isGroupBlocked ? (
+                            <UserCheck className="h-4 w-4" />
+                          ) : (
+                            <UserX className="h-4 w-4" />
+                          )}
                         </button>
                         <button
-                          onClick={() => handleDeleteGroupConfirmed(g.id, g.name)}
+                          onClick={() =>
+                            handleDeleteGroupConfirmed(g.id, g.name)
+                          }
                           className="inline-flex p-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:scale-105 active:scale-95 transition-all cursor-pointer"
                           title="Delete Group"
                         >

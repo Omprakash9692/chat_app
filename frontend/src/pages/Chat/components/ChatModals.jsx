@@ -1,22 +1,35 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Forward, Pin, X } from 'lucide-react';
-import { Avatar } from '../../../components/ui/ui';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Forward, Pin, X } from "lucide-react";
+import { Avatar } from "../../../components/ui/ui";
 
-export const ForwardMessageModal = ({ forwardMessage, chats, allUsers, user, onClose, onSendForward }) => {
+export const ForwardMessageModal = ({
+  forwardMessage,
+  chats,
+  allUsers,
+  user,
+  onClose,
+  onSendForward,
+}) => {
   const [selectedChatIds, setSelectedChatIds] = useState([]);
-  const [forwardSearch, setForwardSearch] = useState('');
+  const [forwardSearch, setForwardSearch] = useState("");
 
   if (!forwardMessage) return null;
 
   const toggleSelectChat = (chatId) => {
-    setSelectedChatIds(prev =>
-      prev.includes(chatId) ? prev.filter(id => id !== chatId) : [...prev, chatId]
+    setSelectedChatIds((prev) =>
+      prev.includes(chatId)
+        ? prev.filter((id) => id !== chatId)
+        : [...prev, chatId],
     );
   };
 
-  const filteredChats = chats.filter(c => {
-    const name = c.name || (allUsers.find(u => u.id === c.participants?.find(p => p !== 'user_me'))?.name);
+  const filteredChats = chats.filter((c) => {
+    const name =
+      c.name ||
+      allUsers.find(
+        (u) => u.id === c.participants?.find((p) => p !== "user_me"),
+      )?.name;
     return name?.toLowerCase().includes(forwardSearch.toLowerCase());
   });
 
@@ -33,45 +46,58 @@ export const ForwardMessageModal = ({ forwardMessage, chats, allUsers, user, onC
             <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
               <Forward className="h-5 w-5 text-indigo-600" /> Forward Message
             </h3>
-            <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400">
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400"
+            >
               <X className="h-4 w-4" />
             </button>
           </div>
 
           <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs italic text-slate-600 mb-4 truncate">
-            "{forwardMessage.text || 'Shared Attachment'}"
+            "{forwardMessage.text || "Shared Attachment"}"
           </div>
 
           <input
             type="text"
             placeholder="Search contacts or groups..."
             value={forwardSearch}
-            onChange={e => setForwardSearch(e.target.value)}
+            onChange={(e) => setForwardSearch(e.target.value)}
             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none mb-4"
           />
 
           <div className="flex-1 overflow-y-auto space-y-2 pr-1 no-scrollbar">
-            {filteredChats.map(c => {
-              const isDirect = c.type === 'direct';
-              const recipientId = isDirect ? c.participants?.find(p => p !== 'user_me') : null;
-              const recipient = isDirect ? allUsers.find(u => u.id === recipientId) : null;
-              const title = isDirect ? (recipient?.name || c.name) : c.name;
+            {filteredChats.map((c) => {
+              const isDirect = c.type === "direct";
+              const recipientId = isDirect
+                ? c.participants?.find((p) => p !== "user_me")
+                : null;
+              const recipient = isDirect
+                ? allUsers.find((u) => u.id === recipientId)
+                : null;
+              const title = isDirect ? recipient?.name || c.name : c.name;
               const isSelected = selectedChatIds.includes(c.id);
 
               return (
                 <div
                   key={c.id}
                   onClick={() => toggleSelectChat(c.id)}
-                  className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all ${isSelected ? 'bg-indigo-50/70 border-indigo-200' : 'bg-white border-slate-100 hover:bg-slate-50'}`}
+                  className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all ${isSelected ? "bg-indigo-50/70 border-indigo-200" : "bg-white border-slate-100 hover:bg-slate-50"}`}
                 >
                   <div className="flex items-center gap-3">
-                    <Avatar src={isDirect ? recipient?.avatar : c.avatar} name={title} size="sm" />
-                    <span className="text-xs font-bold text-slate-900">{title}</span>
+                    <Avatar
+                      src={isDirect ? recipient?.avatar : c.avatar}
+                      name={title}
+                      size="sm"
+                    />
+                    <span className="text-xs font-bold text-slate-900">
+                      {title}
+                    </span>
                   </div>
                   <input
                     type="checkbox"
                     checked={isSelected}
-                    onChange={() => { }}
+                    onChange={() => {}}
                     className="h-4 w-4 rounded text-indigo-600 cursor-pointer"
                   />
                 </div>
@@ -80,7 +106,10 @@ export const ForwardMessageModal = ({ forwardMessage, chats, allUsers, user, onC
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-4">
-            <button onClick={onClose} className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100"
+            >
               Cancel
             </button>
             <button
@@ -97,7 +126,13 @@ export const ForwardMessageModal = ({ forwardMessage, chats, allUsers, user, onC
   );
 };
 
-export const PinDurationModal = ({ isOpen, onClose, selectedDurationHours, setSelectedDurationHours, onConfirmPin }) => {
+export const PinDurationModal = ({
+  isOpen,
+  onClose,
+  selectedDurationHours,
+  setSelectedDurationHours,
+  onConfirmPin,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -111,20 +146,27 @@ export const PinDurationModal = ({ isOpen, onClose, selectedDurationHours, setSe
         >
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-              <Pin className="h-5 w-5 text-indigo-600 transform rotate-45" /> Choose Pin Duration
+              <Pin className="h-5 w-5 text-indigo-600 transform rotate-45" />{" "}
+              Choose Pin Duration
             </h3>
-            <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:bg-slate-100">
+            <button
+              onClick={onClose}
+              className="p-1 rounded-lg text-slate-400 hover:bg-slate-100"
+            >
               <X className="h-4 w-4" />
             </button>
           </div>
 
           <div className="space-y-2">
             {[
-              { hours: 24, label: '24 Hours' },
-              { hours: 168, label: '7 Days (Default)' },
-              { hours: 720, label: '30 Days' }
-            ].map(item => (
-              <label key={item.hours} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer text-xs font-bold text-slate-800">
+              { hours: 24, label: "24 Hours" },
+              { hours: 168, label: "7 Days (Default)" },
+              { hours: 720, label: "30 Days" },
+            ].map((item) => (
+              <label
+                key={item.hours}
+                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer text-xs font-bold text-slate-800"
+              >
                 <input
                   type="radio"
                   name="pinDuration"
@@ -138,7 +180,10 @@ export const PinDurationModal = ({ isOpen, onClose, selectedDurationHours, setSe
           </div>
 
           <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100">
-            <button onClick={onClose} className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100"
+            >
               Cancel
             </button>
             <button

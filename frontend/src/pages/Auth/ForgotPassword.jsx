@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
-import { Mail, ArrowLeft, Send, KeyRound } from 'lucide-react';
-import { useNotifications } from '../../context/NotificationContext';
-import { useAuth } from '../../context/AuthContext';
-import { BrandLogo } from '../../components/ui/ui';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import { Mail, ArrowLeft, Send, KeyRound } from "lucide-react";
+import { useNotifications } from "../../context/NotificationContext";
+import { useAuth } from "../../context/AuthContext";
+import { BrandLogo } from "../../components/ui/ui";
 
 export const ForgotPassword = () => {
   const { showToast } = useNotifications();
@@ -12,19 +12,31 @@ export const ForgotPassword = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    defaultValues: { email: '' }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: { email: "" },
   });
 
   const onSubmit = async (data) => {
     setLoading(true);
     try {
       await forgotPassword(data.email);
-      sessionStorage.setItem('resetPasswordEmail', data.email);
-      showToast("Reset Code Sent", `Verification code sent to ${data.email}`, "success");
-      navigate('/reset-password');
+      sessionStorage.setItem("resetPasswordEmail", data.email);
+      showToast(
+        "Reset Code Sent",
+        `Verification code sent to ${data.email}`,
+        "success",
+      );
+      navigate("/reset-password");
     } catch (err) {
-      showToast("Request Failed", err.message || "Could not send reset code", "danger");
+      showToast(
+        "Request Failed",
+        err.message || "Could not send reset code",
+        "danger",
+      );
     } finally {
       setLoading(false);
     }
@@ -32,13 +44,11 @@ export const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen bg-[#efeae2] text-[#111b21] flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden font-sans select-none">
-      
       {/* WhatsApp Chat UI Wallpaper Pattern Overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px] opacity-60 pointer-events-none -z-10" />
 
       {/* Main Clean Card */}
       <div className="w-full max-w-md bg-white rounded-3xl p-7 sm:p-9 border border-[#e9edef] shadow-[0_12px_40px_rgba(11,20,26,0.08)] relative z-10">
-        
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-6">
           <div className="h-13 w-13 rounded-2xl bg-gradient-to-tr from-[#00a884] to-[#008069] flex items-center justify-center text-white shadow-lg shadow-[#00a884]/20 mb-4 transition-transform hover:scale-105">
@@ -51,7 +61,8 @@ export const ForgotPassword = () => {
             Forgot Password
           </h2>
           <p className="text-xs sm:text-sm text-[#667781] font-medium mt-1.5 leading-relaxed max-w-xs">
-            Enter the email address registered with your account to receive a 6-digit reset code.
+            Enter the email address registered with your account to receive a
+            6-digit reset code.
           </p>
         </div>
 
@@ -67,18 +78,20 @@ export const ForgotPassword = () => {
                 id="email"
                 type="email"
                 placeholder="name@example.com"
-                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.email ? 'border-rose-500' : 'border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]'} text-xs text-[#111b21] py-3.5 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
-                {...register('email', {
-                  required: 'Email is required',
+                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.email ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3.5 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
+                {...register("email", {
+                  required: "Email is required",
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address'
-                  }
+                    message: "Invalid email address",
+                  },
                 })}
               />
             </div>
             {errors.email && (
-              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-1">{errors.email.message}</p>
+              <p className="text-[11px] font-bold text-rose-500 pl-1 mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -102,7 +115,10 @@ export const ForgotPassword = () => {
 
         {/* Footer Link */}
         <div className="mt-7 border-t border-[#f0f2f5] pt-5 text-center">
-          <Link to="/login" className="inline-flex items-center gap-2 text-xs font-bold text-[#667781] hover:text-[#111b21] transition-colors py-1 px-3 rounded-xl hover:bg-[#f0f2f5]">
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 text-xs font-bold text-[#667781] hover:text-[#111b21] transition-colors py-1 px-3 rounded-xl hover:bg-[#f0f2f5]"
+          >
             <ArrowLeft className="h-4 w-4 text-[#00a884]" /> Return to Login
           </Link>
         </div>

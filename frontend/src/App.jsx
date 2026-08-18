@@ -1,18 +1,18 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
-import { Login } from './pages/Auth/Login';
-import { Register } from './pages/Auth/Register';
-import { ForgotPassword } from './pages/Auth/ForgotPassword';
-import { ResetPassword } from './pages/Auth/ResetPassword';
-import { EmailVerification } from './pages/Auth/EmailVerification';
-import { Layout } from './pages/Chat/Layout';
+import { Login } from "./pages/Auth/Login";
+import { Register } from "./pages/Auth/Register";
+import { ForgotPassword } from "./pages/Auth/ForgotPassword";
+import { ResetPassword } from "./pages/Auth/ResetPassword";
+import { EmailVerification } from "./pages/Auth/EmailVerification";
+import { Layout } from "./pages/Chat/Layout";
 
 // Providers
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { ChatProvider } from './context/ChatContext';
-import { NotificationProvider } from './context/NotificationContext';
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ChatProvider } from "./context/ChatContext";
+import { NotificationProvider } from "./context/NotificationContext";
 
 // Root Redirect Guard
 const RootRedirect = () => {
@@ -21,7 +21,7 @@ const RootRedirect = () => {
     if (!user.isVerified) {
       return <Navigate to="/email-verification" replace />;
     }
-    return <Navigate to={user.role === 'Admin' ? '/admin' : '/chat'} replace />;
+    return <Navigate to={user.role === "Admin" ? "/admin" : "/chat"} replace />;
   }
   return <Navigate to="/login" replace />;
 };
@@ -47,7 +47,7 @@ const UserRoute = ({ children }) => {
   if (!user.isVerified) {
     return <Navigate to="/email-verification" replace />;
   }
-  if (user.role === 'Admin') {
+  if (user.role === "Admin") {
     return <Navigate to="/admin" replace />;
   }
   return children;
@@ -62,7 +62,7 @@ const AdminRoute = ({ children }) => {
   if (!user.isVerified) {
     return <Navigate to="/email-verification" replace />;
   }
-  if (user.role !== 'Admin') {
+  if (user.role !== "Admin") {
     return <Navigate to="/chat" replace />;
   }
   return children;
@@ -75,7 +75,9 @@ const AppContent = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 select-none">
         <div className="h-10 w-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-xs font-bold text-slate-500 tracking-[0.15em] uppercase">Connecting to Sampark...</p>
+        <p className="text-xs font-bold text-slate-500 tracking-[0.15em] uppercase">
+          Connecting to Sampark...
+        </p>
       </div>
     );
   }
@@ -92,29 +94,29 @@ const AppContent = () => {
         <Route path="/email-verification" element={<EmailVerification />} />
 
         {/* Application routes wrapped with authentication guards */}
-        <Route 
-          path="/chat" 
+        <Route
+          path="/chat"
           element={
             <UserRoute>
               <Layout />
             </UserRoute>
-          } 
+          }
         />
-        <Route 
-          path="/settings" 
+        <Route
+          path="/settings"
           element={
             <ProtectedRoute>
               <Layout />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin" 
+        <Route
+          path="/admin"
           element={
             <AdminRoute>
               <Layout />
             </AdminRoute>
-          } 
+          }
         />
 
         {/* Redirect invalid routes back to root */}

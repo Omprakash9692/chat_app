@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ShieldCheck, ArrowLeft, RefreshCw } from 'lucide-react';
-import { useNotifications } from '../../context/NotificationContext';
-import { useAuth } from '../../context/AuthContext';
-import { BrandLogo } from '../../components/ui/ui';
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ShieldCheck, ArrowLeft, RefreshCw } from "lucide-react";
+import { useNotifications } from "../../context/NotificationContext";
+import { useAuth } from "../../context/AuthContext";
+import { BrandLogo } from "../../components/ui/ui";
 
 const CODE_LENGTH = 6;
 
@@ -15,7 +15,7 @@ export const EmailVerification = () => {
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
-  const [code, setCode] = useState(Array(CODE_LENGTH).fill(''));
+  const [code, setCode] = useState(Array(CODE_LENGTH).fill(""));
   const inputRefs = useRef([]);
   const timerRef = useRef(null);
 
@@ -29,7 +29,9 @@ export const EmailVerification = () => {
     setCountdown(60);
     clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
-      setCountdown(prev => (prev <= 1 ? (clearInterval(timerRef.current), 0) : prev - 1));
+      setCountdown((prev) =>
+        prev <= 1 ? (clearInterval(timerRef.current), 0) : prev - 1,
+      );
     }, 1000);
   };
 
@@ -38,22 +40,36 @@ export const EmailVerification = () => {
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
-    if (value !== '' && index < CODE_LENGTH - 1 && inputRefs.current[index + 1]) {
+    if (
+      value !== "" &&
+      index < CODE_LENGTH - 1 &&
+      inputRefs.current[index + 1]
+    ) {
       inputRefs.current[index + 1].focus();
     }
   };
 
   const handleKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && code[index] === '' && index > 0 && inputRefs.current[index - 1]) {
+    if (
+      e.key === "Backspace" &&
+      code[index] === "" &&
+      index > 0 &&
+      inputRefs.current[index - 1]
+    ) {
       inputRefs.current[index - 1].focus();
     }
   };
 
   const handlePaste = (e) => {
     e.preventDefault();
-    const pasteData = e.clipboardData.getData('text').slice(0, CODE_LENGTH).split('');
+    const pasteData = e.clipboardData
+      .getData("text")
+      .slice(0, CODE_LENGTH)
+      .split("");
     const newCode = [...code];
-    pasteData.forEach((char, idx) => { if (idx < CODE_LENGTH && !isNaN(char)) newCode[idx] = char; });
+    pasteData.forEach((char, idx) => {
+      if (idx < CODE_LENGTH && !isNaN(char)) newCode[idx] = char;
+    });
     setCode(newCode);
     const focusIdx = Math.min(pasteData.length, CODE_LENGTH - 1);
     if (inputRefs.current[focusIdx]) inputRefs.current[focusIdx].focus();
@@ -61,19 +77,31 @@ export const EmailVerification = () => {
 
   const handleVerify = async (e) => {
     if (e) e.preventDefault();
-    const fullCode = code.join('');
+    const fullCode = code.join("");
     if (fullCode.length < CODE_LENGTH) {
-      showToast("Incomplete Code", `Please enter the full ${CODE_LENGTH}-digit verification code.`, "warning");
+      showToast(
+        "Incomplete Code",
+        `Please enter the full ${CODE_LENGTH}-digit verification code.`,
+        "warning",
+      );
       return;
     }
     setLoading(true);
     try {
       const verifiedUser = await verifyEmail(fullCode);
-      showToast("Email Verified", "Your account has been fully validated.", "success");
-      navigate(verifiedUser?.role === 'Admin' ? '/admin' : '/chat');
+      showToast(
+        "Email Verified",
+        "Your account has been fully validated.",
+        "success",
+      );
+      navigate(verifiedUser?.role === "Admin" ? "/admin" : "/chat");
     } catch (err) {
-      showToast("Verification Failed", err.message || "Invalid verification code.", "danger");
-      setCode(Array(CODE_LENGTH).fill(''));
+      showToast(
+        "Verification Failed",
+        err.message || "Invalid verification code.",
+        "danger",
+      );
+      setCode(Array(CODE_LENGTH).fill(""));
       if (inputRefs.current[0]) inputRefs.current[0].focus();
     } finally {
       setLoading(false);
@@ -85,12 +113,20 @@ export const EmailVerification = () => {
     setResendLoading(true);
     try {
       await resendVerification();
-      showToast("Code Dispatched", `A new ${CODE_LENGTH}-digit code has been sent to your email.`, "success");
-      setCode(Array(CODE_LENGTH).fill(''));
+      showToast(
+        "Code Dispatched",
+        `A new ${CODE_LENGTH}-digit code has been sent to your email.`,
+        "success",
+      );
+      setCode(Array(CODE_LENGTH).fill(""));
       if (inputRefs.current[0]) inputRefs.current[0].focus();
       startCountdown();
     } catch (err) {
-      showToast("Resend Failed", err.message || "Could not resend code. Please try again.", "danger");
+      showToast(
+        "Resend Failed",
+        err.message || "Could not resend code. Please try again.",
+        "danger",
+      );
     } finally {
       setResendLoading(false);
     }
@@ -108,15 +144,20 @@ export const EmailVerification = () => {
             <ShieldCheck className="h-6 w-6" />
           </div>
           <BrandLogo size="lg" showSubtitle={false} className="mb-2" />
-          <h2 className="text-xl sm:text-2xl font-black text-[#111b21] tracking-tight mt-1">Verify Your Email</h2>
+          <h2 className="text-xl sm:text-2xl font-black text-[#111b21] tracking-tight mt-1">
+            Verify Your Email
+          </h2>
           <p className="text-xs sm:text-sm text-[#667781] font-medium mt-1.5 leading-relaxed max-w-xs">
-            Enter the {CODE_LENGTH}-digit confirmation code sent to your registered email address.
+            Enter the {CODE_LENGTH}-digit confirmation code sent to your
+            registered email address.
           </p>
         </div>
 
         <form onSubmit={handleVerify} className="space-y-6 text-center">
           <div>
-            <p className="text-[10px] text-[#667781] uppercase font-black tracking-wider mb-4">{CODE_LENGTH}-digit Confirmation Code</p>
+            <p className="text-[10px] text-[#667781] uppercase font-black tracking-wider mb-4">
+              {CODE_LENGTH}-digit Confirmation Code
+            </p>
             <div className="flex justify-between gap-2.5" onPaste={handlePaste}>
               {code.map((num, idx) => (
                 <input
@@ -139,14 +180,23 @@ export const EmailVerification = () => {
             className="w-full py-3.5 px-4 rounded-2xl bg-[#00a884] hover:bg-[#008069] disabled:opacity-60 disabled:cursor-not-allowed text-white font-extrabold text-xs shadow-md shadow-[#00a884]/20 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading ? (
-              <span className="flex items-center gap-2"><span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />Verifying Account...</span>
+              <span className="flex items-center gap-2">
+                <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                Verifying Account...
+              </span>
             ) : (
-              <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Verify Account</span>
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4" /> Verify Account
+              </span>
             )}
           </button>
 
           <div className="flex items-center justify-between text-xs font-bold pt-4 border-t border-[#f0f2f5]">
-            <button type="button" onClick={() => navigate('/login')} className="inline-flex items-center gap-1.5 text-[#667781] hover:text-[#111b21] transition-colors">
+            <button
+              type="button"
+              onClick={() => navigate("/login")}
+              className="inline-flex items-center gap-1.5 text-[#667781] hover:text-[#111b21] transition-colors"
+            >
               <ArrowLeft className="h-4 w-4 text-[#00a884]" /> Back to Login
             </button>
 
@@ -154,10 +204,16 @@ export const EmailVerification = () => {
               type="button"
               onClick={handleResend}
               disabled={!canResend}
-              className={`inline-flex items-center gap-1.5 transition-colors ${canResend ? 'text-[#00a884] hover:text-[#008069] cursor-pointer' : 'text-slate-400 cursor-not-allowed'}`}
+              className={`inline-flex items-center gap-1.5 transition-colors ${canResend ? "text-[#00a884] hover:text-[#008069] cursor-pointer" : "text-slate-400 cursor-not-allowed"}`}
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${resendLoading ? 'animate-spin' : ''}`} />
-              {resendLoading ? 'Sending...' : countdown > 0 ? `Resend in ${countdown}s` : 'Resend Code'}
+              <RefreshCw
+                className={`h-3.5 w-3.5 ${resendLoading ? "animate-spin" : ""}`}
+              />
+              {resendLoading
+                ? "Sending..."
+                : countdown > 0
+                  ? `Resend in ${countdown}s`
+                  : "Resend Code"}
             </button>
           </div>
         </form>
@@ -167,4 +223,3 @@ export const EmailVerification = () => {
 };
 
 export default EmailVerification;
-
