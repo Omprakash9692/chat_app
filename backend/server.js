@@ -1,9 +1,10 @@
 import express from "express";
-import "dotenv/config";
-import http from "http";
 import cors from "cors";
+import "dotenv/config";
 
-import connectDB from "./config/db.js";
+import http from "http";
+
+import { connectDB } from "./config/db.js";
 
 //Routes
 import authRoutes from "./routes/auth.routes.js";
@@ -16,9 +17,6 @@ import { initSocket, userSockets, userActiveChats } from "./sockets/socket.js";
 const app = express();
 const PORT = 5000;
 
-//connect to database
-connectDB();
-
 //Middleware
 app.use(cors({
     origin: "http://localhost:5173",
@@ -29,6 +27,9 @@ app.use(cors({
 
 app.use(express.json());
 
+//connect to database
+connectDB();
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -37,13 +38,12 @@ app.use("/api/chats", messageRoutes);
 app.use("/api/chats", groupRoutes);
 
 app.get('/', (req, res) => {
-  res.json({ message: "API is working" })
-})
+    res.json("API WORKING")
+});
 
-
-
-
-
+app.listen(PORT, () => {
+    console.log(`Server Started on http://localhost:${PORT}`);
+});
 
 const server = http.createServer(app);
 
@@ -51,7 +51,3 @@ const io = initSocket(server);
 app.set("io", io);
 app.set("userSockets", userSockets);
 app.set("userActiveChats", userActiveChats);
-
-server.listen(PORT, () => {
-    console.log(`server running on http://localhost:${PORT}`);
-});
