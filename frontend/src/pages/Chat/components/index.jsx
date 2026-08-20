@@ -12,12 +12,12 @@ import {
 import { Avatar, Modal, Tabs, Button, Tooltip } from "../../../components/ui/ui";
 
  //  UTILITY FUNCTIONS & HELPERS
-export const getMsgDateKey = (dateString) => {
+const getMsgDateKey = (dateString) => {
   const d = new Date(dateString);
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 };
 
-export const formatDateSeparator = (dateString) => {
+const formatDateSeparator = (dateString) => {
   const d = new Date(dateString);
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -30,7 +30,7 @@ export const formatDateSeparator = (dateString) => {
   return d.toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" });
 };
 
-export const renderTextWithLinks = (text) => {
+const renderTextWithLinks = (text) => {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.split(urlRegex).map((part, i) =>
     urlRegex.test(part) ? (
@@ -95,14 +95,14 @@ export const SimulatedVoicePlayer = ({ duration, url }) => {
   const formatTime = (t) => isNaN(t) ? "0:00" : `${Math.floor(t / 60)}:${Math.floor(t % 60).toString().padStart(2, "0")}`;
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 max-w-[280px]">
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 max-w-70">
       <button onClick={togglePlay} className="h-8 w-8 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center cursor-pointer transition-colors shrink-0">
         {isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current ml-0.5" />}
       </button>
       <div className="flex-1">
-        <div className="flex items-end gap-[2px] h-10 w-full overflow-hidden select-none">
+        <div className="flex items-end gap-0.5 h-10 w-full overflow-hidden select-none">
           {waveBars.map((h, i) => (
-            <div key={i} style={{ height: `${h}%` }} className={`w-[3px] rounded-full transition-colors duration-150 ${progress >= (i / waveBars.length) * 100 ? "bg-indigo-600 dark:bg-indigo-400" : "bg-slate-350 dark:bg-slate-700"}`} />
+            <div key={i} style={{ height: `${h}%` }} className={`w-0.75 rounded-full transition-colors duration-150 ${progress >= (i / waveBars.length) * 100 ? "bg-indigo-600 dark:bg-indigo-400" : "bg-slate-350 dark:bg-slate-700"}`} />
           ))}
         </div>
         <div className="flex items-center justify-between text-[9px] text-slate-400 dark:text-slate-500 mt-1 select-none font-semibold">
@@ -302,7 +302,7 @@ export const ChatInputBar = ({
                     )}
                     <div className="min-w-0 text-left">
                       <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-[#111b21] truncate max-w-[220px]">{pendingAttachment.name}</span>
+                        <span className="font-extrabold text-[#111b21] truncate max-w-55">{pendingAttachment.name}</span>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 shrink-0">Ready to send</span>
                       </div>
                       <p className="text-[11px] font-medium text-[#667781] truncate mt-0.5">{pendingAttachment.size} • Click send button to share</p>
@@ -362,7 +362,7 @@ export const ChatInputBar = ({
               </div>
 
               <div className="flex-1 min-w-0 flex items-center px-1">
-                <textarea value={inputText} onChange={handleInputChange} onKeyDown={handleKeyPress} placeholder="Type a message" className="w-full bg-transparent text-xs outline-none text-[#111b21] placeholder-[#667781] max-h-[100px] min-h-[20px] resize-none leading-relaxed no-scrollbar font-medium py-1" rows={1} />
+                <textarea value={inputText} onChange={handleInputChange} onKeyDown={handleKeyPress} placeholder="Type a message" className="w-full bg-transparent text-xs outline-none text-[#111b21] placeholder-[#667781] max-h-25 min-h-5 resize-none leading-relaxed no-scrollbar font-medium py-1" rows={1} />
               </div>
 
               <div className="shrink-0 flex items-center">
@@ -418,8 +418,8 @@ export const MessageBubble = ({
 
           {showFullEmojiPickerMsgId === msg.id && (
             <>
-              <div className="fixed inset-0 z-[95] bg-transparent" onClick={(e) => { e.stopPropagation(); setShowFullEmojiPickerMsgId(null); }} />
-              <div className={`absolute z-[100] ${isMe ? "right-0" : "left-0"} ${isNearBottom ? "bottom-full mb-2 top-auto" : "top-full mt-2 bottom-auto"} shadow-2xl rounded-2xl overflow-hidden border border-slate-200/90 bg-white animate-in fade-in zoom-in-95`} onClick={(e) => e.stopPropagation()}>
+              <div className="fixed inset-0 z-95 bg-transparent" onClick={(e) => { e.stopPropagation(); setShowFullEmojiPickerMsgId(null); }} />
+              <div className={`absolute z-100 ${isMe ? "right-0" : "left-0"} ${isNearBottom ? "bottom-full mb-2 top-auto" : "top-full mt-2 bottom-auto"} shadow-2xl rounded-2xl overflow-hidden border border-slate-200/90 bg-white animate-in fade-in zoom-in-95`} onClick={(e) => e.stopPropagation()}>
                 <EmojiPicker theme="light" onEmojiClick={(eData) => { addReaction(msg.id, eData.emoji); setShowFullEmojiPickerMsgId(null); setShowEmojiPickerMsgId(null); setActiveMsgMenuId(null); }} searchPlaceholder="Search emoji..." width={Math.min(300, typeof window !== "undefined" ? window.innerWidth - 32 : 300)} height={320} />
               </div>
             </>
@@ -450,7 +450,7 @@ export const MessageBubble = ({
             </div>
           )}
 
-          <div className={`pl-3.5 pr-8 py-2 rounded-2xl text-xs sm:text-xs leading-relaxed max-w-full text-left shadow-[0_1px_0.5px_rgba(11,20,26,0.13)] relative break-words [overflow-wrap:anywhere] [word-break:break-word] ${isMe ? "bg-[#d9fdd3] text-[#111b21] rounded-tr-xs" : "bg-white text-[#111b21] rounded-tl-xs border border-slate-200/50"} ${msg.isDeleted ? "italic text-slate-400 bg-slate-50 border-dashed pr-3.5" : ""} ${msg.emojiReactions && msg.emojiReactions.length > 0 ? "pb-3.5 mb-1" : ""}`}>
+          <div className={`pl-3.5 pr-8 py-2 rounded-2xl text-xs sm:text-xs leading-relaxed max-w-full text-left shadow-[0_1px_0.5px_rgba(11,20,26,0.13)] relative wrap-anywhere [word-break:break-word] ${isMe ? "bg-[#d9fdd3] text-[#111b21] rounded-tr-xs" : "bg-white text-[#111b21] rounded-tl-xs border border-slate-200/50"} ${msg.isDeleted ? "italic text-slate-400 bg-slate-50 border-dashed pr-3.5" : ""} ${msg.emojiReactions && msg.emojiReactions.length > 0 ? "pb-3.5 mb-1" : ""}`}>
             {msg.isForwarded && (
               <div className={`flex items-center gap-1 mb-1 text-[9px] font-bold tracking-wide uppercase italic ${isMe ? "text-indigo-300" : "text-slate-400"}`}>
                 <Forward className="h-2.5 w-2.5" /><span>Forwarded</span>
@@ -463,14 +463,14 @@ export const MessageBubble = ({
               </div>
             )}
 
-            {msg.text && <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] [word-break:break-word]">{renderTextWithLinks(msg.text)}</p>}
+            {msg.text && <p className="whitespace-pre-wrap wrap-anywhere [word-break:break-word]">{renderTextWithLinks(msg.text)}</p>}
             {msg.type === "image" && msg.attachmentUrl && (
-              <div className="relative mt-1 max-w-full sm:max-w-[240px] overflow-hidden rounded-lg cursor-zoom-in border-0">
+              <div className="relative mt-1 max-w-full sm:max-w-60 overflow-hidden rounded-lg cursor-zoom-in border-0">
                 <img src={msg.attachmentUrl} alt={msg.attachmentName || "Attachment"} className="object-cover h-40 w-full hover:scale-105 transition-transform duration-300" onClick={() => setLightboxImage(msg.attachmentUrl)} />
               </div>
             )}
             {msg.type === "file" && (
-              <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" download={msg.attachmentName} onClick={(e) => handleDownloadFile(e, msg.attachmentUrl, msg.attachmentName)} className="flex items-center justify-between gap-3 p-3 mt-1.5 rounded-xl border-0 bg-black/5 hover:bg-black/10 transition-colors duration-200 cursor-pointer max-w-full sm:max-w-[260px] group/file text-slate-800 decoration-transparent">
+              <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" download={msg.attachmentName} onClick={(e) => handleDownloadFile(e, msg.attachmentUrl, msg.attachmentName)} className="flex items-center justify-between gap-3 p-3 mt-1.5 rounded-xl border-0 bg-black/5 hover:bg-black/10 transition-colors duration-200 cursor-pointer max-w-full sm:max-w-65 group/file text-slate-800 decoration-transparent">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="h-10 w-10 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center shrink-0 group-hover/file:bg-red-500/20 transition-colors"><FileText className="h-5.5 w-5.5" /></div>
                   <div className="min-w-0 text-left">
@@ -483,7 +483,7 @@ export const MessageBubble = ({
             )}
             {msg.type === "audio" && <SimulatedVoicePlayer duration={msg.attachmentDuration} url={msg.attachmentUrl} />}
             {msg.type === "call" && (
-              <div className="flex items-center gap-3 p-3 mt-1.5 rounded-xl border-0 bg-black/5 text-slate-800 max-w-[245px]">
+              <div className="flex items-center gap-3 p-3 mt-1.5 rounded-xl border-0 bg-black/5 text-slate-800 max-w-61.25">
                 <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${msg.text.includes("Missed") ? "bg-rose-500/10 text-rose-500" : "bg-emerald-500/10 text-emerald-500"}`}>
                   <Phone className="h-4.5 w-4.5" />
                 </div>
@@ -755,7 +755,7 @@ export const CreateGroupModal = ({ isOpen, onClose, allUsers, user, uploadFile, 
             </div>
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200/80">
               <button type="button" onClick={handleClose} className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/60 active:scale-95 transition-all cursor-pointer">Cancel</button>
-              <button type="button" disabled={selectedMembers.length === 0} onClick={() => setGroupStep(2)} className={`px-6 py-2.5 rounded-full text-xs font-extrabold flex items-center gap-1.5 transition-all duration-200 shadow-sm ${selectedMembers.length > 0 ? "bg-gradient-to-r from-[#008069] to-[#00a884] hover:from-[#006e5a] hover:to-[#008069] text-white shadow-md cursor-pointer" : "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-200/60"}`}>
+              <button type="button" disabled={selectedMembers.length === 0} onClick={() => setGroupStep(2)} className={`px-6 py-2.5 rounded-full text-xs font-extrabold flex items-center gap-1.5 transition-all duration-200 shadow-sm ${selectedMembers.length > 0 ? "bg-linear-to-r from-[#008069] to-[#00a884] hover:from-[#006e5a] hover:to-[#008069] text-white shadow-md cursor-pointer" : "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-200/60"}`}>
                 <span>Next</span><ChevronRight className="h-4 w-4" />
               </button>
             </div>
@@ -778,7 +778,7 @@ export const CreateGroupModal = ({ isOpen, onClose, allUsers, user, uploadFile, 
             </div>
             <div className="space-y-1.5">
               <label className="block text-[10px] font-black text-[#54656f] uppercase tracking-wider">Description (Optional)</label>
-              <textarea placeholder="Provide a short summary..." value={groupDesc} onChange={(e) => setGroupDesc(e.target.value)} className="block w-full rounded-xl bg-[#f0f4f8] border border-slate-200/80 focus:border-[#008069] focus:ring-1 focus:ring-[#008069] text-xs p-3.5 outline-none font-semibold min-h-[70px] resize-none" />
+              <textarea placeholder="Provide a short summary..." value={groupDesc} onChange={(e) => setGroupDesc(e.target.value)} className="block w-full rounded-xl bg-[#f0f4f8] border border-slate-200/80 focus:border-[#008069] focus:ring-1 focus:ring-[#008069] text-xs p-3.5 outline-none font-semibold min-h-17.5 resize-none" />
             </div>
             <div className="space-y-2 pt-2 border-t border-slate-200/80">
               <label className="block text-[10px] font-black text-[#54656f] uppercase tracking-wider">Selected Members ({selectedMembers.length})</label>
@@ -803,7 +803,7 @@ export const CreateGroupModal = ({ isOpen, onClose, allUsers, user, uploadFile, 
             </div>
             <div className="flex items-center justify-between pt-4 border-t border-slate-200/80">
               <button type="button" onClick={() => setGroupStep(1)} className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"><ArrowLeft className="h-4 w-4" /><span>Back</span></button>
-              <button type="submit" className="px-6 py-2.5 rounded-full text-xs font-extrabold bg-gradient-to-r from-[#008069] to-[#00a884] hover:from-[#006e5a] hover:to-[#008069] text-white shadow-md cursor-pointer">Create Group</button>
+              <button type="submit" className="px-6 py-2.5 rounded-full text-xs font-extrabold bg-linear-to-r from-[#008069] to-[#00a884] hover:from-[#006e5a] hover:to-[#008069] text-white shadow-md cursor-pointer">Create Group</button>
             </div>
           </div>
         )}
@@ -857,7 +857,7 @@ export const EditGroupDetailsModal = ({ isOpen, onClose, group, updateGroupProfi
         </div>
         <div>
           <label className="block text-[10px] font-black text-slate-500 uppercase">Description</label>
-          <textarea value={groupDesc} onChange={(e) => setGroupDesc(e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none font-semibold text-slate-900 min-h-[70px] resize-none" />
+          <textarea value={groupDesc} onChange={(e) => setGroupDesc(e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none font-semibold text-slate-900 min-h-17.5 resize-none" />
         </div>
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
           <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">Cancel</button>
@@ -958,7 +958,7 @@ export const GroupMembersList = ({
               </div>
 
               {isMenuOpen && !isMe && (
-                <div className="absolute right-0 top-full mt-1.5 z-[100] w-64 rounded-2xl bg-white text-[#111b21] border border-slate-200 shadow-2xl p-2 space-y-1 animate-in fade-in zoom-in-95 duration-150 select-none">
+                <div className="absolute right-0 top-full mt-1.5 z-100 w-64 rounded-2xl bg-white text-[#111b21] border border-slate-200 shadow-2xl p-2 space-y-1 animate-in fade-in zoom-in-95 duration-150 select-none">
                   <button type="button" onClick={async (e) => { e.stopPropagation(); setActiveMemberMenuId(null); const targetId = member._id?.toString() || member.id; await createDirectChat(targetId); showToast("Opening Direct Chat", `Navigated to chat with ${member.name}.`, "info"); if (onClose) onClose(); }} className="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl cursor-pointer transition-colors text-left">
                     <MessageSquare className="h-4 w-4 text-indigo-500 shrink-0" /><span>Message {member.name}</span>
                   </button>
@@ -1214,7 +1214,7 @@ export const SidebarRightModals = ({
           </div>
           <div>
             <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Additional Details</label>
-            <textarea value={reportDetails} onChange={(e) => setReportDetails(e.target.value)} placeholder="Provide extra details..." className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none min-h-[70px] resize-none" />
+            <textarea value={reportDetails} onChange={(e) => setReportDetails(e.target.value)} placeholder="Provide extra details..." className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none min-h-17.5 resize-none" />
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" onClick={() => setIsReportModalOpen(false)}>Cancel</Button>
@@ -1248,7 +1248,7 @@ export const ReactionDetailsModal = ({ isOpen, message, onClose, getSenderProfil
   return (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none"
+        className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none"
         onClick={onClose}
       >
         <motion.div
@@ -1307,7 +1307,7 @@ export const ReactionDetailsModal = ({ isOpen, message, onClose, getSenderProfil
           </div>
 
           {/* List of Users */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-1 no-scrollbar min-h-[160px]">
+          <div className="flex-1 overflow-y-auto p-3 space-y-1 no-scrollbar min-h-40">
             {displayedReactions.length === 0 ? (
               <div className="p-8 text-center text-xs font-semibold text-slate-400">
                 No reactions found.

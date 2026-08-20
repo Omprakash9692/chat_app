@@ -445,11 +445,11 @@ export const Dashboard = () => {
             variant="pill"
           />
         </div>
-        <div className="hidden lg:block w-[140px]" />
+        <div className="hidden lg:block w-35" />
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-grow overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 no-scrollbar">
+      <div className="grow overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 no-scrollbar">
         {/* TAB: OVERVIEW / DASHBOARD */}
         {activeTab === "dashboard" && (
           <div className="space-y-8">
