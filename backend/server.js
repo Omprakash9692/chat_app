@@ -41,13 +41,13 @@ app.get('/', (req, res) => {
     res.json("API WORKING")
 });
 
-app.listen(PORT, () => {
-    console.log(`Server Started on http://localhost:${PORT}`);
-});
-
 const server = http.createServer(app);
 
 const io = initSocket(server);
 app.set("io", io);
 app.set("userSockets", userSockets);
 app.set("userActiveChats", userActiveChats);
+
+server.listen(PORT, () => {
+    console.log(`Server Started on http://localhost:${PORT}`);
+});

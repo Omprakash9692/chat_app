@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { motion } from "framer-motion";
 import {
   Users,
   AlertTriangle,
@@ -340,7 +341,7 @@ export const Dashboard = () => {
       border: "border-emerald-100",
     },
     {
-      label: "Pending Compliance Tickets",
+      label: "Pending Report Tickets",
       value: realPendingReportsCount,
       icon: ShieldAlert,
       subtext: `${totalReportsCount} Total Reports`,
@@ -352,9 +353,9 @@ export const Dashboard = () => {
 
   const adminTabs = [
     { id: "dashboard", label: "Overview Analytics" },
-    { id: "users", label: `Users (${realUsersList.length})` },
-    { id: "groups", label: `Groups (${groupsList.length})` },
-    { id: "reports", label: `Compliance (${realPendingReportsCount})` },
+    { id: "users", label: "Users" },
+    { id: "groups", label: "Groups" },
+    { id: "reports", label: "Reports" },
   ];
 
   return (
@@ -407,7 +408,7 @@ export const Dashboard = () => {
         <div className="text-left w-full lg:w-auto shrink-0 flex items-center justify-between">
           <div>
             <h2 className="text-base sm:text-lg font-black text-slate-950 flex items-center gap-2">
-              <Shield className="h-5 w-5 text-indigo-600 shrink-0" /> Compliance
+              <Shield className="h-5 w-5 text-indigo-600 shrink-0" /> Admin
               Dashboard
             </h2>
             <p className="text-[9px] text-indigo-600 font-bold uppercase tracking-[0.24em] mt-1">

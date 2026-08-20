@@ -40,7 +40,15 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
           );
 
           setChats(prevChats => {
-            const orderedChats = [...activeChats].sort((a, b) => {
+            const mapped = [...activeChats].map(c => {
+              const isActive = activeChatId && (
+                String(c.id) === String(activeChatId) ||
+                String(c._id) === String(activeChatId) ||
+                (c.groupId && String(c.groupId) === String(activeChatId))
+              );
+              return isActive ? { ...c, unreadCount: 0, isUnread: false } : c;
+            });
+            const orderedChats = mapped.sort((a, b) => {
               if (a.pinned && !b.pinned) return -1;
               if (!a.pinned && b.pinned) return 1;
 
@@ -94,7 +102,7 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
 
   useEffect(() => {
     const totalUnread = chats.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
-    document.title = totalUnread > 0 ? `(${totalUnread}) Sampark` : "Sampark";
+    document.title = totalUnread > 0 ? `(${totalUnread}) ChitChat` : "ChitChat";
   }, [chats]);
 
   // Admin reports effect
@@ -297,20 +305,6 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
     }
   };
 
-  const clearChatMessages = async (chatId) => {
-    if (typeof setMessages === 'function') {
-      setMessages(prev => prev.filter(m => m.chatId !== chatId));
-    }
-    setChats(prevChats =>
-      prevChats.map(c => (c.id === chatId ? { ...c, lastMessage: null, lastMessageId: null } : c))
-    );
-    try {
-      await chatApi.clearChatMessages(authFetch, chatId);
-    } catch (err) {
-      console.error("Failed to clear chat messages:", err);
-    }
-  };
-
   const deleteChat = async (chatId) => {
     if (!chatId) return;
     const chatKey = String(chatId);
@@ -359,7 +353,6 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
     toggleArchiveChat,
     toggleFavoriteChat,
     toggleUnreadChat,
-    clearChatMessages,
     deleteChat
   };
 };

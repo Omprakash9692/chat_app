@@ -84,7 +84,9 @@ export const sendMessage = async (req, res) => {
 
   let finalStatus = "sent";
   const blockedFor = [];
-  let initialReadBy, initialDeliveredTo;
+  const now = new Date();
+  const initialReadBy = [];
+  const initialDeliveredTo = [];
 
   if (conversation.type === "direct") {
     const recipientId = conversation.participants.find((p) => !isMe(p, myId));
@@ -95,13 +97,17 @@ export const sendMessage = async (req, res) => {
         blockedFor.push(recipientId);
       }
     }
-    if (blockedFor.length === 0 && recipientId && userSockets?.get(toStr(recipientId))?.size > 0) {
-      finalStatus = userActiveChats?.get(toStr(recipientId)) === toStr(chatId) ? "seen" : "delivered";
+    const recStr = recipientId ? toStr(recipientId) : null;
+    if (blockedFor.length === 0 && recStr && userSockets?.get(recStr)?.size > 0) {
+      if (userActiveChats?.get(recStr) === toStr(chatId)) {
+        initialReadBy.push({ user: recipientId, readAt: now });
+        finalStatus = "seen";
+      } else {
+        initialDeliveredTo.push({ user: recipientId, deliveredAt: now });
+        finalStatus = "delivered";
+      }
     }
   } else {
-    const now = new Date();
-    initialReadBy = [];
-    initialDeliveredTo = [];
     conversation.participants.forEach((p) => {
       if (!isMe(p, myId)) {
         const pIdStr = toStr(p);

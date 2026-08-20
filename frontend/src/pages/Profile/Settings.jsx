@@ -321,14 +321,14 @@ export const Settings = () => {
                 }}
                 className="w-full sm:w-auto px-6 py-3 border border-rose-200 hover:border-rose-300 bg-white text-rose-600 font-black rounded-2xl cursor-pointer hover:bg-rose-50/60 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xs flex items-center justify-center gap-2 text-xs"
               >
-                <LogOut className="h-4.5 w-4.5" /> Sign Out of SAMPARK
+                <LogOut className="h-4.5 w-4.5" /> Sign Out of ChitChat
               </button>
             </div>
           </form>
 
           {/* Page Footer */}
           <div className="pt-12 pb-6 text-center text-[10px] text-slate-400 font-bold leading-relaxed border-t border-slate-200 select-none">
-            Version 2.4.0 (Build 992) <br />© 2026 SAMPARK Messenger. All rights
+            Version 2.4.0 (Build 992) <br />© 2026 ChitChat Messenger. All rights
             reserved.
           </div>
         </div>

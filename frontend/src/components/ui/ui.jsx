@@ -174,7 +174,7 @@ export const BrandLogo = ({ size = "md", className = "" }) => {
       <span
         className={`${titleSizes[size]} font-black tracking-tight bg-gradient-to-r from-[#00a884] via-[#008069] to-emerald-700 bg-clip-text text-transparent font-sans`}
       >
-        Sampark
+        ChitChat
       </span>
       <span
         className={`${dotSizes[size]} rounded-full bg-[#00a884] shadow-[0_0_10px_rgba(0,168,132,0.8)] animate-pulse inline-block`}

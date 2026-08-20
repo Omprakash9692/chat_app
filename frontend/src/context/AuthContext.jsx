@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [dbUsers, setDbUsers] = useState([]);
   const [token, setToken] = useState(() => localStorage.getItem('accessToken'));
 
-  const saveToken = (newToken) => {
+  const saveToken = useCallback((newToken) => {
     if (newToken) {
       localStorage.setItem('accessToken', newToken);
       setToken(newToken);
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('accessToken');
       setToken(null);
     }
-  };
+  }, []);
 
   const authFetch = useCallback(async (url, options = {}) => {
     const currentToken = token || localStorage.getItem('accessToken');
@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
     });
   }, [token]);
 
-  const fetchDbUsers = async () => {
+  const fetchDbUsers = useCallback(async () => {
     try {
       const res = await authFetch(`${API_URL}/users`, {
         method: "GET"
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error("Failed to fetch database users:", err);
     }
-  };
+  }, [authFetch]);
 
   const updateCachedUser = useCallback((updatedUser) => {
     if (!updatedUser?.id) return;
@@ -90,14 +90,14 @@ export const AuthProvider = ({ children }) => {
       }
     };
     checkSession();
-  }, []);
+  }, [authFetch, fetchDbUsers]);
 
   // Sync database users to allUsers
   useEffect(() => {
     setAllUsers(dbUsers);
   }, [dbUsers]);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     try {
       const res = await authFetch(`${API_URL}/login`, {
         method: "POST",
@@ -120,9 +120,9 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       throw new Error(err.message || "Connection to authentication server failed");
     }
-  };
+  }, [authFetch, saveToken, fetchDbUsers]);
 
-  const register = async (email, name, password, phone) => {
+  const register = useCallback(async (email, name, password, phone) => {
     try {
       const res = await authFetch(`${API_URL}/register`, {
         method: "POST",
@@ -145,10 +145,10 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       throw new Error(err.message || "Connection to authentication server failed");
     }
-  };
+  }, [authFetch, saveToken, fetchDbUsers]);
 
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await authFetch(`${API_URL}/logout`, {
         method: "POST"
@@ -160,9 +160,9 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setDbUsers([]);
     }
-  };
+  }, [authFetch, saveToken]);
 
-  const verifyEmail = async (code) => {
+  const verifyEmail = useCallback(async (code) => {
     const email = user?.email || sessionStorage.getItem('pendingVerificationEmail');
     if (!email) {
       throw new Error("Session expired. Please register again.");
@@ -189,9 +189,9 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       throw new Error(err.message || "Connection to authentication server failed");
     }
-  };
+  }, [authFetch, user?.email, saveToken]);
 
-  const resendVerification = async () => {
+  const resendVerification = useCallback(async () => {
     const email = user?.email || sessionStorage.getItem('pendingVerificationEmail');
     if (!email) {
       throw new Error("No user session found. Please register again.");
@@ -215,9 +215,9 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       throw new Error(err.message || "Connection to authentication server failed");
     }
-  };
+  }, [authFetch, user?.email]);
 
-  const forgotPassword = async (email) => {
+  const forgotPassword = useCallback(async (email) => {
     try {
       const res = await authFetch(`${API_URL}/forgot-password`, {
         method: "POST",
@@ -235,9 +235,9 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       throw new Error(err.message || "Connection to authentication server failed");
     }
-  };
+  }, [authFetch]);
 
-  const resetPassword = async (email, code, password) => {
+  const resetPassword = useCallback(async (email, code, password) => {
     try {
       const res = await authFetch(`${API_URL}/reset-password`, {
         method: "POST",
@@ -255,9 +255,9 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       throw new Error(err.message || "Connection to authentication server failed");
     }
-  };
+  }, [authFetch]);
 
-  const updateProfile = async (formData) => {
+  const updateProfile = useCallback(async (formData) => {
     try {
       const res = await authFetch(`${API_URL}/update-profile`, {
         method: "PUT",
@@ -278,9 +278,9 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       throw new Error(err.message || "Connection to authentication server failed");
     }
-  };
+  }, [authFetch]);
 
-  const updateUserSettings = (category, settings) => {
+  const updateUserSettings = useCallback((category, settings) => {
     setUser(prev => {
       if (!prev) return null;
       const updatedUser = {
@@ -296,7 +296,7 @@ export const AuthProvider = ({ children }) => {
       setAllUsers(users => users.map(u => u.id === prev.id ? updatedUser : u));
       return updatedUser;
     });
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, loading, allUsers, token, authFetch, login, register, logout, verifyEmail, resendVerification, forgotPassword, resetPassword, updateProfile, updateUserSettings, fetchDbUsers, updateCachedUser, removeCachedUser }}>

@@ -286,17 +286,20 @@ export const useChatMessages = ({ user, authFetch, logout, activeChatId, chats, 
   };
 
   const addReaction = (messageId, emoji) => {
+    const myIdStr = user?.id || user?._id?.toString();
     setMessages(prev =>
       prev.map(m => {
         if (m.id !== messageId) return m;
 
         const currentReactions = m.emojiReactions || [];
         const exactMatch = currentReactions.find(
-          r => r.emoji === emoji && (r.userIds || []).includes('user_me')
+          r => r.emoji === emoji && (r.userIds || []).some(id => id === 'user_me' || id === myIdStr || id?.toString() === myIdStr)
         );
 
         let cleaned = currentReactions.map(r => {
-          const userIds = (r.userIds || []).filter(id => id !== 'user_me');
+          const userIds = (r.userIds || []).filter(
+            id => id !== 'user_me' && id !== myIdStr && id?.toString() !== myIdStr
+          );
           return {
             ...r,
             userIds,
@@ -339,6 +342,29 @@ export const useChatMessages = ({ user, authFetch, logout, activeChatId, chats, 
     saveReaction();
   };
 
+  const clearChatMessages = async (chatId) => {
+    if (!chatId) return;
+    const chatIdStr = chatId.toString();
+
+    setMessages(prev => prev.filter(m => m.chatId !== chatIdStr && m.chatId?.toString() !== chatIdStr));
+
+    setChats(prevChats =>
+      prevChats.map(c => {
+        const cIdStr = (c.id || c._id || c.groupId)?.toString();
+        if (cIdStr === chatIdStr) {
+          return { ...c, lastMessage: null, lastMessageId: null };
+        }
+        return c;
+      })
+    );
+
+    try {
+      await chatApi.clearChatMessages(authFetch, chatId);
+    } catch (err) {
+      console.error("Failed to clear chat messages on backend:", err);
+    }
+  };
+
   return {
     messages,
     setMessages,
@@ -354,6 +380,7 @@ export const useChatMessages = ({ user, authFetch, logout, activeChatId, chats, 
     deleteMessage: deleteMessageForEveryone,
     togglePinnedMessage,
     addReaction,
+    clearChatMessages,
     mergeMessagesPreservingStatus
   };
 };

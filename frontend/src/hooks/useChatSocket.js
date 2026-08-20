@@ -73,22 +73,29 @@ export const useChatSocket = ({
         return [...prev, message];
       });
 
-      const isActiveChat = message.chatId === activeChatId;
+      const isActiveChat = activeChatId && (
+        String(message.chatId) === String(activeChatId)
+      );
       setChats(prevChats => {
-        const chatExists = prevChats.some(c => c.id === message.chatId || c.groupId === message.chatId);
+        const chatExists = prevChats.some(
+          c => String(c.id) === String(message.chatId) || String(c._id) === String(message.chatId) || (c.groupId && String(c.groupId) === String(message.chatId))
+        );
         if (!chatExists) {
           loadChats();
           return prevChats;
         }
-        return prevChats.map(c =>
-          (c.id === message.chatId || c.groupId === message.chatId) ? {
+        return prevChats.map(c => {
+          const isTargetChat = String(c.id) === String(message.chatId) || String(c._id) === String(message.chatId) || (c.groupId && String(c.groupId) === String(message.chatId));
+          const isThisActive = isTargetChat && isActiveChat;
+          return isTargetChat ? {
             ...c,
             lastMessageId: message.id,
             createdTime: message.timestamp,
             lastMessage: message,
-            unreadCount: isActiveChat ? 0 : (c.unreadCount || 0) + 1
-          } : c
-        );
+            unreadCount: isThisActive ? 0 : (c.unreadCount || 0) + 1,
+            isUnread: !isThisActive
+          } : c;
+        });
       });
 
       const isWindowHidden = document.visibilityState === 'hidden';
@@ -107,7 +114,7 @@ export const useChatSocket = ({
           const groupChat = chats.find(c => c.id === message.chatId && c.type === 'group');
           const prefix = groupChat ? `[Group: ${groupChat.name}] ${senderName}: ` : `${senderName}: `;
           const notificationBody = `${prefix}${body}`;
-          const notificationTitle = `(${totalUnreadCount}) Sampark`;
+          const notificationTitle = `(${totalUnreadCount}) ChitChat`;
 
           const notification = new Notification(notificationTitle, {
             body: notificationBody,

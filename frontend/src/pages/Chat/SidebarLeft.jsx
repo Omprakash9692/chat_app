@@ -18,8 +18,7 @@ import { useChat } from "../../context/ChatContext";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
 import { Avatar, Badge, BrandLogo } from "../../components/ui/ui";
-import { NewContactModal } from "./components/NewContactModal";
-import { CreateGroupModal } from "./components/CreateGroupModal";
+import { NewContactModal, CreateGroupModal } from "./components";
 
 export const SidebarLeft = ({ closeMobileSidebar }) => {
   const {
@@ -34,7 +33,6 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
     togglePinChat,
     toggleArchiveChat,
     toggleFavoriteChat,
-    toggleUnreadChat,
     clearChatMessages,
     deleteChat,
   } = useChat();
@@ -72,35 +70,51 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
 
   // Fetch target info of a direct chat (recipient user profile)
   const getDirectChatInfo = (chat) => {
+    if (!chat || !chat.participants) {
+      return {
+        name: chat?.name || "Unknown User",
+        status: "offline",
+        avatar: chat?.avatar || "",
+        avatarColor: "from-slate-500 to-slate-600",
+      };
+    }
     const recipientId = chat.participants.find((p) => p !== "user_me");
     const recipient = allUsers.find(
-      (u) => u.id === recipientId || u._id?.toString() === recipientId,
+      (u) => u && (u.id === recipientId || u._id?.toString() === recipientId),
     );
     if (!recipient) {
       return {
-        name: "Unknown User",
+        name: chat.name || "Unknown User",
         status: "offline",
-        avatar: "",
+        avatar: chat.avatar || "",
         avatarColor: "from-slate-500 to-slate-600",
       };
     }
     return {
       ...recipient,
+      name: recipient.name || chat.name || "Unknown User",
       status: recipient.isOnline ? "online" : "offline",
     };
   };
 
   // Fetch target info of a group chat
   const getGroupChatInfo = (chat) => {
-    const group = groups.find((g) => g.id === chat.groupId);
-    return (
-      group || {
+    if (!chat) {
+      return {
         name: "Unknown Group",
         description: "",
         avatar: "",
         avatarColor: "from-indigo-650 to-indigo-650",
-      }
-    );
+      };
+    }
+    const group = groups.find((g) => g && (g.id === chat.groupId || g.id === chat.id));
+    return {
+      name: group?.name || chat.name || "Unknown Group",
+      description: group?.description || chat.description || "",
+      avatar: group?.avatar || chat.avatar || "",
+      avatarColor: group?.avatarColor || "from-indigo-650 to-indigo-650",
+      ...group,
+    };
   };
 
   // Get last message text snippet
@@ -145,14 +159,16 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
 
   // Filter conversations list
   const filteredChats = chats.filter((chat) => {
+    if (!chat) return false;
     // 1. Search Query filter
-    const title =
+    const info =
       chat.type === "group"
-        ? getGroupChatInfo(chat).name
-        : getDirectChatInfo(chat).name;
-    const matchesSearch = title
+        ? getGroupChatInfo(chat)
+        : getDirectChatInfo(chat);
+    const title = info?.name || chat.name || "Unknown";
+    const matchesSearch = String(title)
       .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+      .includes((searchQuery || "").toLowerCase());
 
     if (!matchesSearch) return false;
 
@@ -182,7 +198,14 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
   });
 
   const archivedCount = chats.filter((c) => c.archived).length;
-  const unreadTotal = chats.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+  const unreadTotal = chats.reduce((sum, c) => {
+    const isActive = activeChatId && (
+      String(c.id) === String(activeChatId) ||
+      String(c._id) === String(activeChatId) ||
+      (c.groupId && String(c.groupId) === String(activeChatId))
+    );
+    return sum + (isActive ? 0 : (c.unreadCount || 0));
+  }, 0);
 
   return (
     <>
@@ -268,10 +291,14 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
               const info = isGroup
                 ? getGroupChatInfo(chat)
                 : getDirectChatInfo(chat);
-              const isActive = activeChatId === chat.id;
+              const isActive = activeChatId && (
+                String(activeChatId) === String(chat.id) ||
+                String(activeChatId) === String(chat._id) ||
+                (chat.groupId && String(activeChatId) === String(chat.groupId))
+              );
               const isMenuOpen = openMenuChatId === chat.id;
               const lastText = getLastMessageText(chat);
-              const isUnread = chat.unreadCount > 0 || !!chat.isUnread;
+              const isUnread = !isActive && (chat.unreadCount > 0 || !!chat.isUnread);
 
               return (
                 <div
@@ -358,7 +385,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
                               variant="unread"
                               className="h-5 min-w-[1.25rem] text-[10px] px-1.5 flex-shrink-0"
                             >
-                              {chat.unreadCount || 1}
+                              {chat.unreadCount > 0 ? chat.unreadCount : 1}
                             </Badge>
                           )}
                         </div>
@@ -407,17 +434,6 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
                             {chat.favorite
                               ? "⭐ Remove Favorite"
                               : "⭐ Mark Favorite"}
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            toggleUnreadChat(chat.id);
-                            setOpenMenuChatId(null);
-                          }}
-                          className="w-full text-left px-3.5 py-2 hover:bg-slate-100 flex items-center gap-2 cursor-pointer"
-                        >
-                          <span>
-                            {isUnread ? "✉️ Mark as Read" : "✉️ Mark as Unread"}
                           </span>
                         </button>
                         <button

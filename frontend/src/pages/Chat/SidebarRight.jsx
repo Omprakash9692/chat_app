@@ -20,11 +20,13 @@ import { useChat } from "../../context/ChatContext";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
 import { Avatar, Badge, Modal, Button } from "../../components/ui/ui";
-import { SharedMediaTab } from "./components/SharedMediaTab";
-import { GroupMembersList } from "./components/GroupMembersList";
-import { EditGroupDetailsModal } from "./components/EditGroupDetailsModal";
-import { AddGroupMembersModal } from "./components/AddGroupMembersModal";
-import { SidebarRightModals } from "./components/SidebarRightModals";
+import {
+  SharedMediaTab,
+  GroupMembersList,
+  EditGroupDetailsModal,
+  AddGroupMembersModal,
+  SidebarRightModals,
+} from "./components";
 
 export const SidebarRight = ({ onClose }) => {
   const {
@@ -125,6 +127,8 @@ export const SidebarRight = ({ onClose }) => {
 
   const handleLeaveGroup = async () => {
     if (group) {
+      setIsLeaveModalOpen(false);
+      if (onClose) onClose();
       const success = await leaveGroup(group.id);
       if (success) {
         showToast(
@@ -139,13 +143,13 @@ export const SidebarRight = ({ onClose }) => {
           "danger",
         );
       }
-      setIsLeaveModalOpen(false);
-      if (onClose) onClose();
     }
   };
 
   const handleMakeAdminAndLeave = async (targetUserId) => {
     if (!group) return;
+    setIsLeaveModalOpen(false);
+    if (onClose) onClose();
     const promoted = await makeGroupAdmin(group.id, targetUserId);
     if (promoted) {
       const success = await leaveGroup(group.id);
@@ -155,8 +159,6 @@ export const SidebarRight = ({ onClose }) => {
           `New admin assigned and you exited "${group.name}".`,
           "success",
         );
-        setIsLeaveModalOpen(false);
-        if (onClose) onClose();
       } else {
         showToast(
           "Action Failed",
@@ -171,6 +173,8 @@ export const SidebarRight = ({ onClose }) => {
 
   const handleDeleteGroup = async () => {
     if (group) {
+      setIsDeleteGroupModalOpen(false);
+      if (onClose) onClose();
       const success = await deleteGroup(group.id);
       if (success) {
         showToast(
@@ -181,8 +185,6 @@ export const SidebarRight = ({ onClose }) => {
       } else {
         showToast("Action Failed", "Could not delete group.", "danger");
       }
-      setIsDeleteGroupModalOpen(false);
-      if (onClose) onClose();
     }
   };
 

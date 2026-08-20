@@ -4,11 +4,15 @@ import { Search, X } from "lucide-react";
 import { useChat } from "../../context/ChatContext";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
-import { ChatHeaderBar } from "./components/ChatHeaderBar";
-import { PinnedMessagesBar } from "./components/PinnedMessagesBar";
-import { MessageBubble } from "./components/MessageBubble";
-import { ChatInputBar } from "./components/ChatInputBar";
-import { ForwardMessageModal, PinDurationModal } from "./components/ChatModals";
+import {
+  ChatHeaderBar,
+  PinnedMessagesBar,
+  MessageBubble,
+  ChatInputBar,
+  ForwardMessageModal,
+  PinDurationModal,
+  ReactionDetailsModal,
+} from "./components";
 import {
   Avatar,
   Modal,
@@ -242,6 +246,7 @@ export const ChatWindow = ({
   const quickEmojis = ["👍", "❤️", "😂", "😮", "😢", "🎉", "🔥", "👀"];
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [reactionDetailsTarget, setReactionDetailsTarget] = useState(null);
   const emojiPickerRef = useRef(null);
   const attachmentMenuRef = useRef(null);
 
@@ -821,6 +826,7 @@ export const ChatWindow = ({
                     reportUser={reportUser}
                     getSenderProfile={getSenderProfile}
                     showToast={showToast}
+                    setReactionDetailsTarget={setReactionDetailsTarget}
                   />
                 </React.Fragment>
               );
@@ -1013,6 +1019,15 @@ export const ChatWindow = ({
         selectedDurationHours={selectedDurationHours}
         setSelectedDurationHours={setSelectedDurationHours}
         onConfirmPin={confirmPinMessage}
+      />
+
+      {/* Reaction Details Modal */}
+      <ReactionDetailsModal
+        isOpen={!!reactionDetailsTarget}
+        message={reactionDetailsTarget}
+        onClose={() => setReactionDetailsTarget(null)}
+        getSenderProfile={getSenderProfile}
+        addReaction={addReaction}
       />
 
       {/* Message Info Side Panel (Group Admin / Message Details) */}
