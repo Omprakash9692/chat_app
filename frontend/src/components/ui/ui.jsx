@@ -85,7 +85,7 @@ export const Avatar = ({
 
   return (
     <div
-      className={`relative inline-flex flex-shrink-0 select-none ${onClick ? "cursor-pointer" : ""}`}
+      className={`relative inline-flex shrink-0 select-none ${onClick ? "cursor-pointer" : ""}`}
       onClick={onClick}
     >
       {src ? (
@@ -103,7 +103,7 @@ export const Avatar = ({
 
       <div
         className={`
-          ${sizes[size]} rounded-full flex items-center justify-center text-white font-medium bg-gradient-to-tr ${getInitialsColor(name)}
+          ${sizes[size]} rounded-full flex items-center justify-center text-white font-medium bg-linear-to-tr ${getInitialsColor(name)}
           ${src ? "hidden" : "flex"}
           border border-white/10 ${className}
         `}
@@ -172,7 +172,7 @@ export const BrandLogo = ({ size = "md", className = "" }) => {
   return (
     <div className={`flex items-center gap-1.5 select-none ${className}`}>
       <span
-        className={`${titleSizes[size]} font-black tracking-tight bg-gradient-to-r from-[#00a884] via-[#008069] to-emerald-700 bg-clip-text text-transparent font-sans`}
+        className={`${titleSizes[size]} font-black tracking-tight bg-linear-to-r from-[#00a884] via-[#008069] to-emerald-700 bg-clip-text text-transparent font-sans`}
       >
         ChitChat
       </span>
@@ -528,8 +528,8 @@ export const ToastItem = ({ title, description, type, onClose }) => {
         ${borders[type] || borders.info}
       `}
     >
-      <div className="flex-shrink-0 mt-0.5">{icons[type] || icons.info}</div>
-      <div className="flex-grow text-left min-w-0">
+      <div className="shrink-0 mt-0.5">{icons[type] || icons.info}</div>
+      <div className="grow text-left min-w-0">
         <h4 className="text-xs font-bold text-[#111b21] leading-tight truncate">
           {title}
         </h4>
@@ -541,7 +541,7 @@ export const ToastItem = ({ title, description, type, onClose }) => {
       </div>
       <button
         onClick={onClose}
-        className="flex-shrink-0 p-1 rounded-lg text-[#667781] hover:text-[#111b21] hover:bg-slate-100 transition-colors cursor-pointer"
+        className="shrink-0 p-1 rounded-lg text-[#667781] hover:text-[#111b21] hover:bg-slate-100 transition-colors cursor-pointer"
         title="Dismiss alert"
       >
         <X className="h-4 w-4" />
@@ -554,7 +554,7 @@ export const ToastContainer = () => {
   const { toasts, clearToast } = useNotifications();
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-5 sm:bottom-5 z-[100] flex flex-col gap-3 pointer-events-none max-w-full">
+    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-5 sm:bottom-5 z-100 flex flex-col gap-3 pointer-events-none max-w-full">
       <div className="pointer-events-auto flex flex-col gap-3 items-center sm:items-end w-full">
         <AnimatePresence>
           {toasts.map((toast) => (
@@ -903,7 +903,7 @@ export const MessageInfoPanel = ({ message, onClose }) => {
             </div>
 
             <div className="px-5 py-4 border-b border-slate-100 shrink-0 bg-slate-50/60">
-              <div className="inline-block max-w-full px-4 py-2.5 rounded-2xl rounded-tr-xs bg-slate-900 text-white text-xs leading-relaxed break-words [overflow-wrap:anywhere] [word-break:break-word] shadow-md">
+              <div className="inline-block max-w-full px-4 py-2.5 rounded-2xl rounded-tr-xs bg-slate-900 text-white text-xs leading-relaxed wrap-break-word [word-break:break-word] shadow-md">
                 {msgPreview}
               </div>
               <div className="flex items-center gap-1.5 mt-2">

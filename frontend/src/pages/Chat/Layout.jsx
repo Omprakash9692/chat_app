@@ -47,7 +47,7 @@ export const Layout = () => {
   return (
     <div className="h-screen w-full max-w-full flex bg-[#f0f2f5] text-slate-800 overflow-x-hidden overflow-y-hidden font-sans transition-colors duration-300">
       {/* Global Navigation Strip - Desktop */}
-      <aside className="hidden sm:flex flex-col items-center justify-between w-18 py-6 bg-[#f0f2f5] border-r border-slate-200/80 flex-shrink-0 z-20">
+      <aside className="hidden sm:flex flex-col items-center justify-between w-18 py-6 bg-[#f0f2f5] border-r border-slate-200/80 shrink-0 z-20">
         <div className="flex flex-col items-center gap-6 w-full">
           <div className="flex flex-col gap-4.5 w-full items-center">
             {!isAdminUser && (
@@ -132,9 +132,9 @@ export const Layout = () => {
             className={`
             absolute sm:static ${!activeChatId ? "top-14 h-[calc(100vh-3.5rem)]" : "top-0 h-full"} bottom-0 left-0 right-0 z-20 
             bg-white/92 backdrop-blur-xl
-            transition-all duration-300 ease-in-out transform flex flex-col sm:h-full flex-shrink-0
-            w-full sm:w-[380px] md:w-[400px]
-            ${desktopSidebarOpen ? "sm:w-[380px] md:w-[400px] border-r border-slate-200/80" : "sm:w-0 overflow-hidden border-r-0"}
+            transition-all duration-300 ease-in-out transform flex flex-col sm:h-full shrink-0
+            w-full sm:w-95 md:w-100
+            ${desktopSidebarOpen ? "sm:w-95 md:w-100 border-r border-slate-200/80" : "sm:w-0 overflow-hidden border-r-0"}
             ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full pointer-events-none sm:pointer-events-auto"}
             sm:translate-x-0
           `}
@@ -151,7 +151,7 @@ export const Layout = () => {
         {/* Center active chat/settings/admin pane */}
         <main
           className={`
-          flex-grow flex flex-col bg-white/55 relative h-full w-full max-w-full overflow-hidden
+          grow flex flex-col bg-white/55 relative h-full w-full max-w-full overflow-hidden
           transition-all duration-300
           ${!activeChatId ? "pt-14 sm:pt-0" : "pt-0"}
         `}
@@ -184,7 +184,7 @@ export const Layout = () => {
 
         {/* Right context info panel */}
         {isChatRoute && activeChatId && rightSidebarOpen && (
-          <div className="absolute lg:static top-0 bottom-0 right-0 w-full sm:w-80 bg-white/94 backdrop-blur-xl border-l border-slate-200/80 z-30 lg:z-10 flex flex-col h-full flex-shrink-0">
+          <div className="absolute lg:static top-0 bottom-0 right-0 w-full sm:w-80 bg-white/94 backdrop-blur-xl border-l border-slate-200/80 z-30 lg:z-10 flex flex-col h-full shrink-0">
             <SidebarRight onClose={toggleRightSidebar} />
           </div>
         )}

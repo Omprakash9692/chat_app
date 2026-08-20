@@ -115,11 +115,11 @@ export const Settings = () => {
   const bioLength = bio.length;
 
   return (
-    <div className="flex-grow flex h-full overflow-hidden select-none bg-slate-50/50 relative">
+    <div className="grow flex h-full overflow-hidden select-none bg-slate-50/50 relative">
       {/* Grid background overlay for design consistency */}
       <div className="absolute inset-0 bg-grid-pattern mask-radial-fade pointer-events-none -z-10 opacity-60" />
 
-      <main className="flex-grow overflow-y-auto p-6 md:p-12 no-scrollbar">
+      <main className="grow overflow-y-auto p-6 md:p-12 no-scrollbar">
         <div className="max-w-xl md:max-w-2xl mx-auto space-y-8 select-none text-left">
           {/* Top Profile Header */}
           <div className="flex flex-col items-center justify-center text-center pb-4">
@@ -246,7 +246,7 @@ export const Settings = () => {
                     onChange={(e) => setBio(e.target.value.substring(0, 200))}
                     placeholder="Write a short biography..."
                     disabled={!isEditing}
-                    className="block w-full rounded-xl bg-white disabled:bg-slate-50 disabled:text-slate-500 border border-slate-200 focus:border-slate-350 focus:ring-1 focus:ring-slate-300 text-xs p-3 outline-none text-slate-800 transition-all min-h-[90px] font-medium shadow-xs"
+                    className="block w-full rounded-xl bg-white disabled:bg-slate-50 disabled:text-slate-500 border border-slate-200 focus:border-slate-350 focus:ring-1 focus:ring-slate-300 text-xs p-3 outline-none text-slate-800 transition-all min-h-22.5 font-medium shadow-xs"
                   />
                   <div className="text-[10px] text-slate-400 font-bold text-right pt-0.5">
                     {bioLength} / 200 characters

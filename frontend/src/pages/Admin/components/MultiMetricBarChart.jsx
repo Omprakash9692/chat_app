@@ -249,7 +249,7 @@ export const MultiMetricBarChart = ({
   );
 
   return (
-    <div className="glass-premium rounded-[24px] sm:rounded-[30px] p-4 sm:p-6 bg-white/85 border border-slate-200/60 text-left shadow-[0_15px_35px_rgba(15,23,42,0.03)] hover-glow-card flex flex-col gap-4 sm:gap-5">
+    <div className="glass-premium rounded-3xl sm:rounded-[30px] p-4 sm:p-6 bg-white/85 border border-slate-200/60 text-left shadow-[0_15px_35px_rgba(15,23,42,0.03)] hover-glow-card flex flex-col gap-4 sm:gap-5">
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 select-none">
         <div>
@@ -408,7 +408,7 @@ export const MultiMetricBarChart = ({
         className="relative w-full overflow-x-auto no-scrollbar"
         style={{ height: 260 }}
       >
-        <div className="min-w-[600px] sm:min-w-full h-full">
+        <div className="min-w-150 sm:min-w-full h-full">
           <svg
             className="w-full h-full cursor-crosshair select-none"
             viewBox={`0 0 ${W} ${H}`}

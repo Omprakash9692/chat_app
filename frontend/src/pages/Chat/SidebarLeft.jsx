@@ -318,7 +318,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
                 >
                   {/* Left info */}
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="relative flex-shrink-0">
+                    <div className="relative shrink-0">
                       <Avatar
                         src={info.avatar}
                         name={info.name}
@@ -347,7 +347,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
                           {info.name}
                         </h4>
                         {chat.lastMessage && (
-                          <span className="text-[10px] text-slate-400 flex-shrink-0 font-medium">
+                          <span className="text-[10px] text-slate-400 shrink-0 font-medium">
                             {new Date(
                               chat.lastMessage.timestamp,
                             ).toLocaleTimeString([], {
@@ -365,7 +365,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
                           {lastText}
                         </p>
 
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           {chat.pinned && (
                             <span
                               className="text-amber-500 text-[10px]"
@@ -385,7 +385,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
                           {isUnread && (
                             <Badge
                               variant="unread"
-                              className="h-5 min-w-[1.25rem] text-[10px] px-1.5 flex-shrink-0"
+                              className="h-5 min-w-5 text-[10px] px-1.5 shrink-0"
                             >
                               {chat.unreadCount > 0 ? chat.unreadCount : 1}
                             </Badge>
@@ -510,7 +510,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
             className={`h-13 w-13 rounded-2xl flex items-center justify-center text-white shadow-xl transition-transform active:scale-95 cursor-pointer ${
               isPlusMenuOpen
                 ? "bg-slate-800 rotate-45"
-                : "bg-gradient-to-r from-[#008069] to-[#00a884] hover:scale-105"
+                : "bg-linear-to-r from-[#008069] to-[#00a884] hover:scale-105"
             }`}
             title="Create New Chat or Group"
           >

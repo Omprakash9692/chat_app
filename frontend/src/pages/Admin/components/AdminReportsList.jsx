@@ -81,7 +81,7 @@ export const AdminReportsList = ({
             return (
               <div
                 key={reportId}
-                className={`glass-premium rounded-[32px] p-6 bg-white/80 border hover-glow-card relative shadow-[0_15px_30px_rgba(15,23,42,0.03)] flex flex-col md:flex-row justify-between gap-6 items-start md:items-center border-l-4 ${borderClass}`}
+                className={`glass-premium rounded-4xl p-6 bg-white/80 border hover-glow-card relative shadow-[0_15px_30px_rgba(15,23,42,0.03)] flex flex-col md:flex-row justify-between gap-6 items-start md:items-center border-l-4 ${borderClass}`}
               >
                 <div className="space-y-3.5 max-w-2xl">
                   <div className="flex items-center gap-3">

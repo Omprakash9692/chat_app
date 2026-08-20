@@ -55,7 +55,7 @@ export const GroupManagementTable = ({
 
       <div className="bg-white/80 border border-slate-200/60 rounded-[20px] sm:rounded-[30px] overflow-hidden shadow-[0_15px_45px_rgba(15,23,42,0.03)] backdrop-blur-md">
         <div className="overflow-x-auto w-full no-scrollbar">
-          <table className="w-full min-w-[650px] border-collapse text-left">
+          <table className="w-full min-w-162.5 border-collapse text-left">
             <thead>
               <tr className="border-b border-slate-200 text-[10px] font-black uppercase text-slate-600 bg-slate-50/75 select-none tracking-widest">
                 <th className="px-6 py-4">Group Name & Info</th>
