@@ -8,6 +8,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { useChat } from "../../context/ChatContext";
 import { useNotifications } from "../../context/NotificationContext";
 import { Tabs } from "../../components/ui/ui";
 import { chatApi } from "../../services/chatApi";
@@ -25,6 +26,7 @@ export const Dashboard = () => {
     authFetch,
     user,
   } = useAuth();
+  const { socket } = useChat();
   const { showToast } = useNotifications();
 
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -94,13 +96,32 @@ export const Dashboard = () => {
     fetchAdminReports();
   }, [fetchDbUsers, fetchAdminStats, fetchAdminGroups, fetchAdminReports]);
 
+  // Fast auto-refresh polling (3s) & instant fetch on tab change
   useEffect(() => {
     refreshAllData();
-    pollIntervalRef.current = setInterval(refreshAllData, 30000);
+    const intervalTime = activeTab === "reports" ? 3000 : 4000;
+    pollIntervalRef.current = setInterval(refreshAllData, intervalTime);
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     };
-  }, [refreshAllData]);
+  }, [refreshAllData, activeTab]);
+
+  // Real-time socket event listeners for instant report updates
+  useEffect(() => {
+    if (!socket) return;
+    const handleReportUpdate = () => {
+      fetchAdminReports();
+      fetchAdminStats();
+    };
+
+    socket.on("new-report-submitted", handleReportUpdate);
+    socket.on("report-status-updated", handleReportUpdate);
+
+    return () => {
+      socket.off("new-report-submitted", handleReportUpdate);
+      socket.off("report-status-updated", handleReportUpdate);
+    };
+  }, [socket, fetchAdminReports, fetchAdminStats]);
 
   const closeConfirmModal = () =>
     setConfirmModal((prev) => ({ ...prev, isOpen: false }));

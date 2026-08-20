@@ -268,6 +268,7 @@ export const createReport = async (req, res) => {
     }
 
     const report = await Report.create({ reporter: req.user._id, reportedUser: reportedUserId, messageText, reason });
+    req.app.get("io")?.emit("new-report-submitted", { reportId: report._id.toString() });
     return res.status(201).json({
       success: true,
       message: "Incident report submitted successfully",
@@ -341,6 +342,8 @@ export const updateReportStatus = async (req, res) => {
         message: "Incident report not found"
       });
     }
+
+    req.app.get("io")?.emit("report-status-updated", { reportId: report._id.toString(), status });
 
     return res.status(200).json({
       success: true,
