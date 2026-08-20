@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useMemo } from 'react';
-import { useAuth } from './AuthContext';
-import { useChatSocket } from '../hooks/useChatSocket';
-import { useChatMessages } from '../hooks/useChatMessages';
-import { useChatOperations } from '../hooks/useChatOperations';
-import { useChatGroups } from '../hooks/useChatGroups';
+import React, { createContext, useContext, useMemo } from "react";
+import { useAuth } from "./AuthContext";
+import { useChatSocket } from "../hooks/useChatSocket";
+import { useChatMessages } from "../hooks/useChatMessages";
+import { useChatOperations } from "../hooks/useChatOperations";
+import { useChatGroups } from "../hooks/useChatGroups";
 
 const ChatContext = createContext();
 
@@ -34,7 +34,7 @@ export const ChatProvider = ({ children }) => {
     toggleArchiveChat,
     toggleFavoriteChat,
     toggleUnreadChat,
-    deleteChat
+    deleteChat,
   } = useChatOperations({ user, authFetch, logout, fetchDbUsers });
 
   // 2. Messages Hook (handles messages list, sending/editing/deleting messages, pinning, reactions, clearing)
@@ -49,14 +49,14 @@ export const ChatProvider = ({ children }) => {
     deleteMessageForEveryone,
     togglePinnedMessage,
     addReaction,
-    clearChatMessages
+    clearChatMessages,
   } = useChatMessages({
     user,
     authFetch,
     logout,
     activeChatId,
     chats,
-    setChats
+    setChats,
   });
 
   // 3. Groups Hook (handles group creation, admin roles, member updates, join requests)
@@ -73,13 +73,13 @@ export const ChatProvider = ({ children }) => {
     makeGroupAdmin,
     dismissGroupAdmin,
     removeFromGroup,
-    addMembersToGroup
+    addMembersToGroup,
   } = useChatGroups({
     authFetch,
     logout,
     chats,
     setChats,
-    setActiveChatId
+    setActiveChatId,
   });
 
   // 4. Socket Hook (handles real-time WebSocket connection, notifications, typing indicators)
@@ -97,67 +97,73 @@ export const ChatProvider = ({ children }) => {
     setBlockedUserIds,
     loadChats,
     selectChat,
-    logout
+    logout,
   });
 
   // 5. Memoized provider value for optimal performance and zero unnecessary re-renders
-  const value = useMemo(() => ({
-    chats,
-    messages,
-    groups,
-    activeChatId,
-    typingUsers,
-    blockedUserIds,
-    reports,
-    socket,
-    selectChat,
-    getActiveChat,
-    getChatMessages,
-    sendMessage,
-    uploadFile,
-    editMessage,
-    deleteMessage: deleteMessageForEveryone,
-    deleteMessageForMe,
-    deleteMessageForEveryone,
-    togglePinnedMessage,
-    addReaction,
-    createDirectChat,
-    createGroup,
-    updateGroup,
-    updateGroupProfile,
-    updateGroupPermissions,
-    handleJoinRequest,
-    leaveGroup,
-    deleteGroup,
-    blockUser,
-    unblockUser,
-    reportUser,
-    updateReportStatus,
-    makeGroupAdmin,
-    dismissGroupAdmin,
-    removeFromGroup,
-    addMembersToGroup,
-    togglePinChat,
-    toggleArchiveChat,
-    toggleFavoriteChat,
-    toggleUnreadChat,
-    clearChatMessages,
-    deleteChat
-  }), [
-    chats, messages, groups, activeChatId, typingUsers, blockedUserIds, reports, socket
-  ]);
-
-  return (
-    <ChatContext.Provider value={value}>
-      {children}
-    </ChatContext.Provider>
+  const value = useMemo(
+    () => ({
+      chats,
+      messages,
+      groups,
+      activeChatId,
+      typingUsers,
+      blockedUserIds,
+      reports,
+      socket,
+      selectChat,
+      getActiveChat,
+      getChatMessages,
+      sendMessage,
+      uploadFile,
+      editMessage,
+      deleteMessage: deleteMessageForEveryone,
+      deleteMessageForMe,
+      deleteMessageForEveryone,
+      togglePinnedMessage,
+      addReaction,
+      createDirectChat,
+      createGroup,
+      updateGroup,
+      updateGroupProfile,
+      updateGroupPermissions,
+      handleJoinRequest,
+      leaveGroup,
+      deleteGroup,
+      blockUser,
+      unblockUser,
+      reportUser,
+      updateReportStatus,
+      makeGroupAdmin,
+      dismissGroupAdmin,
+      removeFromGroup,
+      addMembersToGroup,
+      togglePinChat,
+      toggleArchiveChat,
+      toggleFavoriteChat,
+      toggleUnreadChat,
+      clearChatMessages,
+      deleteChat,
+    }),
+    [
+      chats,
+      messages,
+      groups,
+      activeChatId,
+      typingUsers,
+      blockedUserIds,
+      reports,
+      socket,
+    ],
   );
+
+  return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 };
 
 export const useChat = () => {
   const context = useContext(ChatContext);
   if (!context) {
-    throw new Error('useChat must be used within a ChatProvider');
+    throw new Error("useChat must be used within a ChatProvider");
   }
   return context;
 };

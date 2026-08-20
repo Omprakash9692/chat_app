@@ -107,7 +107,9 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
         avatarColor: "from-indigo-650 to-indigo-650",
       };
     }
-    const group = groups.find((g) => g && (g.id === chat.groupId || g.id === chat.id));
+    const group = groups.find(
+      (g) => g && (g.id === chat.groupId || g.id === chat.id),
+    );
     return {
       name: group?.name || chat.name || "Unknown Group",
       description: group?.description || chat.description || "",
@@ -162,9 +164,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
     if (!chat) return false;
     // 1. Search Query filter
     const info =
-      chat.type === "group"
-        ? getGroupChatInfo(chat)
-        : getDirectChatInfo(chat);
+      chat.type === "group" ? getGroupChatInfo(chat) : getDirectChatInfo(chat);
     const title = info?.name || chat.name || "Unknown";
     const matchesSearch = String(title)
       .toLowerCase()
@@ -199,12 +199,12 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
 
   const archivedCount = chats.filter((c) => c.archived).length;
   const unreadTotal = chats.reduce((sum, c) => {
-    const isActive = activeChatId && (
-      String(c.id) === String(activeChatId) ||
-      String(c._id) === String(activeChatId) ||
-      (c.groupId && String(c.groupId) === String(activeChatId))
-    );
-    return sum + (isActive ? 0 : (c.unreadCount || 0));
+    const isActive =
+      activeChatId &&
+      (String(c.id) === String(activeChatId) ||
+        String(c._id) === String(activeChatId) ||
+        (c.groupId && String(c.groupId) === String(activeChatId)));
+    return sum + (isActive ? 0 : c.unreadCount || 0);
   }, 0);
 
   return (
@@ -291,14 +291,16 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
               const info = isGroup
                 ? getGroupChatInfo(chat)
                 : getDirectChatInfo(chat);
-              const isActive = activeChatId && (
-                String(activeChatId) === String(chat.id) ||
-                String(activeChatId) === String(chat._id) ||
-                (chat.groupId && String(activeChatId) === String(chat.groupId))
-              );
+              const isActive =
+                activeChatId &&
+                (String(activeChatId) === String(chat.id) ||
+                  String(activeChatId) === String(chat._id) ||
+                  (chat.groupId &&
+                    String(activeChatId) === String(chat.groupId)));
               const isMenuOpen = openMenuChatId === chat.id;
               const lastText = getLastMessageText(chat);
-              const isUnread = !isActive && (chat.unreadCount > 0 || !!chat.isUnread);
+              const isUnread =
+                !isActive && (chat.unreadCount > 0 || !!chat.isUnread);
 
               return (
                 <div

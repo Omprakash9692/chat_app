@@ -23,9 +23,30 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/email-verification" element={<EmailVerification />} />
 
-        <Route path="/chat" element={<ProtectedRoute userOnly><Layout /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><Layout /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute role="Admin"><Layout /></ProtectedRoute>} />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute userOnly>
+              <Layout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute role="Admin">
+              <Layout />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

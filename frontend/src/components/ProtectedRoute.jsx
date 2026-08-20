@@ -26,7 +26,8 @@ export const ProtectedRoute = ({ children, role, userOnly }) => {
   if (loading) return <LoadingSpinner />;
   if (!user) return <Navigate to="/login" replace />;
   if (!user.isVerified) return <Navigate to="/email-verification" replace />;
-  if (userOnly && user.role === "Admin") return <Navigate to="/admin" replace />;
+  if (userOnly && user.role === "Admin")
+    return <Navigate to="/admin" replace />;
   if (role && user.role !== role) return <Navigate to="/chat" replace />;
   return children;
 };

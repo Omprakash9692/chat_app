@@ -328,8 +328,8 @@ export const Settings = () => {
 
           {/* Page Footer */}
           <div className="pt-12 pb-6 text-center text-[10px] text-slate-400 font-bold leading-relaxed border-t border-slate-200 select-none">
-            Version 2.4.0 (Build 992) <br />© 2026 ChitChat Messenger. All rights
-            reserved.
+            Version 2.4.0 (Build 992) <br />© 2026 ChitChat Messenger. All
+            rights reserved.
           </div>
         </div>
       </main>

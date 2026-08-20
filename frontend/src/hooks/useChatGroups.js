@@ -198,12 +198,12 @@ export const useChatGroups = ({ authFetch, logout, chats, setChats, setActiveCha
             prev.map(g =>
               g.id === chatId
                 ? {
-                    ...g,
-                    memberIds: updatedChat.participants,
-                    adminIds: updatedChat.adminIds,
-                    permissions: updatedChat.permissions,
-                    joinRequests: updatedChat.joinRequests
-                  }
+                  ...g,
+                  memberIds: updatedChat.participants,
+                  adminIds: updatedChat.adminIds,
+                  permissions: updatedChat.permissions,
+                  joinRequests: updatedChat.joinRequests
+                }
                 : g
             )
           );
@@ -257,12 +257,12 @@ export const useChatGroups = ({ authFetch, logout, chats, setChats, setActiveCha
             prev.map(g =>
               g.id === chatId
                 ? {
-                    ...g,
-                    memberIds: updatedChat.participants,
-                    adminIds: updatedChat.adminIds,
-                    permissions: updatedChat.permissions,
-                    joinRequests: updatedChat.joinRequests
-                  }
+                  ...g,
+                  memberIds: updatedChat.participants,
+                  adminIds: updatedChat.adminIds,
+                  permissions: updatedChat.permissions,
+                  joinRequests: updatedChat.joinRequests
+                }
                 : g
             )
           );
