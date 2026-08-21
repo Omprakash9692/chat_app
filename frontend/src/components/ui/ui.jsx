@@ -907,7 +907,15 @@ export const MessageInfoPanel = ({ message, onClose }) => {
                 {msgPreview}
               </div>
               <div className="flex items-center gap-1.5 mt-2">
-                <CheckCheck className="h-3.5 w-3.5 text-sky-500" />
+                {message?.status === "sent" && (
+                  <Check className="h-3.5 w-3.5 text-slate-400" />
+                )}
+                {message?.status === "delivered" && (
+                  <CheckCheck className="h-3.5 w-3.5 text-slate-400" />
+                )}
+                {message?.status === "seen" && (
+                  <CheckCheck className="h-3.5 w-3.5 text-sky-500" />
+                )}
                 <span className="text-[10px] text-slate-400 font-semibold">
                   {message?.timestamp
                     ? new Date(message.timestamp).toLocaleTimeString([], {

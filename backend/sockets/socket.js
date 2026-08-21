@@ -48,26 +48,26 @@ export const initSocket = (server) => {
                     const userObjectId = new mongoose.Types.ObjectId(userId);
                     const conversations = await Conversation.find({ participants: userObjectId });
                     const conversationIds = conversations.map(c => c._id);
-                    
+
                     await Message.updateMany(
-                        { 
-                            conversation: { $in: conversationIds }, 
-                            sender: { $ne: userObjectId }, 
+                        {
+                            conversation: { $in: conversationIds },
+                            sender: { $ne: userObjectId },
                             "deliveredTo.user": { $ne: userObjectId },
                             "readBy.user": { $ne: userObjectId }
                         },
-                        { 
+                        {
                             $push: { deliveredTo: { user: userObjectId, deliveredAt: new Date() } }
                         }
                     );
 
                     await Message.updateMany(
-                        { 
-                            conversation: { $in: conversationIds }, 
-                            sender: { $ne: userObjectId }, 
+                        {
+                            conversation: { $in: conversationIds },
+                            sender: { $ne: userObjectId },
                             status: "sent"
                         },
-                        { 
+                        {
                             $set: { status: "delivered" }
                         }
                     );
@@ -94,12 +94,12 @@ export const initSocket = (server) => {
 
                     // Record per-user read receipt for all unread messages by this user in this chat
                     await Message.updateMany(
-                        { 
-                            conversation: conversationObjectId, 
-                            sender: { $ne: userObjectId }, 
+                        {
+                            conversation: conversationObjectId,
+                            sender: { $ne: userObjectId },
                             "readBy.user": { $ne: userObjectId }
                         },
-                        { 
+                        {
                             $push: { readBy: { user: userObjectId, readAt: now } },
                             $pull: { deliveredTo: { user: userObjectId } }
                         }
@@ -111,6 +111,7 @@ export const initSocket = (server) => {
                             { conversation: conversationObjectId, sender: { $ne: userObjectId } },
                             { $set: { status: "seen" } }
                         );
+                        socket.broadcast.emit("messages-seen", { chatId, userId });
                     } else if (conversation && conversation.participants) {
                         const pCount = conversation.participants.length;
                         const neededReadCount = Math.max(1, pCount - 1);
@@ -122,10 +123,23 @@ export const initSocket = (server) => {
                             },
                             { $set: { status: "seen" } }
                         );
-                    }
+                        await Message.updateMany(
+                            {
+                                conversation: conversationObjectId,
+                                sender: { $ne: userObjectId },
+                                status: "sent",
+                                $or: [{ "readBy.0": { $exists: true } }, { "deliveredTo.0": { $exists: true } }]
+                            },
+                            { $set: { status: "delivered" } }
+                        );
 
-                    // Broadcast to other sockets that messages in this chat are read by this user
-                    socket.broadcast.emit("messages-seen", { chatId, userId });
+                        const seenMsgs = await Message.find({ conversation: conversationObjectId, status: "seen" }, "_id");
+                        const deliveredMsgs = await Message.find({ conversation: conversationObjectId, status: "delivered" }, "_id");
+                        const seenIds = seenMsgs.map((m) => m._id.toString());
+                        const deliveredIds = deliveredMsgs.map((m) => m._id.toString());
+
+                        socket.broadcast.emit("messages-seen", { chatId, userId, seenIds, deliveredIds });
+                    }
                 } catch (err) {
                     console.error("Error updating message statuses to seen:", err);
                 }

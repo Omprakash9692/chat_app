@@ -182,16 +182,27 @@ export const useChatSocket = ({
       );
     };
 
-    const handleMessagesSeen = ({ chatId, userId }) => {
+    const handleMessagesSeen = ({ chatId, userId, seenIds, deliveredIds }) => {
       const myId = user?.id || user?._id;
       if (userId?.toString() === myId?.toString()) return;
 
+      const targetChat = chats.find(c => String(c.id) === String(chatId) || String(c._id) === String(chatId) || (c.groupId && String(c.groupId) === String(chatId)));
+      const isGroup = targetChat?.type === 'group';
+
       setMessages(prev =>
-        prev.map(m =>
-          m.chatId === chatId && m.senderId === 'user_me' && m.status !== 'seen'
-            ? { ...m, status: 'seen' }
-            : m
-        )
+        prev.map(m => {
+          if (m.chatId !== chatId || m.senderId !== 'user_me') return m;
+          if (Array.isArray(seenIds) && seenIds.includes(m.id)) {
+            return { ...m, status: 'seen' };
+          }
+          if (Array.isArray(deliveredIds) && deliveredIds.includes(m.id)) {
+            return { ...m, status: 'delivered' };
+          }
+          if (!seenIds && !deliveredIds) {
+            return { ...m, status: isGroup ? (m.status === 'sent' ? 'delivered' : m.status) : 'seen' };
+          }
+          return m;
+        })
       );
     };
 

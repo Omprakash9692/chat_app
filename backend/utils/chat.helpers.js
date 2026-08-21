@@ -50,9 +50,18 @@ export const formatConversation = (conv, currentUserId, unreadCount = 0) => {
         const senderIdStr = toStr(lastMsgObj.sender);
         let computedStatus = lastMsgObj.status || "sent";
         if (isMe(senderIdStr, currentUserId)) {
-          if (computedStatus === "seen" || (lastMsgObj.readBy || []).length > 0) computedStatus = "seen";
-          else if (computedStatus === "delivered" || (lastMsgObj.deliveredTo || []).length > 0) computedStatus = "delivered";
-          else computedStatus = "sent";
+          const readCount = (lastMsgObj.readBy || []).length;
+          const deliveredCount = (lastMsgObj.deliveredTo || []).length;
+          if (conv.type === "group" && conv.participants) {
+            const neededReadCount = Math.max(1, conv.participants.length - 1);
+            if (computedStatus === "seen" || readCount >= neededReadCount) computedStatus = "seen";
+            else if (computedStatus === "delivered" || readCount > 0 || deliveredCount > 0) computedStatus = "delivered";
+            else computedStatus = "sent";
+          } else {
+            if (computedStatus === "seen" || readCount > 0) computedStatus = "seen";
+            else if (computedStatus === "delivered" || deliveredCount > 0) computedStatus = "delivered";
+            else computedStatus = "sent";
+          }
         }
 
         lastMsgFormatted = {
@@ -144,15 +153,30 @@ export const sanitizeEmojiReactions = (rawReactions, currentUserId) => {
   return result;
 };
 
-export const formatMessage = (msg, currentUserId) => {
+export const formatMessage = (msg, currentUserId, conv = null) => {
   const currentUserIdStr = toStr(currentUserId);
   const senderIdStr = toStr(msg.sender);
 
   let computedStatus = msg.status || "sent";
   if (senderIdStr === currentUserIdStr) {
-    if (computedStatus === "seen" || (msg.readBy || []).length > 0) computedStatus = "seen";
-    else if (computedStatus === "delivered" || (msg.deliveredTo || []).length > 0) computedStatus = "delivered";
-    else computedStatus = "sent";
+    const readCount = (msg.readBy || []).length;
+    const deliveredCount = (msg.deliveredTo || []).length;
+    const convObj = conv || (typeof msg.conversation === "object" ? msg.conversation : null);
+
+    if (convObj && convObj.type === "group" && convObj.participants) {
+      const neededReadCount = Math.max(1, convObj.participants.length - 1);
+      if (computedStatus === "seen" || readCount >= neededReadCount) computedStatus = "seen";
+      else if (computedStatus === "delivered" || readCount > 0 || deliveredCount > 0) computedStatus = "delivered";
+      else computedStatus = "sent";
+    } else if (convObj && convObj.type === "direct") {
+      if (computedStatus === "seen" || readCount > 0) computedStatus = "seen";
+      else if (computedStatus === "delivered" || deliveredCount > 0) computedStatus = "delivered";
+      else computedStatus = "sent";
+    } else {
+      if (computedStatus === "seen") computedStatus = "seen";
+      else if (computedStatus === "delivered" || readCount > 0 || deliveredCount > 0) computedStatus = "delivered";
+      else computedStatus = "sent";
+    }
   }
 
   return {

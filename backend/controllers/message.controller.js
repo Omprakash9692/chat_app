@@ -36,6 +36,10 @@ export const getChatMessages = async (req, res) => {
         { conversation: chatId, sender: { $ne: userId }, $expr: { $gte: [{ $size: { $ifNull: ["$readBy", []] } }, needed] } },
         { $set: { status: "seen" } }
       );
+      await Message.updateMany(
+        { conversation: chatId, sender: { $ne: userId }, status: "sent", $or: [{ "readBy.0": { $exists: true } }, { "deliveredTo.0": { $exists: true } }] },
+        { $set: { status: "delivered" } }
+      );
     }
 
     await Conversation.findByIdAndUpdate(chatId, { $pull: { unreadFor: userId } });
@@ -51,7 +55,7 @@ export const getChatMessages = async (req, res) => {
   }
 
   const messages = await Message.find(filter).sort({ createdAt: 1 });
-  return ok(res, "Messages fetched successfully", { messages: messages.map((m) => formatMessage(m, userId)) });
+  return ok(res, "Messages fetched successfully", { messages: messages.map((m) => formatMessage(m, userId, conversation)) });
 };
 
 // 2. Send Message
@@ -108,6 +112,7 @@ export const sendMessage = async (req, res) => {
       }
     }
   } else {
+    const neededReadCount = Math.max(1, conversation.participants.length - 1);
     conversation.participants.forEach((p) => {
       if (!isMe(p, myId)) {
         const pIdStr = toStr(p);
@@ -117,7 +122,7 @@ export const sendMessage = async (req, res) => {
         }
       }
     });
-    finalStatus = initialReadBy.length > 0 ? "seen" : initialDeliveredTo.length > 0 ? "delivered" : "sent";
+    finalStatus = initialReadBy.length >= neededReadCount ? "seen" : (initialReadBy.length > 0 || initialDeliveredTo.length > 0) ? "delivered" : "sent";
   }
 
   const message = await Message.create({
@@ -144,14 +149,14 @@ export const sendMessage = async (req, res) => {
     conversation.participants.forEach((pId) => {
       if (!isMe(pId, myId) && !blockedFor.some((id) => isMe(id, pId))) {
         userSockets.get(toStr(pId))?.forEach((socketId) => {
-          io.to(socketId).emit("receive-message", formatMessage(message, pId));
+          io.to(socketId).emit("receive-message", formatMessage(message, pId, conversation));
         });
       }
     });
     io.emit("messages-delivered", { chatId, userId: myId });
   }
 
-  return created(res, "Message sent successfully", { message: formatMessage(message, myId) });
+  return created(res, "Message sent successfully", { message: formatMessage(message, myId, conversation) });
 };
 
 // 3. Edit Message
