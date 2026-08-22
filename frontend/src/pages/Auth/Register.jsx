@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, User, UserPlus, Phone, AlertCircle } from "lucide-react";
+import { Mail, Lock, User, UserPlus, Phone, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
 import { BrandLogo } from "../../components/ui/ui";
@@ -12,6 +12,7 @@ export const Register = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -188,9 +189,9 @@ export const Register = () => {
             <div className="relative">
               <Lock className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#667781] h-4 w-4 my-auto" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.password ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
+                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.password ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3 pl-10 pr-10 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
                 {...register("password", {
                   required: "Password is required",
                   minLength: {
@@ -199,6 +200,19 @@ export const Register = () => {
                   },
                 })}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#667781] hover:text-[#111b21] cursor-pointer transition-colors"
+                title={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
             </div>
             {errors.password && (
               <p className="text-[11px] font-bold text-rose-500 pl-1 mt-0.5">

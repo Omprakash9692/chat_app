@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { Lock, ArrowLeft, ShieldCheck, KeyRound } from "lucide-react";
+import { Lock, ArrowLeft, ShieldCheck, KeyRound, Eye, EyeOff } from "lucide-react";
 import { useNotifications } from "../../context/NotificationContext";
 import { useAuth } from "../../context/AuthContext";
 import { BrandLogo } from "../../components/ui/ui";
@@ -12,6 +12,8 @@ export const ResetPassword = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const storedEmail = sessionStorage.getItem("resetPasswordEmail");
@@ -136,9 +138,9 @@ export const ResetPassword = () => {
             <div className="relative">
               <Lock className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#667781] h-4 w-4 my-auto" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.password ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3.5 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
+                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.password ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3.5 pl-10 pr-10 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
                 {...register("password", {
                   required: "Password is required",
                   minLength: {
@@ -147,6 +149,19 @@ export const ResetPassword = () => {
                   },
                 })}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#667781] hover:text-[#111b21] cursor-pointer transition-colors"
+                title={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
             </div>
             {errors.password && (
               <p className="text-[11px] font-bold text-rose-500 pl-1 mt-1">
@@ -163,15 +178,28 @@ export const ResetPassword = () => {
             <div className="relative">
               <Lock className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#667781] h-4 w-4 my-auto" />
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.confirmPassword ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3.5 pl-10 pr-4 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
+                className={`block w-full rounded-2xl bg-[#f0f2f5] border ${errors.confirmPassword ? "border-rose-500" : "border-[#e9edef] focus:bg-white focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884]"} text-xs text-[#111b21] py-3.5 pl-10 pr-10 outline-none transition-all placeholder:text-[#8696a0] font-medium`}
                 {...register("confirmPassword", {
                   required: "Confirm password is required",
                   validate: (value) =>
                     value === password || "Passwords do not match",
                 })}
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#667781] hover:text-[#111b21] cursor-pointer transition-colors"
+                title={showConfirmPassword ? "Hide password" : "Show password"}
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
             </div>
             {errors.confirmPassword && (
               <p className="text-[11px] font-bold text-rose-500 pl-1 mt-1">
