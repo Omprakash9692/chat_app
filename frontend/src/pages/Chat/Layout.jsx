@@ -151,7 +151,7 @@ export const Layout = () => {
         {/* Center active chat/settings/admin pane */}
         <main
           className={`
-          grow flex flex-col bg-white/55 relative h-full w-full max-w-full overflow-hidden
+          grow flex flex-col bg-[#efeae2] relative h-full w-full max-w-full overflow-hidden
           transition-all duration-300
           ${!activeChatId ? "pt-14 sm:pt-0" : "pt-0"}
         `}

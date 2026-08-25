@@ -218,7 +218,7 @@ export const ChatHeaderBar = ({
   const handleBack = () => (onBack ? onBack() : selectChat(null));
 
   return (
-    <div className="h-16 px-3 sm:px-4 border-b border-[#e9edef] bg-[#f0f2f5] flex items-center justify-between z-10 shrink-0 select-none">
+    <div className="h-16 px-3 sm:px-4 border-b border-[#e9edef] bg-[#f0f2f5] flex items-center justify-between z-20 shrink-0 sticky top-0 select-none">
       <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
         <button
           type="button"
@@ -432,7 +432,7 @@ export const ChatInputBar = ({
   getSenderProfile,
 }) => {
   return (
-    <div className="border-t border-slate-200/80 bg-white/86 backdrop-blur-xl shrink-0">
+    <div className="border-t border-slate-200/80 bg-white shrink-0 sticky bottom-0 z-20">
       <div className="max-w-3xl md:max-w-4xl mx-auto p-3 flex flex-col gap-2 w-full">
         <input
           ref={imageInputRef}
