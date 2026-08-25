@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../config';
 
 export const useChatSocket = ({
   user,
@@ -36,7 +37,7 @@ export const useChatSocket = ({
       setBlockedUserIds([]);
     }
 
-    const newSocket = io("http://localhost:5000", {
+    const newSocket = io(SOCKET_URL, {
       withCredentials: true
     });
     newSocket.emit("register", user.id || user._id);

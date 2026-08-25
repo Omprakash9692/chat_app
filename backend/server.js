@@ -1,12 +1,11 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
-
 import http from "http";
 
 import { connectDB } from "./config/db.js";
 
-//Routes
+// Routes
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import conversationRoutes from "./routes/conversation.routes.js";
@@ -15,14 +14,28 @@ import groupRoutes from "./routes/group.routes.js";
 import { initSocket, userSockets, userActiveChats } from "./sockets/socket.js";
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
-//Middleware
+// Dynamic CORS configuration
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",").map((url) => url.trim()) : [])
+];
+
 app.use(cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl) or matched origins
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+      callback(null, true);
+    } else {
+      // Pass-through to avoid blocking CORS on dynamic subdomains (e.g. Vercel previews)
+      callback(null, true);
+    }
+  },
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 }));
 
 app.use(express.json());
@@ -37,8 +50,8 @@ app.use("/api/chats", conversationRoutes);
 app.use("/api/chats", messageRoutes);
 app.use("/api/chats", groupRoutes);
 
-app.get('/', (req, res) => {
-    res.json("API WORKING")
+app.get("/", (req, res) => {
+  res.json({ message: "Chat App API is running smoothly." });
 });
 
 const server = http.createServer(app);

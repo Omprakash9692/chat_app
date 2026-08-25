@@ -16,6 +16,7 @@ import {
 import { useNotifications } from "../../context/NotificationContext";
 import { useChat } from "../../context/ChatContext";
 import { useAuth } from "../../context/AuthContext";
+import { API_BASE_URL } from "../../config";
 
 /* ==========================================================================
    1. AVATAR COMPONENT
@@ -721,7 +722,7 @@ export const MessageInfoPanel = ({ message, onClose }) => {
 
       try {
         const res = await authFetch(
-          `http://localhost:5000/api/chats/messages/${msgId}/info?page=1&limit=${PAGE_LIMIT}`,
+          `${API_BASE_URL}/chats/messages/${msgId}/info?page=1&limit=${PAGE_LIMIT}`,
         );
         if (res.ok) {
           const result = await res.json();
@@ -749,7 +750,7 @@ export const MessageInfoPanel = ({ message, onClose }) => {
       if (!msgId) return;
       try {
         const res = await authFetch(
-          `http://localhost:5000/api/chats/messages/${msgId}/info?page=1&limit=${PAGE_LIMIT}`,
+          `${API_BASE_URL}/chats/messages/${msgId}/info?page=1&limit=${PAGE_LIMIT}`,
         );
         if (res.ok) {
           const result = await res.json();
@@ -815,7 +816,7 @@ export const MessageInfoPanel = ({ message, onClose }) => {
     setLoadingMoreRead(true);
     try {
       const res = await authFetch(
-        `http://localhost:5000/api/chats/messages/${message.id}/info?page=${nextPage}&limit=${PAGE_LIMIT}`,
+        `${API_BASE_URL}/chats/messages/${message.id}/info?page=${nextPage}&limit=${PAGE_LIMIT}`,
       );
       if (res.ok) {
         const result = await res.json();
@@ -834,7 +835,7 @@ export const MessageInfoPanel = ({ message, onClose }) => {
     setLoadingMoreDelivered(true);
     try {
       const res = await authFetch(
-        `http://localhost:5000/api/chats/messages/${message.id}/info?page=${nextPage}&limit=${PAGE_LIMIT}`,
+        `${API_BASE_URL}/chats/messages/${message.id}/info?page=${nextPage}&limit=${PAGE_LIMIT}`,
       );
       if (res.ok) {
         const result = await res.json();
