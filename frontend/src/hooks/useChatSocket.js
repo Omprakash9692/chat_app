@@ -16,7 +16,11 @@ export const useChatSocket = ({
   setBlockedUserIds,
   loadChats,
   selectChat,
-  logout
+  logout,
+  onIncomingCall,
+  onCallAccepted,
+  onCallDeclined,
+  onCallEnded
 }) => {
   const [socket, setSocket] = useState(null);
 
@@ -263,6 +267,19 @@ export const useChatSocket = ({
       loadChats();
     };
 
+    const handleIncomingCall = (data) => {
+      if (typeof onIncomingCall === "function") onIncomingCall(data);
+    };
+    const handleCallAccepted = (data) => {
+      if (typeof onCallAccepted === "function") onCallAccepted(data);
+    };
+    const handleCallDeclined = (data) => {
+      if (typeof onCallDeclined === "function") onCallDeclined(data);
+    };
+    const handleCallEnded = (data) => {
+      if (typeof onCallEnded === "function") onCallEnded(data);
+    };
+
     socket.on("receive-message", handleReceiveMessage);
     socket.on("user-typing", handleUserTyping);
     socket.on("user-stop-typing", handleUserStopTyping);
@@ -274,6 +291,10 @@ export const useChatSocket = ({
     socket.on("group-updated", handleGroupUpdated);
     socket.on("message-reaction-updated", handleMessageReactionUpdated);
     socket.on("user-deleted", handleUserDeleted);
+    socket.on("incoming-call", handleIncomingCall);
+    socket.on("call-accepted", handleCallAccepted);
+    socket.on("call-declined", handleCallDeclined);
+    socket.on("call-ended", handleCallEnded);
 
     return () => {
       socket.off("receive-message", handleReceiveMessage);
@@ -287,8 +308,12 @@ export const useChatSocket = ({
       socket.off("group-updated", handleGroupUpdated);
       socket.off("message-reaction-updated", handleMessageReactionUpdated);
       socket.off("user-deleted", handleUserDeleted);
+      socket.off("incoming-call", handleIncomingCall);
+      socket.off("call-accepted", handleCallAccepted);
+      socket.off("call-declined", handleCallDeclined);
+      socket.off("call-ended", handleCallEnded);
     };
-  }, [socket, activeChatId, chats, allUsers]);
+  }, [socket, activeChatId, chats, allUsers, onIncomingCall, onCallAccepted, onCallDeclined, onCallEnded]);
 
   return socket;
 };

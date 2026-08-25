@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from "react";
+import React, { createContext, useContext, useMemo, useState, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import { useChatSocket } from "../hooks/useChatSocket";
 import { useChatMessages } from "../hooks/useChatMessages";
@@ -9,6 +9,10 @@ const ChatContext = createContext();
 
 export const ChatProvider = ({ children }) => {
   const { user, allUsers, fetchDbUsers, logout, authFetch } = useAuth();
+
+  // Call State
+  const [incomingCall, setIncomingCall] = useState(null); // { roomID, callType, callerName, callerAvatar, chatId, fromUserId }
+  const [activeCallRoom, setActiveCallRoom] = useState(null); // { roomID, callType, peerUser }
 
   // 1. Operations Hook (handles chat listing, active chat state, user blocking, reports, pinning/archiving)
   const {
@@ -81,7 +85,25 @@ export const ChatProvider = ({ children }) => {
     setActiveChatId,
   });
 
-  // 4. Socket Hook (handles real-time WebSocket connection, notifications, typing indicators)
+  // Call Signaling Callbacks
+  const handleIncomingCall = useCallback((data) => {
+    setIncomingCall(data);
+  }, []);
+
+  const handleCallAccepted = useCallback((data) => {
+    console.log("Call accepted on remote end:", data);
+  }, []);
+
+  const handleCallDeclined = useCallback((data) => {
+    setActiveCallRoom(null);
+  }, []);
+
+  const handleCallEnded = useCallback((data) => {
+    setActiveCallRoom(null);
+    setIncomingCall(null);
+  }, []);
+
+  // 4. Socket Hook (handles real-time WebSocket connection, notifications, typing indicators, calls)
   const socket = useChatSocket({
     user,
     activeChatId,
@@ -97,7 +119,113 @@ export const ChatProvider = ({ children }) => {
     loadChats,
     selectChat,
     logout,
+    onIncomingCall: handleIncomingCall,
+    onCallAccepted: handleCallAccepted,
+    onCallDeclined: handleCallDeclined,
+    onCallEnded: handleCallEnded,
   });
+
+  // Call Methods
+  const startCall = useCallback(
+    (callType = "video") => {
+      const activeChat = chats.find(
+        (c) =>
+          String(c.id) === String(activeChatId) ||
+          String(c._id) === String(activeChatId),
+      );
+      if (!activeChat || !socket) return;
+
+      const roomID = "call_" + Math.random().toString(36).substring(2, 10);
+      const isDirect = activeChat.type === "direct";
+
+      let targetUserId = null;
+      let targetParticipantIds = null;
+      let peerUser = null;
+
+      if (isDirect) {
+        const myId = (user?.id || user?._id)?.toString();
+        targetUserId = activeChat.participants?.find(
+          (p) => p !== "user_me" && p?.toString() !== myId,
+        );
+        peerUser = allUsers.find(
+          (u) => (u.id || u._id)?.toString() === targetUserId?.toString(),
+        );
+      } else {
+        targetParticipantIds = activeChat.participantIds || activeChat.participants;
+      }
+
+      socket.emit("start-call", {
+        targetUserId,
+        targetParticipantIds,
+        roomID,
+        callType,
+        callerName: user?.name || "User",
+        callerAvatar: user?.avatar || "",
+        chatId: activeChatId,
+        fromUserId: user?.id || user?._id,
+      });
+
+      setActiveCallRoom({
+        roomID,
+        callType,
+        peerUser: peerUser || { name: activeChat.name },
+      });
+    },
+    [chats, activeChatId, socket, user, allUsers],
+  );
+
+  const acceptCall = useCallback(() => {
+    if (!incomingCall || !socket) return;
+
+    socket.emit("accept-call", {
+      targetUserId: incomingCall.fromUserId,
+      roomID: incomingCall.roomID,
+    });
+
+    setActiveCallRoom({
+      roomID: incomingCall.roomID,
+      callType: incomingCall.callType,
+      peerUser: {
+        name: incomingCall.callerName,
+        avatar: incomingCall.callerAvatar,
+      },
+    });
+
+    setIncomingCall(null);
+  }, [incomingCall, socket]);
+
+  const declineCall = useCallback(() => {
+    if (!incomingCall || !socket) return;
+
+    socket.emit("decline-call", {
+      targetUserId: incomingCall.fromUserId,
+      roomID: incomingCall.roomID,
+    });
+
+    setIncomingCall(null);
+  }, [incomingCall, socket]);
+
+  const endCall = useCallback(() => {
+    if (socket && activeCallRoom) {
+      const activeChat = chats.find(
+        (c) =>
+          String(c.id) === String(activeChatId) ||
+          String(c._id) === String(activeChatId),
+      );
+      const myId = (user?.id || user?._id)?.toString();
+      const targetUserId = activeChat?.participants?.find(
+        (p) => p !== "user_me" && p?.toString() !== myId,
+      );
+
+      socket.emit("end-call", {
+        targetUserId,
+        targetParticipantIds: activeChat?.type === "group" ? activeChat.participants : null,
+        roomID: activeCallRoom.roomID,
+      });
+    }
+    setActiveCallRoom(null);
+    setIncomingCall(null);
+  }, [socket, activeCallRoom, chats, activeChatId, user]);
 
   // 5. Memoized provider value for optimal performance and zero unnecessary re-renders
   const value = useMemo(
@@ -110,6 +238,12 @@ export const ChatProvider = ({ children }) => {
       blockedUserIds,
       reports,
       socket,
+      incomingCall,
+      activeCallRoom,
+      startCall,
+      acceptCall,
+      declineCall,
+      endCall,
       selectChat,
       getActiveChat,
       getChatMessages,
@@ -152,6 +286,12 @@ export const ChatProvider = ({ children }) => {
       blockedUserIds,
       reports,
       socket,
+      incomingCall,
+      activeCallRoom,
+      startCall,
+      acceptCall,
+      declineCall,
+      endCall,
     ],
   );
 

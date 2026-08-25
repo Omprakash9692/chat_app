@@ -70,6 +70,7 @@ export const ChatWindow = ({
     selectChat,
     starredMsgIds,
     toggleStarMessage,
+    startCall,
   } = useChat();
   const { user, allUsers } = useAuth();
   const { showToast } = useNotifications();
@@ -701,6 +702,7 @@ export const ChatWindow = ({
         toggleRightSidebar={toggleRightSidebar}
         onBack={onBack}
         selectChat={selectChat}
+        onStartCall={startCall}
       />
 
       {/* Multi-Pin Banner */}

@@ -38,6 +38,7 @@ import {
   Copy,
   Trash2,
   Phone,
+  Video,
 } from "lucide-react";
 import {
   Avatar,
@@ -305,6 +306,7 @@ export const ChatHeaderBar = ({
   toggleRightSidebar,
   onBack,
   selectChat,
+  onStartCall,
 }) => {
   const handleBack = () => (onBack ? onBack() : selectChat(null));
 
@@ -340,6 +342,22 @@ export const ChatHeaderBar = ({
         </div>
       </div>
       <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => onStartCall && onStartCall("audio")}
+          className="p-2 rounded-xl cursor-pointer text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
+          title="Voice Call"
+        >
+          <Phone className="h-4.5 w-4.5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onStartCall && onStartCall("video")}
+          className="p-2 rounded-xl cursor-pointer text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
+          title="Video Call"
+        >
+          <Video className="h-4.5 w-4.5" />
+        </button>
         <button
           onClick={() => setShowSearchInChat(!showSearchInChat)}
           className={`p-2 rounded-xl cursor-pointer ${showSearchInChat ? "bg-slate-900 text-white" : "text-slate-450 hover:text-slate-750 hover:bg-slate-100"}`}

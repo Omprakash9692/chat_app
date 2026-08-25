@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
+    "@zegocloud/zego-uikit-prebuilt": "^2.18.3",
     "emoji-picker-react": "^4.19.1",
     "framer-motion": "^12.42.2",
     "lucide-react": "^0.468.0",

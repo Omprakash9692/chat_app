@@ -10,10 +10,20 @@ import { ChatWindow } from "./ChatWindow";
 import { Settings } from "../Profile/Settings";
 import { Dashboard } from "../Admin/Dashboard";
 import { Avatar, ToastContainer, BrandLogo } from "../../components/ui/ui";
+import { IncomingCallModal } from "./components/IncomingCallModal";
+import { ZegoCallRoom } from "./components/ZegoCallRoom";
 
 export const Layout = () => {
   const { user, logout } = useAuth();
-  const { activeChatId, selectChat } = useChat();
+  const {
+    activeChatId,
+    selectChat,
+    incomingCall,
+    activeCallRoom,
+    acceptCall,
+    declineCall,
+    endCall,
+  } = useChat();
   const { showToast } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
@@ -189,6 +199,26 @@ export const Layout = () => {
           </div>
         )}
       </div>
+
+      {/* Incoming Call Alert Modal */}
+      {incomingCall && (
+        <IncomingCallModal
+          incomingCall={incomingCall}
+          onAccept={acceptCall}
+          onDecline={declineCall}
+        />
+      )}
+
+      {/* Active Zego Audio/Video Call Room */}
+      {activeCallRoom && (
+        <ZegoCallRoom
+          roomID={activeCallRoom.roomID}
+          userID={user?.id || user?._id}
+          userName={user?.name || "ChitChat User"}
+          callType={activeCallRoom.callType}
+          onLeaveRoom={endCall}
+        />
+      )}
 
       {/* Floating toast alerts */}
       <ToastContainer />

@@ -211,6 +211,82 @@ export const initSocket = (server) => {
             }
         });
 
+        // Call Signaling Events (ZegoCloud / Audio & Video Calls)
+        socket.on("start-call", ({ targetUserId, targetParticipantIds, roomID, callType, callerName, callerAvatar, chatId, fromUserId }) => {
+            const senderId = fromUserId || socket.userId;
+            const payload = {
+                roomID,
+                callType,
+                callerName,
+                callerAvatar,
+                chatId,
+                fromUserId: senderId
+            };
+            if (targetUserId) {
+                const recipientSockets = userSockets.get(targetUserId.toString());
+                if (recipientSockets) {
+                    recipientSockets.forEach(sId => {
+                        io.to(sId).emit("incoming-call", payload);
+                    });
+                }
+            } else if (Array.isArray(targetParticipantIds)) {
+                targetParticipantIds.forEach(pId => {
+                    if (pId.toString() !== senderId?.toString()) {
+                        const recipientSockets = userSockets.get(pId.toString());
+                        if (recipientSockets) {
+                            recipientSockets.forEach(sId => {
+                                io.to(sId).emit("incoming-call", payload);
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        socket.on("accept-call", ({ targetUserId, roomID }) => {
+            if (targetUserId) {
+                const callerSockets = userSockets.get(targetUserId.toString());
+                if (callerSockets) {
+                    callerSockets.forEach(sId => {
+                        io.to(sId).emit("call-accepted", { roomID });
+                    });
+                }
+            }
+        });
+
+        socket.on("decline-call", ({ targetUserId, roomID }) => {
+            if (targetUserId) {
+                const callerSockets = userSockets.get(targetUserId.toString());
+                if (callerSockets) {
+                    callerSockets.forEach(sId => {
+                        io.to(sId).emit("call-declined", { roomID });
+                    });
+                }
+            }
+        });
+
+        socket.on("end-call", ({ targetUserId, targetParticipantIds, roomID }) => {
+            const payload = { roomID };
+            if (targetUserId) {
+                const sockets = userSockets.get(targetUserId.toString());
+                if (sockets) {
+                    sockets.forEach(sId => {
+                        io.to(sId).emit("call-ended", payload);
+                    });
+                }
+            }
+            if (Array.isArray(targetParticipantIds)) {
+                targetParticipantIds.forEach(pId => {
+                    const sockets = userSockets.get(pId.toString());
+                    if (sockets) {
+                        sockets.forEach(sId => {
+                            io.to(sId).emit("call-ended", payload);
+                        });
+                    }
+                });
+            }
+        });
+
         // Handle disconnection
         socket.on("disconnect", async () => {
             let disconnectedUserId = null;
