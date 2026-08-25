@@ -13,6 +13,19 @@ export const ZegoCallRoom = ({
   useEffect(() => {
     let zpInstance = null;
 
+    // Suppress Zego UI kit null track errors when camera is unavailable or on voice calls
+    const handleRejection = (event) => {
+      if (
+        event.reason &&
+        (event.reason.message?.includes("setting 'enabled'") ||
+          event.reason.message?.includes("Cannot set properties of null"))
+      ) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener("unhandledrejection", handleRejection);
+
     const initMeeting = async () => {
       // Default Zego Test Credentials (or override via VITE_ZEGO_APP_ID / VITE_ZEGO_SERVER_SECRET)
       const appID = Number(import.meta.env.VITE_ZEGO_APP_ID) || 123456789;
@@ -23,6 +36,7 @@ export const ZegoCallRoom = ({
         userID || "user_" + Math.random().toString(36).substring(7),
       );
       const cleanUserName = userName || "ChitChat User";
+      const isVideo = callType === "video";
 
       try {
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
@@ -39,17 +53,17 @@ export const ZegoCallRoom = ({
         zp.joinRoom({
           container: containerRef.current,
           scenario: {
-            mode:
-              callType === "video"
-                ? ZegoUIKitPrebuilt.OneONoneCall
-                : ZegoUIKitPrebuilt.GroupCall,
+            mode: isVideo
+              ? ZegoUIKitPrebuilt.OneONoneCall
+              : ZegoUIKitPrebuilt.GroupCall,
           },
-          turnOnCameraWhenJoining: callType === "video",
+          turnOnCameraWhenJoining: isVideo,
           turnOnMicrophoneWhenJoining: true,
-          showMyCameraToggleButton: true,
+          showMyCameraToggleButton: isVideo,
           showMyMicrophoneToggleButton: true,
           showAudioVideoSettingsButton: true,
-          showScreenSharingButton: true,
+          showScreenSharingButton: isVideo,
+          showPreJoinView: false, // Prevents pre-join preview null track errors
           showTextChat: false,
           showUserList: false,
           onLeaveRoom: () => {
@@ -66,6 +80,7 @@ export const ZegoCallRoom = ({
     }
 
     return () => {
+      window.removeEventListener("unhandledrejection", handleRejection);
       if (zpInstance) {
         try {
           zpInstance.destroy();
