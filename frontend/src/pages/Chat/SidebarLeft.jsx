@@ -218,7 +218,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
         </div>
 
         {/* 2. Search & Filter Bar */}
-        <div className="p-3 bg-[#ffffff] border-b border-slate-200/80 space-y-2.5">
+        <div className="p-3 bg-[#ffffff] border-b border-slate-200/80 space-y-2.5 shrink-0 sticky top-0 z-10">
           <div className="relative">
             <Search className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 h-4 w-4 my-auto" />
             <input
@@ -396,7 +396,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
                   </div>
 
                   {/* Context Menu Trigger */}
-                  <div className="relative ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className={`relative ml-2 transition-opacity ${isMenuOpen ? "opacity-100" : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100"}`}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -479,7 +479,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
         </div>
 
         {/* 4. Floating Action Button (+) */}
-        <div className="absolute bottom-5 right-5 z-30">
+        <div className="fixed sm:absolute bottom-5 right-5 z-30">
           {isPlusMenuOpen && (
             <div className="mb-3 space-y-2 flex flex-col items-end animate-in fade-in slide-in-from-bottom-2 duration-150">
               <button

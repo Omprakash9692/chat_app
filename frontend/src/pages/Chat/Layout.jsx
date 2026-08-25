@@ -105,7 +105,7 @@ export const Layout = () => {
       <div className="flex-1 flex overflow-hidden relative w-full max-w-full">
         {/* Mobile Header bar */}
         {!activeChatId && (
-          <div className="sm:hidden absolute top-0 left-0 right-0 h-14 bg-white/90 backdrop-blur-xl border-b border-slate-200 z-30 flex items-center justify-between px-4">
+          <div className="sm:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-slate-200 z-30 flex items-center justify-between px-4 shrink-0">
             <Link
               to="/chat"
               title="Return to main chats"
@@ -130,8 +130,8 @@ export const Layout = () => {
         {isChatRoute && (
           <div
             className={`
-            absolute sm:static ${!activeChatId ? "top-14 h-[calc(100vh-3.5rem)]" : "top-0 h-full"} bottom-0 left-0 right-0 z-20 
-            bg-white/92 backdrop-blur-xl
+            fixed sm:static ${!activeChatId ? "top-14 h-[calc(100dvh-3.5rem)]" : "top-0 h-full"} bottom-0 left-0 right-0 z-20 
+            bg-white
             transition-all duration-300 ease-in-out transform flex flex-col sm:h-full shrink-0
             w-full sm:w-95 md:w-100
             ${desktopSidebarOpen ? "sm:w-95 md:w-100 border-r border-slate-200/80" : "sm:w-0 overflow-hidden border-r-0"}
