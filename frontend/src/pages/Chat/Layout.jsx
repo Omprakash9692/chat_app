@@ -45,7 +45,7 @@ export const Layout = () => {
   const isAdminUser = user?.role === "Admin";
 
   return (
-    <div className="h-screen w-full max-w-full flex bg-[#f0f2f5] text-slate-800 overflow-x-hidden overflow-y-hidden font-sans transition-colors duration-300">
+    <div className="h-screen h-[100dvh] w-full max-w-full flex bg-[#f0f2f5] text-slate-800 overflow-x-hidden overflow-y-hidden font-sans transition-colors duration-300 overscroll-none">
       {/* Global Navigation Strip - Desktop */}
       <aside className="hidden sm:flex flex-col items-center justify-between w-18 py-6 bg-[#f0f2f5] border-r border-slate-200/80 shrink-0 z-20">
         <div className="flex flex-col items-center gap-6 w-full">
@@ -151,8 +151,8 @@ export const Layout = () => {
         {/* Center active chat/settings/admin pane */}
         <main
           className={`
-          grow flex flex-col bg-[#efeae2] relative h-full w-full max-w-full overflow-hidden
-          transition-all duration-300
+          grow flex flex-col bg-[#efeae2] relative h-full h-[100dvh] sm:h-full w-full max-w-full overflow-hidden
+          transition-all duration-300 overscroll-none
           ${!activeChatId ? "pt-14 sm:pt-0" : "pt-0"}
         `}
         >

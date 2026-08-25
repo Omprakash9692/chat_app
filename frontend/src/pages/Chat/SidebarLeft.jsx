@@ -274,7 +274,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
         </div>
 
         {/* 3. Conversations List */}
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-100 no-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-100 no-scrollbar overscroll-contain">
           {sortedChats.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center text-slate-400 h-64">
               <MessageSquare className="h-10 w-10 mb-2 opacity-40" />

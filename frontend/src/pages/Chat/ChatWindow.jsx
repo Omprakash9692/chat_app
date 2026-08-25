@@ -760,7 +760,7 @@ export const ChatWindow = ({
       {/* Messages Window timeline scroll */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto no-scrollbar bg-whatsapp-wallpaper"
+        className="flex-1 min-h-0 overflow-y-auto no-scrollbar bg-whatsapp-wallpaper overscroll-contain"
       >
         <div className="max-w-3xl md:max-w-4xl mx-auto px-2.5 py-3 sm:p-4 space-y-3.5 w-full">
           {filteredMessages.length === 0 ? (
