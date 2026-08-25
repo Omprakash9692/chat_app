@@ -211,7 +211,7 @@ export const SidebarLeft = ({ closeMobileSidebar }) => {
     <>
       <div className="flex flex-col h-full bg-[#ffffff] select-none relative w-full border-r border-slate-200/80">
         {/* 1. Header Bar */}
-        <div className="flex items-center justify-between px-4 py-3 bg-[#ffffff] border-b border-slate-200/80">
+        <div className="hidden sm:flex items-center justify-between px-4 py-3 bg-[#ffffff] border-b border-slate-200/80">
           <div className="flex items-center gap-2">
             <BrandLogo size="sm" showSubtitle={false} />
           </div>
