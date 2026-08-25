@@ -117,33 +117,88 @@ const filterCandidateUsers = (
 //  SIMULATED VOICE PLAYER
 export const SimulatedVoicePlayer = ({ duration, url }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
   const [progress, setProgress] = useState(0);
   const audioRef = useRef(null);
 
+  // Parse total duration seconds from prop string (e.g. "0:03" -> 3)
+  const parseDurationSec = (durStr) => {
+    if (!durStr) return 0;
+    const parts = String(durStr).split(":").map(Number);
+    if (parts.length === 2) return (parts[0] || 0) * 60 + (parts[1] || 0);
+    if (parts.length === 1) return parts[0] || 0;
+    return 0;
+  };
+
+  const propDurationSec = parseDurationSec(duration);
+
   useEffect(() => {
     if (url && url !== "#") {
-      audioRef.current = new Audio(url);
-      const onTimeUpdate = () =>
-        setProgress(
-          ((audioRef.current.currentTime || 0) /
-            (audioRef.current.duration || 1)) *
-            100,
-        );
+      const audio = new Audio(url);
+      audioRef.current = audio;
+
+      const updateProgress = () => {
+        if (!audio) return;
+        const cur = audio.currentTime || 0;
+        let dur = audio.duration;
+
+        // Fallback if audio.duration is Infinity, NaN, or 0 (common for Cloudinary WebM files)
+        if (!dur || !isFinite(dur) || dur === 0) {
+          dur = propDurationSec || 1;
+        }
+
+        const validCur = isFinite(cur) && cur < 86400 ? cur : 0;
+        setCurrentTime(validCur);
+        const pct = Math.min(100, Math.max(0, (validCur / dur) * 100));
+        setProgress(pct);
+      };
+
+      const onTimeUpdate = () => {
+        updateProgress();
+      };
+
       const onEnded = () => {
         setIsPlaying(false);
+        setCurrentTime(0);
         setProgress(0);
       };
-      audioRef.current.addEventListener("timeupdate", onTimeUpdate);
-      audioRef.current.addEventListener("ended", onEnded);
+
+      audio.addEventListener("timeupdate", onTimeUpdate);
+      audio.addEventListener("ended", onEnded);
+
       return () => {
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.removeEventListener("timeupdate", onTimeUpdate);
-          audioRef.current.removeEventListener("ended", onEnded);
-        }
+        audio.pause();
+        audio.removeEventListener("timeupdate", onTimeUpdate);
+        audio.removeEventListener("ended", onEnded);
       };
     }
-  }, [url]);
+  }, [url, propDurationSec]);
+
+  // Smooth animation frame loop while playing
+  useEffect(() => {
+    let animationId;
+    const step = () => {
+      if (audioRef.current && isPlaying) {
+        const audio = audioRef.current;
+        const cur = audio.currentTime || 0;
+        let dur = audio.duration;
+        if (!dur || !isFinite(dur) || dur === 0) {
+          dur = propDurationSec || 1;
+        }
+        const validCur = isFinite(cur) && cur < 86400 ? cur : 0;
+        setCurrentTime(validCur);
+        setProgress(Math.min(100, Math.max(0, (validCur / dur) * 100)));
+        animationId = requestAnimationFrame(step);
+      }
+    };
+
+    if (isPlaying) {
+      animationId = requestAnimationFrame(step);
+    }
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    };
+  }, [isPlaying, propDurationSec]);
 
   const togglePlay = () => {
     if (!audioRef.current) return;
@@ -151,51 +206,87 @@ export const SimulatedVoicePlayer = ({ duration, url }) => {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play().catch(console.error);
-      setIsPlaying(true);
+      audioRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          console.error("Audio playback failed:", err);
+          setIsPlaying(false);
+        });
     }
+  };
+
+  const handleSeek = (e) => {
+    if (!audioRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const width = rect.width || 1;
+    const pct = Math.max(0, Math.min(1, clickX / width));
+
+    let dur = audioRef.current.duration;
+    if (!dur || !isFinite(dur) || dur === 0) {
+      dur = propDurationSec || 1;
+    }
+
+    const newTime = pct * dur;
+    try {
+      audioRef.current.currentTime = newTime;
+    } catch (err) {
+      console.error("Seek error:", err);
+    }
+    setCurrentTime(newTime);
+    setProgress(pct * 100);
   };
 
   const waveBars = [
     15, 24, 18, 30, 42, 20, 12, 28, 35, 22, 10, 18, 25, 32, 40, 26, 12, 18, 30,
     38, 22, 14, 26, 32, 18, 10,
   ];
-  const formatTime = (t) =>
-    isNaN(t)
-      ? "0:00"
-      : `${Math.floor(t / 60)}:${Math.floor(t % 60)
-          .toString()
-          .padStart(2, "0")}`;
+
+  const formatSec = (sec) => {
+    if (!sec || isNaN(sec) || !isFinite(sec) || sec >= 86400) return "0:00";
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 max-w-70">
+    <div className="flex items-center gap-3 p-3 rounded-2xl bg-[#111b21] text-white max-w-68 shadow-md select-none">
       <button
+        type="button"
         onClick={togglePlay}
-        className="h-8 w-8 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center cursor-pointer transition-colors shrink-0"
+        className="h-9 w-9 rounded-full bg-[#00a884] hover:bg-[#008f6f] text-white flex items-center justify-center cursor-pointer transition-transform active:scale-95 shrink-0 shadow-xs"
+        title={isPlaying ? "Pause" : "Play"}
       >
         {isPlaying ? (
-          <Pause className="h-4 w-4 fill-current" />
+          <Pause className="h-4.5 w-4.5 fill-current" />
         ) : (
-          <Play className="h-4 w-4 fill-current ml-0.5" />
+          <Play className="h-4.5 w-4.5 fill-current ml-0.5" />
         )}
       </button>
-      <div className="flex-1">
-        <div className="flex items-end gap-0.5 h-10 w-full overflow-hidden select-none">
-          {waveBars.map((h, i) => (
-            <div
-              key={i}
-              style={{ height: `${h}%` }}
-              className={`w-0.75 rounded-full transition-colors duration-150 ${progress >= (i / waveBars.length) * 100 ? "bg-indigo-600 dark:bg-indigo-400" : "bg-slate-350 dark:bg-slate-700"}`}
-            />
-          ))}
+      <div className="flex-1 min-w-0">
+        <div
+          onClick={handleSeek}
+          className="flex items-end gap-1 h-8 w-full overflow-hidden select-none cursor-pointer py-1"
+          title="Click to seek"
+        >
+          {waveBars.map((h, i) => {
+            const barPct = (i / (waveBars.length - 1)) * 100;
+            const isFilled = progress >= barPct;
+            return (
+              <div
+                key={i}
+                style={{ height: `${h}%` }}
+                className={`flex-1 rounded-full transition-colors duration-75 ${
+                  isFilled ? "bg-[#00a884]" : "bg-slate-600/60"
+                }`}
+              />
+            );
+          })}
         </div>
-        <div className="flex items-center justify-between text-[9px] text-slate-400 dark:text-slate-500 mt-1 select-none font-semibold">
-          <span>
-            {audioRef.current
-              ? formatTime(audioRef.current.currentTime)
-              : "0:00"}
-          </span>
-          <span>{duration || "0:00"}</span>
+        <div className="flex items-center justify-between text-[10px] text-slate-300 mt-1 select-none font-semibold">
+          <span>{formatSec(currentTime)}</span>
+          <span>{duration || formatSec(propDurationSec) || "0:00"}</span>
         </div>
       </div>
     </div>
