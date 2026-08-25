@@ -15,12 +15,15 @@ export const ZegoCallRoom = ({
   useEffect(() => {
     let zpInstance = null;
 
-    // Suppress Zego UI kit null track and invalid AppID errors
+    // Suppress Zego UI kit null track, AiDenoiseConfig, and cancel login rejections
     const handleRejection = (event) => {
       if (
         event.reason &&
         (event.reason.message?.includes("setting 'enabled'") ||
           event.reason.message?.includes("Cannot set properties of null") ||
+          event.reason.message?.includes("AiDenoiseConfig") ||
+          event.reason.message?.includes("1102026") ||
+          event.reason.message?.includes("cancel login") ||
           event.reason.message?.includes("1001004") ||
           event.reason.message?.includes("appid invalid"))
       ) {
@@ -89,8 +92,8 @@ export const ZegoCallRoom = ({
           turnOnMicrophoneWhenJoining: true,
           showMyCameraToggleButton: isVideo,
           showMyMicrophoneToggleButton: true,
-          showAudioVideoSettingsButton: true,
-          showScreenSharingButton: isVideo,
+          showAudioVideoSettingsButton: false,
+          showScreenSharingButton: false,
           showPreJoinView: false,
           showTextChat: false,
           showUserList: false,
