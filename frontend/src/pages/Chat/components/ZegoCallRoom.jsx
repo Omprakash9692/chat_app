@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { ZegoExpressEngine } from "zego-express-engine-webrtm";
+import { ZegoExpressWebRTMEngine as ZegoExpressEngine } from "zego-express-engine-webrtm";
 import { AlertTriangle, X, ExternalLink, Phone, PhoneOff, Mic, MicOff, Video, VideoOff } from "lucide-react";
 
 export const ZegoCallRoom = ({
