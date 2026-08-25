@@ -33,7 +33,6 @@ export const ChatProvider = ({ children }) => {
     togglePinChat,
     toggleArchiveChat,
     toggleFavoriteChat,
-    toggleUnreadChat,
     deleteChat,
   } = useChatOperations({ user, authFetch, logout, fetchDbUsers });
 
@@ -141,7 +140,6 @@ export const ChatProvider = ({ children }) => {
       togglePinChat,
       toggleArchiveChat,
       toggleFavoriteChat,
-      toggleUnreadChat,
       clearChatMessages,
       deleteChat,
     }),

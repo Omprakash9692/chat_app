@@ -284,27 +284,6 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
     }
   };
 
-  const toggleUnreadChat = async (chatId) => {
-    setChats(prevChats =>
-      prevChats.map(c => {
-        if (c.id === chatId || c.groupId === chatId) {
-          const isCurrentlyUnread = (c.unreadCount > 0) || !!c.isUnread;
-          return {
-            ...c,
-            isUnread: !isCurrentlyUnread,
-            unreadCount: isCurrentlyUnread ? 0 : 1
-          };
-        }
-        return c;
-      })
-    );
-    try {
-      await chatApi.toggleUnreadChat(authFetch, chatId);
-    } catch (err) {
-      console.error("Failed to toggle unread chat:", err);
-    }
-  };
-
   const deleteChat = async (chatId) => {
     if (!chatId) return;
     const chatKey = String(chatId);
@@ -352,7 +331,6 @@ export const useChatOperations = ({ user, authFetch, logout, fetchDbUsers, setMe
     togglePinChat,
     toggleArchiveChat,
     toggleFavoriteChat,
-    toggleUnreadChat,
     deleteChat
   };
 };

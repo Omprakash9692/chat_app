@@ -117,10 +117,7 @@ export const toggleArchiveChat = (req, res) => toggleUserStatus(req, res, "archi
 // 5. Toggle Favorite Chat
 export const toggleFavoriteChat = (req, res) => toggleUserStatus(req, res, "favoriteBy", "Chat favorite status updated");
 
-// 6. Toggle Unread Chat
-export const toggleUnreadChat = (req, res) => toggleUserStatus(req, res, "unreadFor", "Chat unread status updated");
-
-// 7. Clear Chat Messages
+// 6. Clear Chat Messages
 export const clearChatMessages = async (req, res) => {
   const { chatId } = req.params;
   const myId = req.user._id;

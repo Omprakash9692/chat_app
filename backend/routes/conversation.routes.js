@@ -6,7 +6,6 @@ import {
   togglePinChat,
   toggleArchiveChat,
   toggleFavoriteChat,
-  toggleUnreadChat,
   clearChatMessages,
   deleteChat
 } from "../controllers/conversation.controller.js";
@@ -20,7 +19,6 @@ conversationRouter.post("/direct", createDirectChat);
 conversationRouter.put("/:chatId/pin", togglePinChat);
 conversationRouter.put("/:chatId/archive", toggleArchiveChat);
 conversationRouter.put("/:chatId/favorite", toggleFavoriteChat);
-conversationRouter.put("/:chatId/unread", toggleUnreadChat);
 conversationRouter.delete("/:chatId/clear-messages", clearChatMessages);
 conversationRouter.delete("/:chatId/delete-chat", deleteChat);
 
