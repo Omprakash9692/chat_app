@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState, useCallback } from "react";
+import React, { createContext, useContext, useMemo, useState, useCallback, useRef } from "react";
 import { useAuth } from "./AuthContext";
 import { useChatSocket } from "../hooks/useChatSocket";
 import { useChatMessages } from "../hooks/useChatMessages";
@@ -13,6 +13,8 @@ export const ChatProvider = ({ children }) => {
   // Call State
   const [incomingCall, setIncomingCall] = useState(null); // { roomID, callType, callerName, callerAvatar, chatId, fromUserId }
   const [activeCallRoom, setActiveCallRoom] = useState(null); // { roomID, callType, peerUser }
+  const callStartTimeRef = useRef(null); // tracks when call was actually accepted
+  const callChatIdRef = useRef(null);   // which chat the call belongs to
 
   // 1. Operations Hook (handles chat listing, active chat state, user blocking, reports, pinning/archiving)
   const {
@@ -95,13 +97,36 @@ export const ChatProvider = ({ children }) => {
   }, []);
 
   const handleCallDeclined = useCallback((data) => {
+    // Caller side: remote declined → show missed call in chat
+    if (callChatIdRef.current) {
+      const chatId = callChatIdRef.current;
+      const callType = activeCallRoom?.callType || "audio";
+      const label = callType === "video" ? "📹 Missed Video Call" : "📞 Missed Call";
+      sendMessage(chatId, label, "call");
+    }
+    callStartTimeRef.current = null;
+    callChatIdRef.current = null;
     setActiveCallRoom(null);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCallRoom]);
 
   const handleCallEnded = useCallback((data) => {
+    // Remote ended the call: compute duration
+    if (callChatIdRef.current && callStartTimeRef.current) {
+      const chatId = callChatIdRef.current;
+      const elapsed = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
+      const mins = Math.floor(elapsed / 60).toString().padStart(1, "0");
+      const secs = (elapsed % 60).toString().padStart(2, "0");
+      const callType = activeCallRoom?.callType || "audio";
+      const label = callType === "video" ? "📹 Video Call" : "📞 Voice Call";
+      sendMessage(chatId, label, "call", { attachmentDuration: `${mins}:${secs}` });
+    }
+    callStartTimeRef.current = null;
+    callChatIdRef.current = null;
     setActiveCallRoom(null);
     setIncomingCall(null);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCallRoom]);
 
   // 4. Socket Hook (handles real-time WebSocket connection, notifications, typing indicators, calls)
   const socket = useChatSocket({
@@ -165,6 +190,9 @@ export const ChatProvider = ({ children }) => {
         fromUserId: user?.id || user?._id,
       });
 
+      callStartTimeRef.current = Date.now();
+      callChatIdRef.current = activeChatId;
+
       setActiveCallRoom({
         roomID,
         callType,
@@ -181,6 +209,9 @@ export const ChatProvider = ({ children }) => {
       targetUserId: incomingCall.fromUserId,
       roomID: incomingCall.roomID,
     });
+
+    callStartTimeRef.current = Date.now();
+    callChatIdRef.current = incomingCall.chatId;
 
     setActiveCallRoom({
       roomID: incomingCall.roomID,
@@ -222,10 +253,23 @@ export const ChatProvider = ({ children }) => {
         targetParticipantIds: activeChat?.type === "group" ? activeChat.participants : null,
         roomID: activeCallRoom.roomID,
       });
+
+      // Caller/accepter side: save call history message with duration
+      const chatId = callChatIdRef.current || activeChatId;
+      if (chatId && callStartTimeRef.current) {
+        const elapsed = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
+        const mins = Math.floor(elapsed / 60).toString().padStart(1, "0");
+        const secs = (elapsed % 60).toString().padStart(2, "0");
+        const callType = activeCallRoom.callType || "audio";
+        const label = callType === "video" ? "📹 Video Call" : "📞 Voice Call";
+        sendMessage(chatId, label, "call", { attachmentDuration: `${mins}:${secs}` });
+      }
     }
+    callStartTimeRef.current = null;
+    callChatIdRef.current = null;
     setActiveCallRoom(null);
     setIncomingCall(null);
-  }, [socket, activeCallRoom, chats, activeChatId, user]);
+  }, [socket, activeCallRoom, chats, activeChatId, user, sendMessage]);
 
   // 5. Memoized provider value for optimal performance and zero unnecessary re-renders
   const value = useMemo(
