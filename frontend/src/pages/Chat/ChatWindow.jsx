@@ -687,7 +687,7 @@ export const ChatWindow = ({
   if (!activeChat) return null;
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#efeae2] relative font-sans select-text">
+    <div className="flex-1 flex flex-col h-full h-[100dvh] sm:h-full overflow-hidden bg-[#efeae2] relative font-sans select-text">
       {/* Top Header Bar */}
       <ChatHeaderBar
         chatTitle={chatTitle}

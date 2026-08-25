@@ -102,7 +102,7 @@ export const Layout = () => {
       </aside>
 
       {/* Middle Content Container */}
-      <div className="flex-1 flex overflow-hidden relative w-full max-w-full">
+      <div className="flex-1 flex h-full h-[100dvh] sm:h-full overflow-hidden relative w-full max-w-full">
         {/* Mobile Header bar */}
         {!activeChatId && (
           <div className="sm:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-slate-200 z-30 flex items-center justify-between px-4 shrink-0">
